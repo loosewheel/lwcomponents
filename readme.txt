@@ -42,7 +42,7 @@ Copy the 'lwcomponents' folder to your mods folder.
 
 Bug Report
 ==========
-
+https://forum.minetest.net/viewtopic.php?f=9&t=27425
 
 
 Description
