@@ -1,3 +1,11 @@
 
 v 0.1.0
 *	initial release
+
+
+v0.1.1
+*	Fixed receiving digilines message on "" channel.
+*	Added siren.
+*	Made digilines optional for solid conductor blocks.
+*	Fixed lighting
+*	Added puncher

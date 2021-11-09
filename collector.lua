@@ -400,7 +400,7 @@ local function digilines_support ()
 					if meta then
 						local this_channel = meta:get_string ("channel")
 
-						if this_channel == channel then
+						if this_channel ~= "" and this_channel == channel then
 							local m = { }
 							for w in string.gmatch(msg, "[^%s]+") do
 								m[#m + 1] = w
@@ -432,7 +432,7 @@ minetest.register_node("lwcomponents:collector", {
 	is_ground_content = false,
 	groups = { cracky = 3 },
 	sounds = default.node_sound_stone_defaults (),
-	paramtype = "light",
+	paramtype = "none",
 	param1 = 0,
 	floodable = false,
 	drop = "lwcomponents:collector",
@@ -458,7 +458,7 @@ minetest.register_node("lwcomponents:collector_locked", {
 	is_ground_content = false,
 	groups = { cracky = 3 },
 	sounds = default.node_sound_stone_defaults (),
-	paramtype = "light",
+	paramtype = "none",
 	param1 = 0,
 	floodable = false,
 	drop = "lwcomponents:collector_locked",
@@ -484,7 +484,7 @@ minetest.register_node("lwcomponents:collector_on", {
 	is_ground_content = false,
 	groups = { cracky = 3, not_in_creative_inventory = 1 },
 	sounds = default.node_sound_stone_defaults (),
-	paramtype = "light",
+	paramtype = "none",
 	param1 = 0,
 	floodable = false,
 	drop = "lwcomponents:collector",
@@ -510,7 +510,7 @@ minetest.register_node("lwcomponents:collector_locked_on", {
 	is_ground_content = false,
 	groups = { cracky = 3, not_in_creative_inventory = 1 },
 	sounds = default.node_sound_stone_defaults (),
-	paramtype = "light",
+	paramtype = "none",
 	param1 = 0,
 	floodable = false,
 	drop = "lwcomponents:collector_locked",

@@ -71,7 +71,7 @@ local function digilines_support ()
 				if meta then
 					local mychannel = meta:get_string ("channel")
 
-					if mychannel == channel then
+					if mychannel ~= "" and mychannel == channel then
 						if type (msg) == "string" then
 							local words = { }
 

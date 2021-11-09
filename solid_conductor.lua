@@ -3,7 +3,7 @@ local S = utils.S
 
 
 
-if utils.unifieddyes_supported and utils.mesecon_supported and utils.digilines_supported then
+if utils.unifieddyes_supported and utils.mesecon_supported then
 
 
 
@@ -17,7 +17,7 @@ mesecon.register_node (":lwcomponents:solid_conductor",
 		palette = "unifieddyes_palette_extended.png",
 		on_rotate = false,
 		drop = "lwcomponents:solid_conductor_off",
-		digiline = { wire = { rules = mesecon.rules.default } },
+		digiline = { wire = { rules = utils.digilines_default_rules } },
 		on_construct = unifieddyes.on_construct,
 		on_dig = unifieddyes.on_dig,
 	},
@@ -27,8 +27,8 @@ mesecon.register_node (":lwcomponents:solid_conductor",
 		{
 			conductor =
 			{
-				rules = mesecon.rules.default,
-				state = mesecon.state.off,
+				rules = utils.mesecon_default_rules,
+				state = utils.mesecon_state_off,
 				onstate = "lwcomponents:solid_conductor_on",
 			}
 		},
@@ -43,8 +43,8 @@ mesecon.register_node (":lwcomponents:solid_conductor",
 		{
 			conductor =
 			{
-				rules = mesecon.rules.default,
-				state = mesecon.state.on,
+				rules = utils.mesecon_default_rules,
+				state = utils.mesecon_state_on,
 				offstate = "lwcomponents:solid_conductor_off",
 			}
 		},
@@ -83,7 +83,7 @@ mesecon.register_node (":lwcomponents:solid_horizontal_conductor",
 		palette = "unifieddyes_palette_extended.png",
 		on_rotate = false,
 		drop = "lwcomponents:solid_horizontal_conductor_off",
-		digiline = { wire = { rules = mesecon.rules.flat } },
+		digiline = { wire = { rules = utils.digilines_flat_rules } },
 		on_construct = unifieddyes.on_construct,
 		on_dig = unifieddyes.on_dig,
 	},
@@ -93,8 +93,8 @@ mesecon.register_node (":lwcomponents:solid_horizontal_conductor",
 		{
 			conductor =
 			{
-				rules = mesecon.rules.flat,
-				state = mesecon.state.off,
+				rules = utils.mesecon_flat_rules,
+				state = utils.mesecon_state_off,
 				onstate = "lwcomponents:solid_horizontal_conductor_on",
 			}
 		},
@@ -109,8 +109,8 @@ mesecon.register_node (":lwcomponents:solid_horizontal_conductor",
 		{
 			conductor =
 			{
-				rules = mesecon.rules.flat,
-				state = mesecon.state.on,
+				rules = utils.mesecon_flat_rules,
+				state = utils.mesecon_state_on,
 				offstate = "lwcomponents:solid_horizontal_conductor_off",
 			}
 		},
@@ -139,4 +139,4 @@ unifieddyes.register_color_craft ({
 
 
 
-end -- utils.unifieddyes_supported and utils.mesecon_supported and utils.digilines_supported then
+end -- utils.unifieddyes_supported and utils.mesecon_supported then

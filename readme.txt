@@ -263,6 +263,101 @@ count
 
 
 
+Siren
+-----
+* This block is only available if digilines and/or mesecons are loaded.
+
+Plays a sound repeatedly while active. Also acts as a digilines conductor.
+
+UI
+
+Channel - digilines channel of siren.
+Distance - block distance the sound can be heard (range 0 to 100).
+Volume - volume the sound is played.
+Sound - select Buzzer, Horn, Raid or Siren.
+
+Mesecons
+	Sound plays while mesecons power is applied.
+
+Digilines messages
+
+"start"
+	Start the siren (turn on).
+
+"stop"
+	Stop the siren (turn off).
+
+"distance <n>"
+	Set block distance the sound can be heard. <n> should be a number
+	from 1 to 100, and is trimmed to this range.
+
+"volume <n>"
+	Set the sound volume. <n> should be a number from 1 to 100, and is
+	trimmed to this range.
+
+"sound buzzer"
+"sound horn"
+"sound raid"
+"sound siren"
+	Set the sound of the siren.
+
+"siren on"
+	Activate the siren, if its on.
+
+"siren off"
+	deactivate the siren.
+
+
+
+Puncher
+-------
+* This block is only available if digilines and/or mesecons are loaded.
+
+Punches players or entities within a given reach. Also acts as a
+digilines conductor.
+
+UI
+
+Channel - digilines channel of detector.
+Reach - block distance from puncher to punch.
+Entities - if checked punches entities.
+Players - if checked punches players.
+
+mode:
+	Forward - punches to reach extent directly in front of the puncher (one block high).
+	Up - detects to reach extent directly above the puncher (one block wide).
+	Down - detects to reach extent directly below the puncher (one block wide).
+
+Mesecons
+	Punches the next item when power is turned on.
+
+Digilines messages
+
+"start"
+	Start the puncher.
+
+"stop"
+	Stop the puncher.
+
+"reach <n>"
+	Set reach of the puncher. <n> should be a number from 1 to 5, and is
+	trimmed to this range.
+
+"entities <true|false>"
+	Set punching of entities on or off.
+
+"players <true|false>"
+	Set punching of players on or off.
+
+"mode forward"
+"mode up"
+"mode down"
+	Set the puncher's mode.
+
+"punch"
+	Action a single punch if the puncher is turned on.
+
+
 DigiSwitch
 ----------
 * This block is only available if both digilines and mesecons are loaded.
@@ -309,8 +404,7 @@ the MoveFloor will not move.
 
 Solid Color Conductors
 ----------------------
-* These blocks are only defined if mesecons, digilines, and unifieddyes are
-loaded.
+* These blocks are only defined if mesecons and unifieddyes are loaded.
 
 Provides 2 blocks that can be colored the same as Solid Color Block (with
 the air brush) and is both a mesecons and digilines conductor.

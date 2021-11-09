@@ -58,6 +58,42 @@ minetest.register_craft( {
 	},
 })
 
+
+minetest.register_craft( {
+	output = "lwcomponents:siren",
+	recipe = {
+		{ "group:wood", "default:chest" },
+		{ "default:copper_ingot", "default:steel_ingot" },
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:siren_locked",
+	recipe = {
+		{ "group:wood", "default:chest_locked" },
+		{ "default:copper_ingot", "default:steel_ingot" },
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:puncher",
+	recipe = {
+		{ "default:chest", "default:sword_stone" },
+		{ "default:copper_ingot", "default:steel_ingot" },
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:puncher_locked",
+	recipe = {
+		{ "default:chest_locked", "default:sword_stone" },
+		{ "default:copper_ingot", "default:steel_ingot" },
+	},
+})
+
 end -- utils.digilines_supported or utils.mesecon_supported
 
 
@@ -115,7 +151,7 @@ end -- utils.digilines_supported and utils.mesecon_supported
 
 
 
-if utils.unifieddyes_supported and utils.mesecon_supported and utils.digilines_supported then
+if utils.unifieddyes_supported and utils.mesecon_supported then
 
 minetest.register_craft ({
 	output = "lwcomputers:solid_conductor_off 3",
@@ -134,7 +170,7 @@ minetest.register_craft ({
 	},
 })
 
-end -- utils.unifieddyes_supported and utils.mesecon_supported and utils.digilines_supported then
+end -- utils.unifieddyes_supported and utils.mesecon_supported then
 
 
 

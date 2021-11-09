@@ -47,9 +47,18 @@ end
 -- check for digilines
 if minetest.global_exists ("digilines") then
 	utils.digilines_supported = true
+	utils.digilines_default_rules = digiline.rules.default
+	utils.digilines_flat_rules = {
+		{ x =  1, y = 0, z =  0 },
+		{ x = -1, y = 0, z =  0 },
+		{ x =  0, y = 0, z =  1 },
+		{ x =  0, y = 0, z = -1 },
+	}
 	utils.digilines_receptor_send = digilines.receptor_send
 else
 	utils.digilines_supported = false
+	utils.digilines_default_rules = { }
+	utils.digilines_flat_rules = { }
 
 	-- dummy
 	utils.digilines_receptor_send = function (pos, rules, channel, msg)
