@@ -9,3 +9,9 @@ v0.1.1
 *	Made digilines optional for solid conductor blocks.
 *	Fixed lighting
 *	Added puncher
+
+
+v0.1.2
+*	Added support for hopper as optional dependency for droppers, dispensers
+	and collectors.
+*	Added digilines message to punchers when something is punched.

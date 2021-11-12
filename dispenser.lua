@@ -52,7 +52,7 @@ local function send_dispense_message (pos, slot, name)
 
 			if channel:len () > 0 then
 				utils.digilines_receptor_send (pos,
-														 digiline.rules.default,
+														 utils.digilines_default_rules,
 														 channel,
 														 { action = "dispense",
 															name = name,
@@ -314,7 +314,7 @@ local function digilines_support ()
 		{
 			wire =
 			{
-				rules = digiline.rules.default,
+				rules = utils.digilines_default_rules,
 			},
 
 			effector =
@@ -418,6 +418,22 @@ minetest.register_node("lwcomponents:dispenser_locked", {
 	can_dig = can_dig,
 	on_blast = on_blast,
 	on_rightclick = on_rightclick
+})
+
+
+
+utils.hopper_add_container({
+	{"top", "lwcomponents:dispenser", "main"}, -- take items from above into hopper below
+	{"bottom", "lwcomponents:dispenser", "main"}, -- insert items below from hopper above
+	{"side", "lwcomponents:dispenser", "main"}, -- insert items from hopper at side
+})
+
+
+
+utils.hopper_add_container({
+	{"top", "lwcomponents:dispenser_locked", "main"}, -- take items from above into hopper below
+	{"bottom", "lwcomponents:dispenser_locked", "main"}, -- insert items below from hopper above
+	{"side", "lwcomponents:dispenser_locked", "main"}, -- insert items from hopper at side
 })
 
 

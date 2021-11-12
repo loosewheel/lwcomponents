@@ -32,7 +32,7 @@ local function send_drop_message (pos, slot, name)
 
 			if channel:len () > 0 then
 				utils.digilines_receptor_send (pos,
-														 digiline.rules.default,
+														 utils.digilines_default_rules,
 														 channel,
 														 { action = "drop",
 															name = name,
@@ -290,7 +290,7 @@ local function digilines_support ()
 		{
 			wire =
 			{
-				rules = digiline.rules.default,
+				rules = utils.digilines_default_rules,
 			},
 
 			effector =
@@ -396,6 +396,21 @@ minetest.register_node("lwcomponents:dropper_locked", {
 	on_rightclick = on_rightclick
 })
 
+
+
+utils.hopper_add_container({
+	{"top", "lwcomponents:dropper", "main"}, -- take items from above into hopper below
+	{"bottom", "lwcomponents:dropper", "main"}, -- insert items below from hopper above
+	{"side", "lwcomponents:dropper", "main"}, -- insert items from hopper at side
+})
+
+
+
+utils.hopper_add_container({
+	{"top", "lwcomponents:dropper_locked", "main"}, -- take items from above into hopper below
+	{"bottom", "lwcomponents:dropper_locked", "main"}, -- insert items below from hopper above
+	{"side", "lwcomponents:dropper_locked", "main"}, -- insert items from hopper at side
+})
 
 
 end -- utils.digilines_supported or utils.mesecon_supported

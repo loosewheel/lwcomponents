@@ -422,7 +422,7 @@ local function digilines_support ()
 		{
 			wire =
 			{
-				rules = digiline.rules.default,
+				rules = utils.digilines_default_rules,
 			},
 
 			effector =

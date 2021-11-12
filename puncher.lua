@@ -7,6 +7,28 @@ if utils.digilines_supported or utils.mesecon_supported then
 
 
 
+local function send_punch_message (pos, item_type, name, label)
+	if utils.digilines_supported then
+		local meta = minetest.get_meta (pos)
+
+		if meta then
+			local channel = meta:get_string ("channel")
+
+			if channel:len () > 0 then
+				utils.digilines_receptor_send (pos,
+														 utils.digilines_default_rules,
+														 channel,
+														 { action = "punch",
+															type = item_type,
+															name = name,
+															label = label })
+			end
+		end
+	end
+end
+
+
+
 local function direction_vector (pos)
 	local meta = minetest.get_meta (pos)
 
@@ -67,6 +89,11 @@ local function punch (pos)
 												 damage_groups = { fleshy = 4 } },
 												vector.direction (pos, object[i]:get_pos ()))
 
+						send_punch_message (pos,
+												  "player",
+												  object[i]:get_player_name (),
+												  object[i]:get_player_name ())
+
 						punched = true
 					end
 
@@ -80,12 +107,27 @@ local function punch (pos)
 
 					-- entity
 					if meta:get_string ("entities") == "true" then
+						local name = object[i]:get_nametag_attributes ()
+						local label = ""
+
+						if type (name) == "table" then
+							label = tostring (name.text or "")
+						end
+
+						name = (object[i].get_luaentity and
+								  object[i]:get_luaentity () and
+								  object[i]:get_luaentity ().name) or ""
 
 						object[i]:punch (object[i],
 											  1.0,
 											  { full_punch_interval = 1.0,
 												 damage_groups = { fleshy = 4 } },
 												vector.direction (pos, object[i]:get_pos ()))
+
+						send_punch_message (pos,
+												  "entity",
+												  name,
+												  label)
 
 						punched = true
 					end
@@ -368,7 +410,7 @@ local function digilines_support ()
 		{
 			wire =
 			{
-				rules = digiline.rules.default,
+				rules = utils.digilines_default_rules,
 			},
 
 			effector =

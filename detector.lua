@@ -69,7 +69,7 @@ local function send_detect_message (pos, item_type, name, label, item_pos, count
 
 			if channel:len () > 0 then
 				utils.digilines_receptor_send (pos,
-														 digiline.rules.default,
+														 utils.digilines_default_rules,
 														 channel,
 														 { action = "detect",
 															type = item_type,
@@ -565,7 +565,7 @@ local function digilines_support ()
 		{
 			wire =
 			{
-				rules = digiline.rules.default,
+				rules = utils.digilines_default_rules,
 			},
 
 			effector =

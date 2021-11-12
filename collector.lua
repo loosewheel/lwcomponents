@@ -20,7 +20,7 @@ local function send_collect_message (pos, name, count)
 
 			if channel:len () > 0 then
 				utils.digilines_receptor_send (pos,
-														 digiline.rules.default,
+														 utils.digilines_default_rules,
 														 channel,
 														 { action = "collect",
 															name = name,
@@ -389,7 +389,7 @@ local function digilines_support ()
 		{
 			wire =
 			{
-				rules = digiline.rules.default,
+				rules = utils.digilines_default_rules,
 			},
 
 			effector =
@@ -525,6 +525,38 @@ minetest.register_node("lwcomponents:collector_locked_on", {
 	on_blast = on_blast,
 	on_timer = on_timer,
 	on_rightclick = on_rightclick
+})
+
+
+
+utils.hopper_add_container({
+	{"top", "lwcomponents:collector", "main"}, -- take items from above into hopper below
+	{"bottom", "lwcomponents:collector", "main"}, -- insert items below from hopper above
+	{"side", "lwcomponents:collector", "main"}, -- insert items from hopper at side
+})
+
+
+
+utils.hopper_add_container({
+	{"top", "lwcomponents:collector_locked", "main"}, -- take items from above into hopper below
+	{"bottom", "lwcomponents:collector_locked", "main"}, -- insert items below from hopper above
+	{"side", "lwcomponents:collector_locked", "main"}, -- insert items from hopper at side
+})
+
+
+
+utils.hopper_add_container({
+	{"top", "lwcomponents:collector_on", "main"}, -- take items from above into hopper below
+	{"bottom", "lwcomponents:collector_on", "main"}, -- insert items below from hopper above
+	{"side", "lwcomponents:collector_on", "main"}, -- insert items from hopper at side
+})
+
+
+
+utils.hopper_add_container({
+	{"top", "lwcomponents:collector_locked_on", "main"}, -- take items from above into hopper below
+	{"bottom", "lwcomponents:collector_locked_on", "main"}, -- insert items below from hopper above
+	{"side", "lwcomponents:collector_locked_on", "main"}, -- insert items from hopper at side
 })
 
 

@@ -113,6 +113,22 @@ end
 
 
 
+-- check for hopper
+if minetest.global_exists ("hopper") then
+	utils.hopper_supported = true
+
+	utils.hopper_add_container = function (list)
+		hopper:add_container (list)
+	end
+else
+	utils.hopper_supported = false
+
+	utils.hopper_add_container = function (list)
+	end
+end
+
+
+
 function utils.can_interact_with_node (pos, player)
 	if not player or not player:is_player () then
 		return false

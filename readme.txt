@@ -13,7 +13,7 @@ CC BY-SA 3.0
 
 Version
 =======
-0.1.1
+0.1.2
 
 
 Minetest Version
@@ -33,6 +33,7 @@ mesecons
 digilines
 unifieddyes
 intllib
+hopper
 
 
 Installation
@@ -56,7 +57,8 @@ Dropper
 * This block is only available if digilines and/or mesecons are loaded.
 
 Contains an inventory and drops an item on command. Also acts as a
-digilines conductor.
+digilines conductor. If the hopper mod is loaded, will take items from the
+top and sides, and release them from the bottom.
 
 UI
 
@@ -96,7 +98,8 @@ Dispenser
 * This block is only available if digilines and/or mesecons are loaded.
 
 Contains an inventory and dispenses (with velocity) an item on command.
-Also acts as a digilines conductor.
+Also acts as a digilines conductor. If the hopper mod is loaded, will take
+items from the top and sides, and release them from the bottom.
 
 UI
 
@@ -137,7 +140,8 @@ Collector
 * This block is only available if digilines is loaded.
 
 Picks up dropped items in adjacent block, with optional filtering. Also
-acts as a digilines conductor.
+acts as a digilines conductor. If the hopper mod is loaded, will take items
+from the top and sides, and release them from the bottom.
 
 UI
 
@@ -356,6 +360,27 @@ Digilines messages
 
 "punch"
 	Action a single punch if the puncher is turned on.
+
+When a player or entity is punched a digilines message is sent with the
+puncher's channel. The message is a table with the following keys:
+{
+	action = "punch",
+	type = "<type>", -- will be "entity" or "player"
+	name = "<name>",
+	label = "<label>"
+}
+
+type
+	Will be "entity" or "player".
+
+name
+	For "entity" the registered entity name.
+	For "player" the player's name.
+
+label
+	For "entity" the name tag text.
+	For "player" the player's name.
+
 
 
 DigiSwitch
