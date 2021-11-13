@@ -34,6 +34,8 @@ digilines
 unifieddyes
 intllib
 hopper
+mobs
+digistuff
 
 
 Installation
