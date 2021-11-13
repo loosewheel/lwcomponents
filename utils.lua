@@ -129,6 +129,24 @@ end
 
 
 
+-- check for mobs
+if minetest.global_exists ("mobs") then
+	utils.mobs_supported = true
+else
+	utils.mobs_supported = false
+end
+
+
+
+-- check for digistuff
+if minetest.global_exists ("digistuff") then
+	utils.digistuff_supported = true
+else
+	utils.digistuff_supported = false
+end
+
+
+
 function utils.can_interact_with_node (pos, player)
 	if not player or not player:is_player () then
 		return false

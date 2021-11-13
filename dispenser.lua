@@ -64,6 +64,90 @@ end
 
 
 
+local function try_spawn (pos, node, item)
+	if utils.mobs_supported then
+		local mob = item:get_name ()
+		local item_def = minetest.registered_craftitems[mob]
+		local spawn_pos = dispense_pos (pos, node)
+
+		if item_def and item_def.groups and item_def.groups.spawn_egg then
+			if mob:sub (mob:len () - 4) == "_set" then
+				mob = mob:sub (1, mob:len () - 5)
+
+				if minetest.registered_entities[mob] then
+					local data = item:get_metadata ()
+					local smob = minetest.add_entity (spawn_pos, mob, data)
+					local ent = smob and smob:get_luaentity ()
+
+					if ent then
+						local meta = minetest.get_meta (pos)
+
+						if meta then
+							local owner = meta:get_string ("owner")
+
+							-- set owner if not a monster
+							if owner:len () > 0 and ent.type ~= "monster" then
+								ent.owner = owner
+								ent.tamed = true
+							end
+						end
+					end
+
+					return smob
+				end
+
+			else
+				if minetest.registered_entities[mob] then
+					local smob = minetest.add_entity (spawn_pos, mob)
+					local ent = smob and smob:get_luaentity ()
+
+					if ent then
+						local meta = minetest.get_meta (pos)
+
+						if meta then
+							local owner = meta:get_string ("owner")
+
+							-- set owner if not a monster
+							if owner:len () > 0 and ent.type ~= "monster" then
+								ent.owner = owner
+								ent.tamed = true
+							end
+						end
+					end
+
+					return smob
+				end
+
+			end
+
+		elseif mob == "mobs:egg" then
+			if math.random (1, 10) == 1 then
+				local smob = minetest.add_entity (spawn_pos, "mobs_animal:chicken")
+				local ent = smob and smob:get_luaentity ()
+
+				if ent then
+					local meta = minetest.get_meta (pos)
+
+					if meta then
+						local owner = meta:get_string ("owner")
+
+						-- set owner if not a monster
+						if owner:len () > 0 and ent.type ~= "monster" then
+							ent.owner = owner
+							ent.tamed = true
+						end
+					end
+				end
+
+				return smob
+			end
+		end
+	end
+
+	return nil
+end
+
+
 -- slot:
 --    nil - next item, no dispense if empty
 --    number - 1 item from slot, no dispense if empty
@@ -119,7 +203,11 @@ local function dispense_item (pos, node, slot)
 					if item then
 						item:set_count (1)
 
-						local obj = minetest.add_item (dispense_pos (pos, node), item)
+						local obj = try_spawn (pos, node, item)
+
+						if not obj then
+							obj = minetest.add_item (dispense_pos (pos, node), item)
+						end
 
 						if obj then
 							obj:set_velocity (dispense_velocity (node))

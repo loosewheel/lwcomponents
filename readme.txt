@@ -101,6 +101,10 @@ Contains an inventory and dispenses (with velocity) an item on command.
 Also acts as a digilines conductor. If the hopper mod is loaded, will take
 items from the top and sides, and release them from the bottom.
 
+Dispensers support mobs mod if loaded. Will spawn the entity from an 'egg'
+if possible, or the 'egg' is dispensed. If a chicken egg is dispensed a
+10% chance a chicken is dispensed instead.
+
 UI
 
 Channel - digilines channel of dispenser.
@@ -234,7 +238,9 @@ message is a table with the following keys:
 	name = "<name>",
 	label = "<label>",
 	pos = { x = n, y = n, z = n },
-	count = <count>
+	count = <count>,
+	hp = <number>,
+	height = <number>
 }
 
 type
@@ -265,6 +271,12 @@ pos
 count
 	The count of items for a "drop", or 1 for everything else.
 
+hp
+	Health points for players and entities. Zero for everything else.
+
+height
+	Height for players and entities. Zero for everything else. This is simply
+	the top position of the object's collision box.
 
 
 Siren
@@ -380,6 +392,26 @@ name
 label
 	For "entity" the name tag text.
 	For "player" the player's name.
+
+
+
+Player Button
+-------------
+* This block is only available if both digilines and digistuff are loaded.
+
+When pressed sends a digilines message with the name of the player that
+pressed the button.
+
+The first time the button is right clicked a form opens to set the
+digilines channel. After that right click presses the button. The
+digilines cannot be changed after its set.
+
+When the button is pressed a digilines message is sent with the button's
+channel in the form:
+{
+	action = "player",
+	name = <player name>
+}
 
 
 

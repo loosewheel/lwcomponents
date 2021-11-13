@@ -121,6 +121,21 @@ end -- utils.digilines_supported
 
 
 
+if utils.digilines_supported and utils.digistuff_supported then
+
+
+minetest.register_craft({
+	output = "lwcomponents:player_button",
+	recipe = {
+		{ "mesecons_button:button_off", "digilines:wire_std_00000000" }
+	},
+})
+
+
+end -- utils.digilines_supported and utils.digistuff_supported
+
+
+
 if utils.mesecon_supported and mesecon.mvps_push then
 
 minetest.register_craft ({

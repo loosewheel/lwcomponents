@@ -60,7 +60,7 @@ end
 
 
 
-local function send_detect_message (pos, item_type, name, label, item_pos, count)
+local function send_detect_message (pos, item_type, name, label, item_pos, count, hp, height)
 	if utils.digilines_supported then
 		local meta = minetest.get_meta (pos)
 
@@ -76,7 +76,9 @@ local function send_detect_message (pos, item_type, name, label, item_pos, count
 															name = name,
 															label = label,
 															pos = to_relative_coords (pos, item_pos),
-															count = count })
+															count = count,
+															hp = hp,
+															height = height })
 			end
 		end
 	end
@@ -132,6 +134,33 @@ end
 
 
 
+local function get_entity_height (objref)
+	if objref.get_luaentity then
+		entity = objref:get_luaentity ()
+
+		if entity and entity.name then
+			def = minetest.registered_entities[entity.name]
+
+			if def and type (def.collisionbox) == "table" and
+				type (def.collisionbox[5]) == "number" then
+
+				return def.collisionbox[5]
+			end
+		end
+	end
+
+	local props = objref:get_properties ()
+	if props and props.collisionbox and type (props.collisionbox) == "table" and
+		type (props.collisionbox[5]) == "number" then
+
+		return props.collisionbox[5]
+	end
+
+	return 0
+end
+
+
+
 local function detect (pos)
 	local meta = minetest.get_meta (pos)
 	local detected = false
@@ -153,7 +182,9 @@ local function detect (pos)
 												object[i]:get_player_name (),
 												object[i]:get_player_name (),
 												object[i]:get_pos (),
-												1)
+												1,
+												object[i]:get_hp (),
+												get_entity_height (object[i]))
 
 					detected = true
 				end
@@ -174,7 +205,9 @@ local function detect (pos)
 													stack:get_name (),
 													stack:get_name (),
 													object[i]:get_pos (),
-													stack:get_count ())
+													stack:get_count (),
+													0,
+													0)
 
 						detected = true
 					end
@@ -203,7 +236,9 @@ local function detect (pos)
 												name,
 												label,
 												object[i]:get_pos (),
-												1)
+												1,
+												object[i]:get_hp (),
+												get_entity_height (object[i]))
 
 					detected = true
 
@@ -228,7 +263,9 @@ local function detect (pos)
 														node.name,
 														node.name,
 														testpos,
-														1)
+														1,
+														0,
+														0)
 
 							detected = true
 						end
