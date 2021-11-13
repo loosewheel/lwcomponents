@@ -1,1 +1,47 @@
 
+
+lwcomponents.version ()
+	Returns this mod version as a string. eg. "0.1.5".
+
+
+
+lwcomponents.register_spawner (itemname, spawn_func)
+
+	itemname:
+		Registered string name of the spawner item
+
+	spawn_func:
+		The function to call to spawn the mob of the form -
+
+		spawn_func (spawn_pos, itemstack, owner, spawner_pos, spawner_dir)
+
+		spawn_pos:
+			The position the entity should be spawned at.
+
+		itemstack:
+			The spawner ItemStack, of the name itemname.
+
+		owner:
+			As string of the player's name that will own the spawned entity,
+			if applicable. This may be "" for no owner.
+
+		spawner_pos:
+			The position of the block calling this function.
+
+		spawner_dir:
+			A single unit vector of the direction the spawner block is facing.
+			eg. { x = -1, y = 0, z = 0 }
+
+		This function should return the ObjectRef of the spawned entity or
+		nil. If this function returns nil for ObjectRef a second boolean
+		value should be returned for weather to cancel the action.
+
+		eg. If too many mobs:
+			return nil, true
+
+		eg. If only chance of spawn and out of luck:
+			return nil, false
+
+	The register function return true on success, or false on failure
+	(parameter type check failed or the spawn item has already been
+	registered).
