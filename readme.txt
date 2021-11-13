@@ -103,7 +103,9 @@ items from the top and sides, and release them from the bottom.
 
 Dispensers support mobs mod if loaded. Will spawn the entity from an 'egg'
 if possible, or the 'egg' is dispensed. If a chicken egg is dispensed a
-10% chance a chicken is dispensed instead.
+10% chance a chicken is dispensed instead. If the spawned entity can be
+owned (or tamed) and the dispenser is owned the owner of the dispenser is
+set as the owner of the entity.
 
 UI
 
