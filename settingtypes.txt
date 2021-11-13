@@ -1,0 +1,2 @@
+# Allow dispensers to spawn mobs instead of spawners.
+lwcomponents_spawn_mobs (Spawn mobs) bool true

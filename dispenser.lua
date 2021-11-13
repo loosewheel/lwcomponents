@@ -7,6 +7,22 @@ if utils.digilines_supported or utils.mesecon_supported then
 
 
 
+local function dispense_dir (node)
+	if node.param2 == 0 then
+		return { x = 0, y = 0, z = -1 }
+	elseif node.param2 == 1 then
+		return { x = -1, y = 0, z = 0 }
+	elseif node.param2 == 2 then
+		return { x = 0, y = 0, z = 1 }
+	elseif node.param2 == 3 then
+		return { x = 1, y = 0, z = 0 }
+	else
+		return { x = 0, y = 0, z = 0 }
+	end
+end
+
+
+
 local function dispense_pos (pos, node)
 	if node.param2 == 0 then
 		return { x = pos.x, y = pos.y, z = pos.z - 1 }
@@ -64,8 +80,8 @@ end
 
 
 
-local function try_spawn (pos, node, item)
-	if utils.mobs_supported then
+local function try_spawn (pos, node, item, owner)
+	if utils.mobs_supported and utils.settings.spawn_mobs then
 		local mob = item:get_name ()
 		local item_def = minetest.registered_craftitems[mob]
 		local spawn_pos = dispense_pos (pos, node)
@@ -80,16 +96,10 @@ local function try_spawn (pos, node, item)
 					local ent = smob and smob:get_luaentity ()
 
 					if ent then
-						local meta = minetest.get_meta (pos)
-
-						if meta then
-							local owner = meta:get_string ("owner")
-
-							-- set owner if not a monster
-							if owner:len () > 0 and ent.type ~= "monster" then
-								ent.owner = owner
-								ent.tamed = true
-							end
+						-- set owner if not a monster
+						if owner:len () > 0 and ent.type ~= "monster" then
+							ent.owner = owner
+							ent.tamed = true
 						end
 					end
 
@@ -102,16 +112,10 @@ local function try_spawn (pos, node, item)
 					local ent = smob and smob:get_luaentity ()
 
 					if ent then
-						local meta = minetest.get_meta (pos)
-
-						if meta then
-							local owner = meta:get_string ("owner")
-
-							-- set owner if not a monster
-							if owner:len () > 0 and ent.type ~= "monster" then
-								ent.owner = owner
-								ent.tamed = true
-							end
+						-- set owner if not a monster
+						if owner:len () > 0 and ent.type ~= "monster" then
+							ent.owner = owner
+							ent.tamed = true
 						end
 					end
 
@@ -126,16 +130,10 @@ local function try_spawn (pos, node, item)
 				local ent = smob and smob:get_luaentity ()
 
 				if ent then
-					local meta = minetest.get_meta (pos)
-
-					if meta then
-						local owner = meta:get_string ("owner")
-
-						-- set owner if not a monster
-						if owner:len () > 0 and ent.type ~= "monster" then
-							ent.owner = owner
-							ent.tamed = true
-						end
+					-- set owner if not a monster
+					if owner:len () > 0 and ent.type ~= "monster" then
+						ent.owner = owner
+						ent.tamed = true
 					end
 				end
 
@@ -146,6 +144,7 @@ local function try_spawn (pos, node, item)
 
 	return nil
 end
+
 
 
 -- slot:
@@ -202,11 +201,26 @@ local function dispense_item (pos, node, slot)
 
 					if item then
 						item:set_count (1)
+						local spawn_pos = dispense_pos (pos, node)
+						local owner = meta:get_string ("owner")
 
-						local obj = try_spawn (pos, node, item)
+						local obj, cancel = utils.spawn_registered (name,
+																				  spawn_pos,
+																				  item,
+																				  owner,
+																				  pos,
+																				  dispense_dir (node))
+
+						if obj == nil and cancel then
+							return false
+						end
 
 						if not obj then
-							obj = minetest.add_item (dispense_pos (pos, node), item)
+							obj = try_spawn (pos, node, item, owner)
+						end
+
+						if not obj then
+							obj = minetest.add_item (spawn_pos, item)
 						end
 
 						if obj then

@@ -1,4 +1,4 @@
-local version = "0.1.4"
+local version = "0.1.5"
 local mod_storage = minetest.get_mod_storage ()
 
 
@@ -16,6 +16,8 @@ local utils = { }
 local modpath = minetest.get_modpath ("lwcomponents")
 
 loadfile (modpath.."/utils.lua") (utils, mod_storage)
+loadfile (modpath.."/settings.lua") (utils)
+loadfile (modpath.."/api.lua") (utils)
 loadfile (modpath.."/dropper.lua") (utils)
 loadfile (modpath.."/collector.lua") (utils)
 loadfile (modpath.."/dispenser.lua") (utils)

@@ -13,7 +13,7 @@ CC BY-SA 3.0
 
 Version
 =======
-0.1.4
+0.1.5
 
 
 Minetest Version
@@ -103,11 +103,11 @@ Contains an inventory and dispenses (with velocity) an item on command.
 Also acts as a digilines conductor. If the hopper mod is loaded, will take
 items from the top and sides, and release them from the bottom.
 
-Dispensers support mobs mod if loaded. Will spawn the entity from an 'egg'
-if possible, or the 'egg' is dispensed. If a chicken egg is dispensed a
-10% chance a chicken is dispensed instead. If the spawned entity can be
-owned (or tamed) and the dispenser is owned the owner of the dispenser is
-set as the owner of the entity.
+Dispensers support mobs mod if loaded and Spawn mobs setting is enabled.
+Will spawn the entity from an 'egg' if possible, or the 'egg' is dispensed.
+If a chicken egg is dispensed a 10% chance a chicken is dispensed instead.
+If the spawned entity can be owned (or tamed) and the dispenser is owned
+the owner of the dispenser is set as the owner of the entity.
 
 UI
 

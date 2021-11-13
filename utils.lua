@@ -171,4 +171,43 @@ end
 
 
 
+utils.registered_spawners = { }
+-- each entry [spawner_itemname] = spawner_func
+
+
+
+function utils.register_spawner (itemname, spawn_func)
+	if type (itemname) == "string" and type (spawn_func) == "function" then
+		if not utils.registered_spawners[itemname] then
+			utils.registered_spawners[itemname] = spawn_func
+
+			return true
+		end
+	end
+
+	return false
+end
+
+
+
+function utils.spawn_registered (itemname, spawn_pos, itemstack, owner, spawner_pos, spawner_dir)
+	local func = utils.registered_spawners[itemname]
+
+	if func then
+		local result, obj, cancel = pcall (func, spawn_pos, itemstack, owner, spawner_pos, spawner_dir)
+
+		if result and (obj == nil or type (obj) == "userdata") then
+			return obj, cancel
+		end
+
+		minetest.log ("error", "lwcomponents.register_spawner spawner function for "..itemname.." failed")
+
+		return nil, true
+	end
+
+	return nil, false
+end
+
+
+
 --
