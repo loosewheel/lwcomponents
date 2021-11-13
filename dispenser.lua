@@ -71,8 +71,8 @@ local function try_spawn (pos, node, item)
 		local spawn_pos = dispense_pos (pos, node)
 
 		if item_def and item_def.groups and item_def.groups.spawn_egg then
-			if mob:sub (mob:len () - 4) == "_set" then
-				mob = mob:sub (1, mob:len () - 5)
+			if mob:sub (mob:len () - 3) == "_set" then
+				mob = mob:sub (1, mob:len () - 4)
 
 				if minetest.registered_entities[mob] then
 					local data = item:get_metadata ()

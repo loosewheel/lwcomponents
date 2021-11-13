@@ -22,3 +22,7 @@ v0.1.3
 *	Added dispensers spawn if spawner with optional dependency on mobs mod.
 	If mobs:egg is dispensed 10% change a chicken is dispensed instead.
 *	Added player_button.
+
+
+v0.1.4
+*	Bug fix to spawning owned mobs.
