@@ -171,6 +171,75 @@ end
 
 
 
+function utils.get_far_node (pos)
+	local node = minetest.get_node (pos)
+
+	if node.name == "ignore" then
+		minetest.get_voxel_manip ():read_from_map (pos, pos)
+
+		node = minetest.get_node (pos)
+
+		if node.name == "ignore" then
+			return nil
+		end
+	end
+
+	return node
+end
+
+
+
+function utils.find_item_def (name)
+	local def = minetest.registered_items[name]
+
+	if not def then
+		def = minetest.registered_craftitems[name]
+	end
+
+	if not def then
+		def = minetest.registered_nodes[name]
+	end
+
+	if not def then
+		def = minetest.registered_tools[name]
+	end
+
+	return def
+end
+
+
+
+function utils.destroy_node (pos)
+	local node = utils.get_far_node (pos)
+
+	if node then
+		local items = minetest.get_node_drops (node, nil)
+
+		if items then
+			for i = 1, #items do
+				local stack = ItemStack (items[i])
+
+				if stack and not stack:is_empty () then
+					local name = stack:get_name ()
+					local def = utils.find_item_def (name)
+
+					if def then
+						if def.preserve_metadata then
+							def.preserve_metadata (pos, node, minetest.get_meta (pos), { stack })
+						end
+
+						utils.on_destroy (stack)
+					end
+				end
+			end
+		end
+
+		minetest.remove_node (pos)
+	end
+end
+
+
+
 utils.registered_spawners = { }
 -- each entry [spawner_itemname] = spawner_func
 

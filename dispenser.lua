@@ -427,7 +427,9 @@ local function digilines_support ()
 					if meta then
 						local this_channel = meta:get_string ("channel")
 
-						if this_channel ~= "" and this_channel == channel then
+						if this_channel ~= "" and this_channel == channel and
+							type (msg) == "string" then
+
 							local m = { }
 							for w in string.gmatch(msg, "[^%s]+") do
 								m[#m + 1] = w

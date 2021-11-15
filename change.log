@@ -31,3 +31,9 @@ v0.1.4
 v0.1.5
 *	Added setting Spawn mobs.
 *	Added lwcomponents.register_spawner api.
+
+
+v0.1.6
+*	Added holograms.
+*	Added breakers.
+*	Added fans.

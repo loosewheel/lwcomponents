@@ -94,6 +94,42 @@ minetest.register_craft( {
 	},
 })
 
+
+minetest.register_craft( {
+	output = "lwcomponents:breaker",
+	recipe = {
+		{ "default:chest", "default:pick_stone" },
+		{ "default:copper_ingot", "default:steel_ingot" },
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:breaker_locked",
+	recipe = {
+		{ "default:chest_locked", "default:pick_stone" },
+		{ "default:copper_ingot", "default:steel_ingot" },
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:fan",
+	recipe = {
+		{ "default:chest", "default:steel_ingot" },
+		{ "default:copper_ingot", "default:steel_ingot" },
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:fan_locked",
+	recipe = {
+		{ "default:chest_locked", "default:steel_ingot" },
+		{ "default:copper_ingot", "default:steel_ingot" },
+	},
+})
+
 end -- utils.digilines_supported or utils.mesecon_supported
 
 
@@ -114,6 +150,26 @@ minetest.register_craft( {
 	recipe = {
 		{ "default:copper_ingot", "default:steel_ingot" },
 		{ "default:chest_locked", "default:stone" },
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:hologram",
+	recipe = {
+		{ "dye:red", "dye:green", "dye:blue" },
+		{ "default:copper_ingot", "default:steel_ingot", "default:copper_ingot" },
+		{ "default:chest", "default:stone", "default:glass" },
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:hologram_locked",
+	recipe = {
+		{ "dye:red", "dye:green", "dye:blue" },
+		{ "default:copper_ingot", "default:steel_ingot", "default:copper_ingot" },
+		{ "default:chest_locked", "default:stone", "default:glass" },
 	},
 })
 
