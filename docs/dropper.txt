@@ -1,0 +1,40 @@
+Dropper
+-------
+* This block is only available if digilines and/or mesecons are loaded.
+
+Contains an inventory and drops an item on command. Also acts as a
+digilines conductor. If the hopper mod is loaded, will take items from the
+top and sides, and release them from the bottom.
+
+Only the owner can dig or access the form of the locked version.
+
+UI
+
+Channel - digilines channel of dropper.
+Top 16 slot inventory - storage of items to drop.
+Bottom 32 slot inventory - player's inventory.
+
+Mesecons
+	Drops the next item when power is turned on.
+
+Digilines messages
+
+"drop"
+	Drops the next item. No drop if dropper is empty.
+
+"drop <slot>"
+	Drops 1 item from the given slot (1 to 16). No drop if slot is empty.
+	eg. "drop 7"
+
+"drop <itemname>"
+	Drops 1 item of the given name. No drop if dropper does not contain the
+	item.
+	eg. "drop default:stone"
+
+When an item is dropped a digilines message is sent with the dropper's
+channel. The message is a table with the following keys:
+{
+	action = "drop",
+	name = "<itemname>", -- name of dropped item
+	slot = <slot> -- slot number the item was taken from (1 to 16).
+}

@@ -1,0 +1,33 @@
+Collector
+---------
+* This block is only available if digilines is loaded.
+
+Picks up dropped items in adjacent block, with optional filtering. Also
+acts as a digilines conductor. If the hopper mod is loaded, will take items
+from the top and sides, and release them from the bottom.
+
+Only the owner can dig or access the form of the locked version.
+
+UI
+
+Channel - digilines channel of collector.
+Left 16 slot inventory - storage of picked up items.
+Right 8 slot inventory - Filter list. Place what items should be picked
+	up in this list. Leave empty to pick up all.
+Bottom 32 slot inventory - player's inventory.
+
+Digilines messages
+
+"start"
+	Start the collector.
+
+"stop"
+	Stop the collector.
+
+When items are picked up a digilines message is sent with the collector's
+channel. The message is a table with the following keys:
+{
+	action = "collect",
+	name = "<itemname>", -- name of picked up items.
+	count = <count> -- number of the item picked up.
+}

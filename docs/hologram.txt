@@ -1,0 +1,107 @@
+Hologram
+--------
+* This block is only available if digilines is loaded.
+
+Projects a hologram above the hologram node. Also acts as a digilines
+conductor.
+
+The hologram occupies a space 15x15x15. The lower level of the hologram
+is 2 blocks above the hologram node (so the hologram node can be hidden
+beneath a floor). The hologram node is in the x, z horizontal center, ie.
+the hologram can extend 7 blocks in each direction from the node.
+
+Colored blocks cannot be interacted with, but will be replaced if built
+into. If a block already exists where the hologram requires a color, it
+is not placed unless the block is a color block from this hologram block.
+If an existing block is dug while a holograms is displayed it is not
+filled in, the hologram has to be re-displayed.
+
+Only the owner can dig or access the form of the locked version.
+
+UI
+
+Channel - digilines channel of hologram.
+
+Digilines messages
+
+"clear"
+	Removes any hologram currently projected.
+
+table
+	To display a hologram a table of dimensions holo[15][15][15] is sent as
+	the message. The table structure is holo[layer][line][block]. In the
+	direction the hologram block is facing, the layers run from bottom to
+	top, the lines run from back to front, and the blocks run from right to
+	left. Each block value can be nil for no display, or a string with the
+	color. Valid colors are:
+		"black"
+		"gray"
+		"silver"
+		"white"
+		"sky"
+		"blue"
+		"cyan"
+		"lime"
+		"green"
+		"magenta"
+		"purple"
+		"pink"
+		"red"
+		"yellow"
+		"orange"
+		"brown"
+	If anything else no color block is placed.
+
+	For example:
+	{
+		{
+			{ "black", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, "green" },
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{ "blue", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, "red" }
+		},
+		{},
+		{},
+		{},
+		{},
+		{},
+		{},
+		{},
+		{},
+		{},
+		{},
+		{},
+		{},
+		{},
+		{
+			{ "orange", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, "lime" },
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{ "purple", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, "yellow" }
+		},
+	}
+
+	will display a hologram with a black and green block at the back of
+	the bottom layer, and orange and lime at the back of the top layer.

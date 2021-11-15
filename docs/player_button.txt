@@ -1,0 +1,21 @@
+Player Button
+-------------
+* This block is only available if both digilines and digistuff are loaded.
+
+When pressed sends a digilines message with the name of the player that
+pressed the button.
+
+The first time the button is right clicked a form opens to set the
+digilines channel. After that right click presses the button. The
+digilines cannot be changed after its set.
+
+UI
+
+Channel - digilines channel of button.
+
+When the button is pressed a digilines message is sent with the button's
+channel in the form:
+{
+	action = "player",
+	name = <player name>
+}

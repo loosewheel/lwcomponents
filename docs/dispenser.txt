@@ -1,0 +1,47 @@
+Dispenser
+---------
+* This block is only available if digilines and/or mesecons are loaded.
+
+Contains an inventory and dispenses (with velocity) an item on command.
+Also acts as a digilines conductor. If the hopper mod is loaded, will take
+items from the top and sides, and release them from the bottom.
+
+Dispensers support mobs mod if loaded and Spawn mobs setting is enabled.
+Will spawn the entity from an 'egg' if possible, or the 'egg' is dispensed.
+If a chicken egg is dispensed a 10% chance a chicken is dispensed instead.
+If the spawned entity can be owned (or tamed) and the dispenser is owned
+the owner of the dispenser is set as the owner of the entity.
+
+Only the owner can dig or access the form of the locked version.
+
+UI
+
+Channel - digilines channel of dispenser.
+Top 16 slot inventory - storage of items to dispense.
+Bottom 32 slot inventory - player's inventory.
+
+Mesecons
+	Dispenses the next item when power is turned on.
+
+Digilines messages
+
+"dispense"
+	Dispenses the next item. No dispense if dispenser is empty.
+
+"dispense <slot>"
+	Dispenses 1 item from the given slot (1 to 16). No dispense if slot is
+	empty.
+	eg. "dispense 7"
+
+"dispense <itemname>"
+	Dispenses 1 item of the given name. No dispense if dispenser does not
+	contain the item.
+	eg. "dispense default:stone"
+
+When an item is dropped a digilines message is sent with the dropper's
+channel. The message is a table with the following keys:
+{
+	action = "dispense",
+	name = "<itemname>", -- name of dropped item
+	slot = <slot> -- slot number the item was taken from (1 to 16).
+}

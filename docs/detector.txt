@@ -1,0 +1,106 @@
+Detector
+--------
+* This block is only available if digilines and/or mesecons are loaded.
+
+Detects items or entities within a given radius. Also acts as a
+digilines conductor.
+
+Only the owner can dig or access the form of the locked version.
+
+UI
+
+Channel - digilines channel of detector.
+Radius - block distance from detector to detect.
+Entities - if checked detects entities.
+Players - if checked detects players.
+Drops - if checked detects drops.
+Nodes - if checked detects nodes.
+
+mode:
+	All - detects to radius in all directions, including diagonal.
+	Forward - detects to radius directly in front of the detector (one block high).
+	Up - detects to radius directly above the detector (one block wide).
+	Down - detects to radius directly below the detector (one block wide).
+
+Mesecons
+	Mesecons power is turned on when something is detected, and turned off
+	when nothing is detected.
+
+Digilines messages
+
+"start"
+	Start the detector.
+
+"stop"
+	Stop the detector.
+
+"radius <n>"
+	Set radius of the detector. <n> should be a number from 1 to 5, and is
+	trimmed to this range.
+
+"entities <true|false>"
+	Set detection of entities on or off.
+
+"players <true|false>"
+	Set detection of players on or off.
+
+"drops <true|false>"
+	Set detection of drops on or off.
+
+"nodes <true|false>"
+	Set detection of nodes on or off.
+
+"mode all"
+"mode forward"
+"mode up"
+"mode down"
+	Set the detector's mode.
+
+When items or entities are detected a digilines message is sent with the
+detector's channel. A message is sent for each found item/entity. The
+message is a table with the following keys:
+{
+	action = "detect",
+	type = "<type>", -- will be "entity", "player", "drop" or "node"
+	name = "<name>",
+	label = "<label>",
+	pos = { x = n, y = n, z = n },
+	count = <count>,
+	hp = <number>,
+	height = <number>
+}
+
+type
+	Will be "entity", "player", "drop" or "node".
+
+name
+	For "entity" the registered entity name.
+	For "player" the player's name.
+	For "drop" the registered item name.
+	For "node" the registered item name.
+
+label
+	For "entity" the name tag text.
+	For "player" the player's name.
+	For "drop" the registered item name.
+	For "node" the registered item name.
+
+pos
+	The relative position of the detected item/entity from the detector,
+	facing the direction of the detector.
+	+x = right
+	-x = left
+	+z = forward
+	-z = behind
+	+y = above
+	-y = below
+
+count
+	The count of items for a "drop", or 1 for everything else.
+
+hp
+	Health points for players and entities. Zero for everything else.
+
+height
+	Height for players and entities. Zero for everything else. This is simply
+	the top position of the object's collision box.

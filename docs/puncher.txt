@@ -1,0 +1,69 @@
+Puncher
+-------
+* This block is only available if digilines and/or mesecons are loaded.
+
+Punches players or entities within a given reach. Also acts as a
+digilines conductor.
+
+Only the owner can dig or access the form of the locked version.
+
+UI
+
+Channel - digilines channel of puncher.
+Reach - block distance from puncher to punch.
+Entities - if checked punches entities.
+Players - if checked punches players.
+
+mode:
+	Forward - punches to reach extent directly in front of the puncher (one block high).
+	Up - detects to reach extent directly above the puncher (one block wide).
+	Down - detects to reach extent directly below the puncher (one block wide).
+
+Mesecons
+	Punches the next item when power is turned on.
+
+Digilines messages
+
+"start"
+	Start the puncher.
+
+"stop"
+	Stop the puncher.
+
+"reach <n>"
+	Set reach of the puncher. <n> should be a number from 1 to 5, and is
+	trimmed to this range.
+
+"entities <true|false>"
+	Set punching of entities on or off.
+
+"players <true|false>"
+	Set punching of players on or off.
+
+"mode forward"
+"mode up"
+"mode down"
+	Set the puncher's mode.
+
+"punch"
+	Action a single punch if the puncher is turned on.
+
+When a player or entity is punched a digilines message is sent with the
+puncher's channel. The message is a table with the following keys:
+{
+	action = "punch",
+	type = "<type>", -- will be "entity" or "player"
+	name = "<name>",
+	label = "<label>"
+}
+
+type
+	Will be "entity" or "player".
+
+name
+	For "entity" the registered entity name.
+	For "player" the player's name.
+
+label
+	For "entity" the name tag text.
+	For "player" the player's name.

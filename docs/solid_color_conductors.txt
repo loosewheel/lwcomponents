@@ -1,0 +1,9 @@
+Solid Color Conductors
+----------------------
+* These blocks are only defined if mesecons and unifieddyes are loaded.
+
+Provides 2 blocks that can be colored the same as Solid Color Block (with
+the air brush) and is both a mesecons and digilines conductor.
+
+The Solid Color Conductor block conducts in the 'default' directions and
+the Solid Color Horizontal Conductor only conducts horizontally.

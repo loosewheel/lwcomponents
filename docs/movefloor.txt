@@ -1,0 +1,17 @@
+MoveFloor
+---------
+* This block is only available if mesecons and mesecons_mvps is loaded.
+
+The MoveFloor block responds to a mesecons power source in the 4 horizontal
+directions. If the power source is one higher the MoveFloor moves up to
+that height. If the power source is one lower the MoveFloor moves down to
+that height. Powering an adjacent block has no effect. The power source
+should be turned off before another move or the MoveFloor will oscillate.
+
+Any horizontally adjoining MoveFloor acts as a single block (only one
+needs to be powered).
+
+The MoveFloor will move up to 3 blocks stacked on it.
+
+If using a DigiSwitch as the power source use the side name "switch" or
+the MoveFloor will not move.

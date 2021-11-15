@@ -1,0 +1,44 @@
+Breaker
+-------
+* This block is only available if digilines and/or mesecons are loaded.
+
+Breakers dig the node directly in front of them and drop the item at the
+back of them. The node is only dug if the breaker has a tool that can
+dig it, of if it can be dug by hand. The tool is worn if used. Also acts
+as a digilines conductor. If the hopper mod is loaded, will take tools
+from the top and sides.
+
+Only the owner can dig or access the form of the locked version.
+
+UI
+
+Channel - digilines channel of breaker.
+Top 1 slot inventory - tool to use.
+Bottom 32 slot inventory - player's inventory.
+
+Mesecons
+	Digs the node in front when power is turned on, if it can.
+
+Digilines messages
+
+"break"
+	Digs the node in front when power is turned on, if it can.
+
+"eject side"
+	Drop the tool in the tool slot at the given side. Valid sides are "left",
+	"right", "back", "front". If side is omitted or invalid "front" is used.
+
+When a breaker digs a node or wears out the tool a digilines message is
+sent with the puncher's channel. The message is a table with the following
+keys:
+{
+	action = "<action>",
+	name = "<name>"
+}
+
+action
+	Will be "break" or "tool".
+
+name
+	For "break" action the registered node name of what was dug.
+	For "tool" action the registered tool name of the tool that wore out.

@@ -1,0 +1,24 @@
+Fan
+---
+* This block is only available if digilines and/or mesecons are loaded.
+
+Fans blow any entity, player or drop in front of the fan for 5 node
+spaces in the direction of the fan. A node placed in these 5 spaces blocks
+the fan's action beyond the placed node. Also acts as a digilines conductor.
+
+Only the owner can dig or access the form of the locked version.
+
+UI
+
+Channel - digilines channel of fan.
+
+Mesecons
+	Fan runs while power is turned on.
+
+Digilines messages
+
+"start"
+	Starts the fan.
+
+"stop"
+	Stops the fan.

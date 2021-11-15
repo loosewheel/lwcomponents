@@ -1,0 +1,46 @@
+Siren
+-----
+* This block is only available if digilines and/or mesecons are loaded.
+
+Plays a sound repeatedly while active. Also acts as a digilines conductor.
+digilines conductor.
+
+Only the owner can dig or access the form of the locked version.
+
+UI
+
+Channel - digilines channel of siren.
+Distance - block distance the sound can be heard (range 0 to 100).
+Volume - volume the sound is played.
+Sound - select Buzzer, Horn, Raid or Siren.
+
+Mesecons
+	Sound plays while mesecons power is applied.
+
+Digilines messages
+
+"start"
+	Start the siren (turn on).
+
+"stop"
+	Stop the siren (turn off).
+
+"distance <n>"
+	Set block distance the sound can be heard. <n> should be a number
+	from 1 to 100, and is trimmed to this range.
+
+"volume <n>"
+	Set the sound volume. <n> should be a number from 1 to 100, and is
+	trimmed to this range.
+
+"sound buzzer"
+"sound horn"
+"sound raid"
+"sound siren"
+	Set the sound of the siren.
+
+"siren on"
+	Activate the siren, if its on.
+
+"siren off"
+	deactivate the siren.
