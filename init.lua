@@ -1,4 +1,4 @@
-local version = "0.1.6"
+local version = "0.1.7"
 local mod_storage = minetest.get_mod_storage ()
 
 
@@ -27,6 +27,7 @@ loadfile (modpath.."/puncher.lua") (utils)
 loadfile (modpath.."/player_button.lua") (utils)
 loadfile (modpath.."/hologram.lua") (utils)
 loadfile (modpath.."/breaker.lua") (utils)
+loadfile (modpath.."/deployer.lua") (utils)
 loadfile (modpath.."/fan.lua") (utils)
 loadfile (modpath.."/extras.lua") (utils)
 loadfile (modpath.."/digiswitch.lua") (utils)

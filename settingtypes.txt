@@ -1,2 +1,5 @@
 # Allow dispensers to spawn mobs instead of spawners.
 lwcomponents_spawn_mobs (Spawn mobs) bool true
+
+# Issue errors when handler's of other mods fail.
+lwcomponents_alert_handler_errors (Alert handler errors) bool true

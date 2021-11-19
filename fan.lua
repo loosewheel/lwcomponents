@@ -309,7 +309,7 @@ end
 
 
 minetest.register_node("lwcomponents:fan", {
-	description = S("Breaker"),
+	description = S("Fan"),
 	tiles = { "lwfan.png", "lwfan.png", "lwfan.png",
 				 "lwfan.png", "lwfan.png", "lwfan_face.png"},
 	is_ground_content = false,
@@ -336,7 +336,7 @@ minetest.register_node("lwcomponents:fan", {
 
 
 minetest.register_node("lwcomponents:fan_locked", {
-	description = S("Breaker (locked)"),
+	description = S("Fan (locked)"),
 	tiles = { "lwfan.png", "lwfan.png", "lwfan.png",
 				 "lwfan.png", "lwfan.png", "lwfan_face.png"},
 	is_ground_content = false,
@@ -363,7 +363,7 @@ minetest.register_node("lwcomponents:fan_locked", {
 
 
 minetest.register_node("lwcomponents:fan_on", {
-	description = S("Breaker"),
+	description = S("Fan"),
 	tiles = { "lwfan.png", "lwfan.png", "lwfan.png",
 				 "lwfan.png", "lwfan.png", "lwfan_face_on.png"},
 	is_ground_content = false,
@@ -391,7 +391,7 @@ minetest.register_node("lwcomponents:fan_on", {
 
 
 minetest.register_node("lwcomponents:fan_locked_on", {
-	description = S("Breaker (locked)"),
+	description = S("Fan (locked)"),
 	tiles = { "lwfan.png", "lwfan.png", "lwfan.png",
 				 "lwfan.png", "lwfan.png", "lwfan_face_on.png"},
 	is_ground_content = false,

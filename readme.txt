@@ -13,7 +13,7 @@ CC BY-SA 3.0
 
 Version
 =======
-0.1.6
+0.1.7
 
 
 Minetest Version
@@ -59,7 +59,8 @@ Various components for mesecons and digilines.
 *	Siren, plays a sound repeatedly while active.
 *	Puncher, punches players or entities within a given reach.
 *	Player button, sends digilines message with player name.
-*	Breaker, digs the node directly in front.
+*	Breaker, digs the nodes directly in front.
+*	Deployers, places the nodes directly in front.
 *	Hologram, projects a hologram above the hologram node.
 *	Fan, blows any entity, player or drop in front of the fan.
 *	Digiswitch, digilines controlled mesecons power.
@@ -74,6 +75,17 @@ The following are also defined as variants of the original mod item, if
 the relevant mod is loaded.
 *	Touchscreen, full node variant of digistuff:touchscreen.
 *	Panel, full node variant of digistuff:panel.
+
+
+The mod supports the following settings:
+
+Spawn mobs
+	Allow dispensers to spawn mobs instead of spawners.
+	Default: true
+
+Alert handler errors
+	Issue errors when handler's of other mods fail.
+	Default: true
 
 
 

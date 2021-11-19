@@ -37,7 +37,27 @@ end
 
 
 
-local function send_break_message (pos, action, name)
+local function get_break_pos (pos, param2, range)
+	local breakpos = { x = pos.x, y = pos.y, z = pos.z }
+
+	for i = 1, range do
+		breakpos = get_breaker_side (breakpos, param2, "front")
+
+		if i < range then
+			local node = minetest.get_node_or_nil (breakpos)
+
+			if not node or node.name ~= "air" then
+				return nil
+			end
+		end
+	end
+
+	return breakpos
+end
+
+
+
+local function send_break_message (pos, action, name, range)
 	if utils.digilines_supported then
 		local meta = minetest.get_meta (pos)
 
@@ -49,7 +69,8 @@ local function send_break_message (pos, action, name)
 														 utils.digilines_default_rules,
 														 channel,
 														 { action = action,
-															name = name })
+															name = name,
+															range = range })
 			end
 		end
 	end
@@ -105,21 +126,11 @@ end
 
 
 
-local function play_dug_sound (pos, nodename)
-	local def = utils.find_item_def (nodename)
-
-	if def and def.sounds and def.sounds.dug then
-		minetest.sound_play (def.sounds.dug, { pos = pos })
-	end
-end
-
-
-
-local function can_break_node (pos)
+local function can_break_node (pos, breakpos)
 	local node = minetest.get_node (pos)
 
 	if node then
-		local dig_node = minetest.get_node (get_breaker_side (pos, node.param2, "front"))
+		local dig_node = minetest.get_node_or_nil (breakpos)
 
 		if dig_node and dig_node.name ~= "air" then
 			local node_def = minetest.registered_nodes[dig_node.name]
@@ -160,40 +171,85 @@ end
 
 
 
-local function break_node (pos)
-	local diggable, tool, wear = can_break_node (pos)
-	local node = minetest.get_node (pos)
+local function dig_node (pos, toolname)
+	local node = minetest.get_node_or_nil (pos)
+	local dig = false
+	local drops = nil
 
-	if diggable and node then
-		local break_pos = get_breaker_side (pos, node.param2, "front")
-		local break_node = minetest.get_node (break_pos)
+	if toolname == true then
+		dig = true
+		toolname = nil
+	end
 
-		if break_node then
-			local items = minetest.get_node_drops (break_node, tool)
-			local break_name = break_node.name
+	if node and node.name ~= "air" and node.name ~= "ignore" then
+		local def = utils.find_item_def (node.name)
+
+		if not dig then
+			if def and def.can_dig then
+				local result, can_dig = pcall (def.can_dig, pos)
+
+				dig = ((not result) or (result and (can_dig == nil or can_dig == true)))
+			else
+				dig = true
+			end
+		end
+
+		if dig then
+			local items = minetest.get_node_drops (node, toolname)
 
 			if items then
-				local eject_pos = get_breaker_side (pos, node.param2, "back")
+				drops = { }
 
 				for i = 1, #items do
-					local stack = ItemStack (items[i])
+					drops[i] = ItemStack (items[i])
+				end
 
-					if stack and not stack:is_empty () then
-						local item_def = utils.find_item_def (stack:get_name ())
-
-						if item_def and item_def.preserve_metadata then
-							item_def.preserve_metadata (pos, node, minetest.get_meta (pos), { stack })
-						end
-
-						utils.item_drop (stack, nil, eject_pos)
-					end
+				if def and def.preserve_metadata then
+					def.preserve_metadata (pos, node, minetest.get_meta (pos), drops)
 				end
 			end
 
-			minetest.remove_node (break_pos)
-			play_dug_sound (break_pos, break_name)
-			add_wear (pos, wear)
-			send_break_message (pos, "break", break_name)
+			if def and def.sounds and def.sounds.dug then
+				pcall (minetest.sound_play, def.sounds.dug, { pos = pos })
+			end
+
+			minetest.remove_node (pos)
+		end
+	end
+
+	return drops
+end
+
+
+
+local function break_node (pos, range)
+	local node = minetest.get_node_or_nil (pos)
+
+	if node then
+		local breakpos = get_break_pos (pos, node.param2, range)
+
+		if breakpos then
+			local diggable, toolname, wear = can_break_node (pos, breakpos)
+
+			if diggable then
+				local breaknode = minetest.get_node_or_nil (breakpos)
+
+				if breaknode and breaknode.name ~= "air" then
+					local drops = dig_node (breakpos, toolname)
+
+					if drops then
+						local break_name = breaknode.name
+						local eject_pos = get_breaker_side (pos, node.param2, "back")
+
+						for i = 1, #drops do
+							utils.item_drop (drops[i], nil, eject_pos)
+						end
+
+						add_wear (pos, wear)
+						send_break_message (pos, "break", break_name, range)
+					end
+				end
+			end
 		end
 	end
 end
@@ -222,22 +278,24 @@ end
 
 
 
-local function breaker_on (pos)
+local function breaker_on (pos, range)
 	local node = minetest.get_node (pos)
 
-	if node then
+	range = tonumber (range) or 1
+
+	if node and range < 6 and range > 0 then
 		if node.name == "lwcomponents:breaker" then
 			node.name = "lwcomponents:breaker_on"
 
 			minetest.swap_node (pos, node)
-			break_node (pos)
+			break_node (pos, range)
 			minetest.get_node_timer (pos):start (break_interval)
 
 		elseif node.name == "lwcomponents:breaker_locked" then
 			node.name = "lwcomponents:breaker_locked_on"
 
 			minetest.swap_node (pos, node)
-			break_node (pos)
+			break_node (pos, range)
 			minetest.get_node_timer (pos):start (break_interval)
 
 		end
@@ -480,7 +538,7 @@ local function digilines_support ()
 							end
 
 							if m[1] == "break" then
-								breaker_on (pos)
+								breaker_on (pos, m[2])
 
 							elseif m[1] == "eject" then
 								eject_tool (pos, m[2])
@@ -508,7 +566,7 @@ local function mesecon_support ()
 
 				action_on = function (pos, node)
 					-- do something to turn the effector on
-					breaker_on (pos)
+					breaker_on (pos, 1)
 				end,
 			}
 		}
@@ -522,7 +580,7 @@ end
 minetest.register_node("lwcomponents:breaker", {
 	description = S("Breaker"),
 	tiles = { "lwbreaker.png", "lwbreaker.png", "lwbreaker.png",
-				 "lwbreaker.png", "lwbreaker.png", "lwbreaker_face.png"},
+				 "lwbreaker.png", "lwbreaker_rear.png", "lwbreaker_face.png"},
 	is_ground_content = false,
 	groups = { cracky = 3 },
 	sounds = default.node_sound_stone_defaults (),
@@ -551,7 +609,7 @@ minetest.register_node("lwcomponents:breaker", {
 minetest.register_node("lwcomponents:breaker_locked", {
 	description = S("Breaker (locked)"),
 	tiles = { "lwbreaker.png", "lwbreaker.png", "lwbreaker.png",
-				 "lwbreaker.png", "lwbreaker.png", "lwbreaker_face.png"},
+				 "lwbreaker.png", "lwbreaker_rear.png", "lwbreaker_face.png"},
 	is_ground_content = false,
 	groups = { cracky = 3 },
 	sounds = default.node_sound_stone_defaults (),
@@ -581,7 +639,7 @@ minetest.register_node("lwcomponents:breaker_locked", {
 minetest.register_node("lwcomponents:breaker_on", {
 	description = S("Breaker"),
 	tiles = { "lwbreaker.png", "lwbreaker.png", "lwbreaker.png",
-				 "lwbreaker.png", "lwbreaker.png", "lwbreaker_face_on.png"},
+				 "lwbreaker.png", "lwbreaker_rear.png", "lwbreaker_face_on.png"},
 	is_ground_content = false,
 	groups = { cracky = 3, not_in_creative_inventory = 1 },
 	sounds = default.node_sound_stone_defaults (),
@@ -611,7 +669,7 @@ minetest.register_node("lwcomponents:breaker_on", {
 minetest.register_node("lwcomponents:breaker_locked_on", {
 	description = S("Breaker (locked)"),
 	tiles = { "lwbreaker.png", "lwbreaker.png", "lwbreaker.png",
-				 "lwbreaker.png", "lwbreaker.png", "lwbreaker_face_on.png"},
+				 "lwbreaker.png", "lwbreaker_rear.png", "lwbreaker_face_on.png"},
 	is_ground_content = false,
 	groups = { cracky = 3, not_in_creative_inventory = 1 },
 	sounds = default.node_sound_stone_defaults (),

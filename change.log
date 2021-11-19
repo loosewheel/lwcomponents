@@ -37,3 +37,9 @@ v0.1.6
 *	Added holograms.
 *	Added breakers.
 *	Added fans.
+
+
+v0.1.7
+*	Fixed fan description.
+*	Breakers can break nodes up to 5 forward with digilines message.
+*	Added deployers.
