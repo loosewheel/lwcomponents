@@ -2,11 +2,12 @@ Breaker
 -------
 * This block is only available if digilines and/or mesecons are loaded.
 
-Breakers dig the node directly in front of them and drop the item at the
-back of them. The node is only dug if the breaker has a tool that can
-dig it, of if it can be dug by hand. The tool is worn if used. Also acts
-as a digilines conductor. If the hopper mod is loaded, will take tools
-from the top and sides.
+Breakers dig the node up to 5 nodes directly in front of them and drop
+the item at the back of them. The node is only dug if the breaker has a
+tool that can dig it or if it can be dug by hand, and there are no nodes
+before of it. ie. cannot dig 2nd node if 1st node has something in it.
+The tool is worn if used. Also acts as a digilines conductor. If the
+hopper mod is loaded, will take tools from the top and sides.
 
 Only the owner can dig or access the form of the locked version.
 
@@ -17,23 +18,26 @@ Top 1 slot inventory - tool to use.
 Bottom 32 slot inventory - player's inventory.
 
 Mesecons
-	Digs the node in front when power is turned on, if it can.
+	Digs the node in front (always the 1st node position) when power is
+	turned on, if it can.
 
 Digilines messages
 
-"break"
-	Digs the node in front when power is turned on, if it can.
+"break n"
+	Digs the node at n nodes in front when power is turned on, if it can.
+	n should be a number between 1 and 5. If omitted 1 is assumed.
 
 "eject side"
 	Drop the tool in the tool slot at the given side. Valid sides are "left",
 	"right", "back", "front". If side is omitted or invalid "front" is used.
 
 When a breaker digs a node or wears out the tool a digilines message is
-sent with the puncher's channel. The message is a table with the following
+sent with the breaker's channel. The message is a table with the following
 keys:
 {
 	action = "<action>",
-	name = "<name>"
+	name = "<name>",
+	range = <number>
 }
 
 action
@@ -42,3 +46,7 @@ action
 name
 	For "break" action the registered node name of what was dug.
 	For "tool" action the registered tool name of the tool that wore out.
+
+range
+	For "break" action the nodes forward that was dug.
+	For "tool" action always nil.

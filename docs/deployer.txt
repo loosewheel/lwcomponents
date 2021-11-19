@@ -1,0 +1,57 @@
+Deployer
+-------
+* This block is only available if digilines and/or mesecons are loaded.
+
+Deployers place the node up to 5 nodes directly in front of them. The
+node is only placed if there are no nodes before of it which are not
+replaceable. ie. cannot place 2nd node if 1st node has something in it.
+Also acts as a digilines conductor. If the hopper mod is loaded, will
+take items from the top and sides, and release them from the bottom.
+
+Only the owner can dig or access the form of the locked version.
+
+UI
+
+Channel - digilines channel of breaker.
+Top 16 slot inventory - storage of items to place.
+Bottom 32 slot inventory - player's inventory.
+
+Mesecons
+	Places the node in front (always the 1st node position) when power is
+	turned on, if it can.
+
+Digilines messages
+
+"deploy  <slot or itemname> <n>"
+	Places the node at n nodes in front when power is turned on, if it can.
+	n should be a number between 1 and 5. If omitted 1 is assumed.
+
+	If slot is a number, places an item from that slot. No placement if
+	slot is empty.
+	eg. "deploy 7"
+
+	If itemname is given, places the item of the name given. No placement
+	if deployer does not contain the item.
+	eg. "deploy default:stone"
+
+	If n is given with no slot/itemname use "nil".
+	eg. "deploy nil 3"
+
+When a deployer places a node a digilines message is sent with the
+deployer's channel. The message is a table with the following
+keys:
+{
+	action = "deploy",
+	name = "<name>",
+	slot = <slot>,
+	range = <number>
+}
+
+action
+	Will be "deploy".
+
+name
+	The registered node name of what was placed.
+
+range
+	The nodes forward that was placed.

@@ -34,7 +34,7 @@ lwcomponents.register_spawner (itemname, spawn_func)
 
 		This function should return the ObjectRef of the spawned entity or
 		nil. If this function returns nil for ObjectRef a second boolean
-		value should be returned for weather to cancel the action.
+		value should be returned for whether to cancel the action.
 
 		eg. If too many mobs:
 			return nil, true
