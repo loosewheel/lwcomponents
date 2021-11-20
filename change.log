@@ -43,3 +43,14 @@ v0.1.7
 *	Fixed fan description.
 *	Breakers can break nodes up to 5 forward with digilines message.
 *	Added deployers.
+
+
+v0.1.8
+*	Changed detector digilines message to single message with list of
+	detected items.
+*	Added conduits.
+*	Fixed fans not blowing upward.
+*	Made changes to lwcomponents.register_spawner api - called function
+	must now set velocity, can use force parameter.
+*	Removed spawning from this mod. Created lwcomponents_spawners to
+	register spawers.

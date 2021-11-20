@@ -13,7 +13,7 @@ CC BY-SA 3.0
 
 Version
 =======
-0.1.7
+0.1.8
 
 
 Minetest Version
@@ -34,7 +34,6 @@ digilines
 unifieddyes
 intllib
 hopper
-mobs
 digistuff
 
 
@@ -63,9 +62,13 @@ Various components for mesecons and digilines.
 *	Deployers, places the nodes directly in front.
 *	Hologram, projects a hologram above the hologram node.
 *	Fan, blows any entity, player or drop in front of the fan.
+*	Conduit, connected in a circuit to move items.
 *	Digiswitch, digilines controlled mesecons power.
 *	Movefloor, similar to vertical mesecons movestone.
-*	Solid color conductor blocks, same as Solid Color Block but also mesecons and digilines conductor.
+*	Solid color conductor blocks, same as Solid Color Block but also mesecons
+	and digilines conductor.
+
+To spawn entities from dispensers include the lwcomponents_spawners mod.
 
 See the docs folder for details on each item.
 
@@ -75,6 +78,7 @@ The following are also defined as variants of the original mod item, if
 the relevant mod is loaded.
 *	Touchscreen, full node variant of digistuff:touchscreen.
 *	Panel, full node variant of digistuff:panel.
+
 
 
 The mod supports the following settings:

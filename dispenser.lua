@@ -7,6 +7,10 @@ if utils.digilines_supported or utils.mesecon_supported then
 
 
 
+local dispenser_force = 25
+
+
+
 local function dispense_dir (node)
 	if node.param2 == 0 then
 		return { x = 0, y = 0, z = -1 }
@@ -40,18 +44,17 @@ end
 
 
 local function dispense_velocity (node)
-	local force = 25 --math.random (30 , 35)
 	local tilt = (math.random (1 , 2001) - 1001) / 1000
 	local sway = (math.random (1 , 4001) - 2001) / 1000
 
 	if node.param2 == 0 then
-		return { x = sway, y = tilt, z = -force }
+		return { x = sway, y = tilt, z = -dispenser_force }
 	elseif node.param2 == 1 then
-		return { x = -force, y = tilt, z = sway }
+		return { x = -dispenser_force, y = tilt, z = sway }
 	elseif node.param2 == 2 then
-		return { x = sway, y = tilt, z = force }
+		return { x = sway, y = tilt, z = dispenser_force }
 	elseif node.param2 == 3 then
-		return { x = force, y = tilt, z = sway }
+		return { x = dispenser_force, y = tilt, z = sway }
 	else
 		return { x = 0, y = 0, z = 0 }
 	end
@@ -76,73 +79,6 @@ local function send_dispense_message (pos, slot, name)
 			end
 		end
 	end
-end
-
-
-
-local function try_spawn (pos, node, item, owner)
-	if utils.mobs_supported and utils.settings.spawn_mobs then
-		local mob = item:get_name ()
-		local item_def = minetest.registered_craftitems[mob]
-		local spawn_pos = dispense_pos (pos, node)
-
-		if item_def and item_def.groups and item_def.groups.spawn_egg then
-			if mob:sub (mob:len () - 3) == "_set" then
-				mob = mob:sub (1, mob:len () - 4)
-
-				if minetest.registered_entities[mob] then
-					local data = item:get_metadata ()
-					local smob = minetest.add_entity (spawn_pos, mob, data)
-					local ent = smob and smob:get_luaentity ()
-
-					if ent then
-						-- set owner if not a monster
-						if owner:len () > 0 and ent.type ~= "monster" then
-							ent.owner = owner
-							ent.tamed = true
-						end
-					end
-
-					return smob
-				end
-
-			else
-				if minetest.registered_entities[mob] then
-					local smob = minetest.add_entity (spawn_pos, mob)
-					local ent = smob and smob:get_luaentity ()
-
-					if ent then
-						-- set owner if not a monster
-						if owner:len () > 0 and ent.type ~= "monster" then
-							ent.owner = owner
-							ent.tamed = true
-						end
-					end
-
-					return smob
-				end
-
-			end
-
-		elseif mob == "mobs:egg" then
-			if math.random (1, 10) == 1 then
-				local smob = minetest.add_entity (spawn_pos, "mobs_animal:chicken")
-				local ent = smob and smob:get_luaentity ()
-
-				if ent then
-					-- set owner if not a monster
-					if owner:len () > 0 and ent.type ~= "monster" then
-						ent.owner = owner
-						ent.tamed = true
-					end
-				end
-
-				return smob
-			end
-		end
-	end
-
-	return nil
 end
 
 
@@ -203,28 +139,29 @@ local function dispense_item (pos, node, slot)
 						item:set_count (1)
 						local spawn_pos = dispense_pos (pos, node)
 						local owner = meta:get_string ("owner")
+						local obj, cancel = nil, false
 
-						local obj, cancel = utils.spawn_registered (name,
-																				  spawn_pos,
-																				  item,
-																				  owner,
-																				  pos,
-																				  dispense_dir (node))
+						if utils.settings.spawn_mobs then
+							obj, cancel = utils.spawn_registered (name,
+																			  spawn_pos,
+																			  item,
+																			  owner,
+																			  pos,
+																			  dispense_dir (node),
+																			  dispenser_force)
 
-						if obj == nil and cancel then
-							return false
-						end
-
-						if not obj then
-							obj = try_spawn (pos, node, item, owner)
+							if obj == nil and cancel then
+								return false
+							end
 						end
 
 						if not obj then
 							obj = minetest.add_item (spawn_pos, item)
+
+							obj:set_velocity (dispense_velocity (node))
 						end
 
 						if obj then
-							obj:set_velocity (dispense_velocity (node))
 
 							stack:set_count (stack:get_count () - 1)
 							inv:set_stack ("main", slot, stack)

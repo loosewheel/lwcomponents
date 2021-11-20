@@ -114,6 +114,24 @@ minetest.register_craft( {
 
 
 minetest.register_craft( {
+	output = "lwcomponents:deployer",
+	recipe = {
+		{ "default:chest", "group:wood" },
+		{ "default:copper_ingot", "default:steel_ingot" },
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:deployer_locked",
+	recipe = {
+		{ "default:chest_locked", "group:wood" },
+		{ "default:copper_ingot", "default:steel_ingot" },
+	},
+})
+
+
+minetest.register_craft( {
 	output = "lwcomponents:fan",
 	recipe = {
 		{ "default:chest", "default:steel_ingot" },
@@ -127,6 +145,26 @@ minetest.register_craft( {
 	recipe = {
 		{ "default:chest_locked", "default:steel_ingot" },
 		{ "default:copper_ingot", "default:steel_ingot" },
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:conduit 5",
+	recipe = {
+		{ "default:stone", "", "default:stone" },
+		{ "", "default:chest", "" },
+		{ "default:stone", "default:steel_ingot", "default:stone" },
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:conduit_locked 5",
+	recipe = {
+		{ "default:stone", "", "default:stone" },
+		{ "", "default:chest_locked", "" },
+		{ "default:stone", "default:steel_ingot", "default:stone" },
 	},
 })
 

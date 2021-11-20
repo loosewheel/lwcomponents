@@ -60,7 +60,7 @@ end
 
 
 
-local function send_detect_message (pos, item_type, name, label, item_pos, count, hp, height)
+local function send_detect_message (pos, detected_list)
 	if utils.digilines_supported then
 		local meta = minetest.get_meta (pos)
 
@@ -72,13 +72,7 @@ local function send_detect_message (pos, item_type, name, label, item_pos, count
 														 utils.digilines_default_rules,
 														 channel,
 														 { action = "detect",
-															type = item_type,
-															name = name,
-															label = label,
-															pos = to_relative_coords (pos, item_pos),
-															count = count,
-															hp = hp,
-															height = height })
+															detected = detected_list })
 			end
 		end
 	end
@@ -169,6 +163,7 @@ local function detect (pos)
 		local radius = meta:get_int ("radius")
 		local mode = meta:get_int ("mode")
 		local object = minetest.get_objects_inside_radius (pos, radius + 0.5)
+		local detected_list = { }
 
 		for i = 1, #object do
 			if object[i]:is_player () then
@@ -177,14 +172,16 @@ local function detect (pos)
 				if meta:get_string ("players") == "true" and
 					filter_item (pos, mode, object[i]:get_pos ()) then
 
-					send_detect_message (pos,
-												"player",
-												object[i]:get_player_name (),
-												object[i]:get_player_name (),
-												object[i]:get_pos (),
-												1,
-												object[i]:get_hp (),
-												get_entity_height (object[i]))
+					detected_list[#detected_list + 1] =
+					{
+						type = "player",
+						name = object[i]:get_player_name (),
+						label = object[i]:get_player_name (),
+						pos = to_relative_coords (pos, object[i]:get_pos ()),
+						count = 1,
+						hp = object[i]:get_hp (),
+						height = get_entity_height (object[i])
+					}
 
 					detected = true
 				end
@@ -200,14 +197,17 @@ local function detect (pos)
 					local stack = ItemStack (object[i]:get_luaentity ().itemstring or "")
 
 					if stack and not stack:is_empty () then
-						send_detect_message (pos,
-													"drop",
-													stack:get_name (),
-													stack:get_name (),
-													object[i]:get_pos (),
-													stack:get_count (),
-													0,
-													0)
+
+						detected_list[#detected_list + 1] =
+						{
+							type = "drop",
+							name = stack:get_name (),
+							label = stack:get_name (),
+							pos = to_relative_coords (pos, object[i]:get_pos ()),
+							count = stack:get_count (),
+							hp = 0,
+							height = 0
+						}
 
 						detected = true
 					end
@@ -231,14 +231,16 @@ local function detect (pos)
 							  object[i]:get_luaentity () and
 							  object[i]:get_luaentity ().name) or ""
 
-					send_detect_message (pos,
-												"entity",
-												name,
-												label,
-												object[i]:get_pos (),
-												1,
-												object[i]:get_hp (),
-												get_entity_height (object[i]))
+					detected_list[#detected_list + 1] =
+					{
+						type = "entity",
+						name = name,
+						label = label,
+						pos = to_relative_coords (pos, object[i]:get_pos ()),
+						count = 1,
+						hp = object[i]:get_hp (),
+						height = get_entity_height (object[i])
+					}
 
 					detected = true
 
@@ -258,14 +260,16 @@ local function detect (pos)
 						if node and node.name ~= "air" and node.name ~= "ignore" and
 							filter_item (pos, mode, testpos) then
 
-							send_detect_message (pos,
-														"node",
-														node.name,
-														node.name,
-														testpos,
-														1,
-														0,
-														0)
+							detected_list[#detected_list + 1] =
+							{
+								type = "node",
+								name = node.name,
+								label = node.name,
+								pos = testpos,
+								count = 1,
+								hp = 0,
+								height = 0
+							}
 
 							detected = true
 						end
@@ -276,6 +280,8 @@ local function detect (pos)
 
 		if detected then
 			mesecons_on (pos)
+
+			send_detect_message (pos, detected_list)
 		else
 			mesecons_off (pos)
 		end

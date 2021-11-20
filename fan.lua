@@ -13,17 +13,33 @@ local fan_force = 15.0
 
 
 local function direction_vector (node)
-	if node.param2 == 0 then
-		return { x = 0, y = 0, z = -1 }
-	elseif node.param2 == 1 then
-		return { x = -1, y = 0, z = 0 }
-	elseif node.param2 == 2 then
-		return { x = 0, y = 0, z = 1 }
-	elseif node.param2 == 3 then
-		return { x = 1, y = 0, z = 0 }
-	else
-		return { x = 0, y = 0, z = 0 }
+	local axis = math.floor (node.param2 / 4)
+	local rotate = node.param2 % 4
+	local vec = { x = 0, y = 0, z = 0 }
+
+	if rotate == 0 then
+		vec = { x = 0, y = 0, z = -1 }
+	elseif rotate == 1 then
+		vec = { x = -1, y = 0, z = 0 }
+	elseif rotate == 2 then
+		vec = { x = 0, y = 0, z = 1 }
+	elseif rotate == 3 then
+		vec = { x = 1, y = 0, z = 0 }
 	end
+
+	if axis == 1 then
+		vec = vector.rotate (vec, { x = math.pi / -2, y = 0, z = 0 })
+	elseif axis == 2 then
+		vec = vector.rotate (vec, { x = math.pi / 2, y = 0, z = 0 })
+	elseif axis == 3 then
+		vec = vector.rotate (vec, { x = 0, y = 0, z = math.pi / 2 })
+	elseif axis == 4 then
+		vec = vector.rotate (vec, { x = 0, y = 0, z = math.pi / -2 })
+	elseif axis == 5 then
+		vec = vector.rotate (vec, { x = math.pi, y = 0, z = 0 })
+	end
+
+	return vec
 end
 
 
@@ -39,11 +55,15 @@ local function blow (pos)
 		local tnode = minetest.get_node_or_nil (tpos)
 
 		if tnode and tnode.name ~= "air" then
-			return
+			local def = utils.find_item_def (tnode.name)
+
+			if def and def.walkable then
+				return
+			end
 		end
 
 		local object = minetest.get_objects_inside_radius (tpos, 1.5)
-		local vel = vector.multiply (dir, fan_force)
+		local vel = vector.multiply (dir, (dir.y > 0 and fan_force / 2) or fan_force)
 
 		for i = 1, #object do
 			if object[i].add_velocity then
@@ -109,6 +129,20 @@ local function fan_on (pos)
 
 		end
 	end
+end
+
+
+
+local function on_place (itemstack, placer, pointed_thing)
+	local param2 = 0
+
+	if placer and placer:is_player () then
+		param2 = minetest.dir_to_facedir (placer:get_look_dir (), true)
+	elseif pointed_thing and pointed_thing.type == "node" then
+		param2 = minetest.dir_to_facedir (vector.subtract (pointed_thing.under, pointed_thing.above), true)
+	end
+
+	return minetest.item_place (itemstack, placer, pointed_thing, param2)
 end
 
 
@@ -318,7 +352,7 @@ minetest.register_node("lwcomponents:fan", {
 	paramtype = "none",
 	param1 = 0,
 	paramtype2 = "facedir",
-	param2 = 1,
+	param2 = 0,
 	floodable = false,
 	drop = "lwcomponents:fan",
 	_digistuff_channelcopier_fieldname = "channel",
@@ -326,6 +360,7 @@ minetest.register_node("lwcomponents:fan", {
 	mesecons = mesecon_support (),
 	digiline = digilines_support (),
 
+	on_place = on_place,
 	on_receive_fields = on_receive_fields,
 	can_dig = can_dig,
 	after_place_node = after_place_node,
@@ -345,7 +380,7 @@ minetest.register_node("lwcomponents:fan_locked", {
 	paramtype = "none",
 	param1 = 0,
 	paramtype2 = "facedir",
-	param2 = 1,
+	param2 = 0,
 	floodable = false,
 	drop = "lwcomponents:fan_locked",
 	_digistuff_channelcopier_fieldname = "channel",
@@ -353,6 +388,7 @@ minetest.register_node("lwcomponents:fan_locked", {
 	mesecons = mesecon_support (),
 	digiline = digilines_support (),
 
+	on_place = on_place,
 	on_receive_fields = on_receive_fields,
 	can_dig = can_dig,
 	after_place_node = after_place_node_locked,
@@ -372,7 +408,7 @@ minetest.register_node("lwcomponents:fan_on", {
 	paramtype = "none",
 	param1 = 0,
 	paramtype2 = "facedir",
-	param2 = 1,
+	param2 = 0,
 	floodable = false,
 	drop = "lwcomponents:fan",
 	_digistuff_channelcopier_fieldname = "channel",
@@ -380,6 +416,7 @@ minetest.register_node("lwcomponents:fan_on", {
 	mesecons = mesecon_support (),
 	digiline = digilines_support (),
 
+	on_place = on_place,
 	on_receive_fields = on_receive_fields,
 	can_dig = can_dig,
 	after_place_node = after_place_node,
@@ -400,7 +437,7 @@ minetest.register_node("lwcomponents:fan_locked_on", {
 	paramtype = "none",
 	param1 = 0,
 	paramtype2 = "facedir",
-	param2 = 1,
+	param2 = 0,
 	floodable = false,
 	drop = "lwcomponents:fan_locked",
 	_digistuff_channelcopier_fieldname = "channel",
@@ -408,6 +445,7 @@ minetest.register_node("lwcomponents:fan_locked_on", {
 	mesecons = mesecon_support (),
 	digiline = digilines_support (),
 
+	on_place = on_place,
 	on_receive_fields = on_receive_fields,
 	can_dig = can_dig,
 	after_place_node = after_place_node_locked,

@@ -129,15 +129,6 @@ end
 
 
 
--- check for mobs
-if minetest.global_exists ("mobs") then
-	utils.mobs_supported = true
-else
-	utils.mobs_supported = false
-end
-
-
-
 -- check for digistuff
 if minetest.global_exists ("digistuff") then
 	utils.digistuff_supported = true
@@ -259,17 +250,18 @@ end
 
 
 
-function utils.spawn_registered (itemname, spawn_pos, itemstack, owner, spawner_pos, spawner_dir)
+function utils.spawn_registered (itemname, spawn_pos, itemstack, owner, spawner_pos, spawner_dir, force)
 	local func = utils.registered_spawners[itemname]
 
 	if func then
-		local result, obj, cancel = pcall (func, spawn_pos, itemstack, owner, spawner_pos, spawner_dir)
+		local result, obj, cancel = pcall (func, spawn_pos, itemstack, owner, spawner_pos, spawner_dir, force)
 
-		if result and (obj == nil or type (obj) == "userdata") then
+		if result and (obj == nil or type (obj) == "userdata" or type (obj) == "table") then
 			return obj, cancel
 		end
 
-		minetest.log ("error", "lwcomponents.register_spawner spawner function for "..itemname.." failed")
+		minetest.log ("error", "lwcomponents.register_spawner spawner function for "..itemname.." failed "..
+									  ((type (obj) == "string" and obj) or ""))
 
 		return nil, true
 	end
