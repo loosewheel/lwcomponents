@@ -59,8 +59,14 @@ Digilines messages
 When items or entities are detected a digilines message is sent with the
 detector's channel. A message is sent for each found item/entity. The
 message is a table with the following keys:
+
 {
 	action = "detect",
+	detected = table
+}
+
+The detected field is a list of detected items. Each entry is of the form:
+{
 	type = "<type>", -- will be "entity", "player", "drop" or "node"
 	name = "<name>",
 	label = "<label>",

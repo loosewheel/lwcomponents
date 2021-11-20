@@ -1,0 +1,66 @@
+Conduit
+-------
+* This block is only available if digilines and/or mesecons are loaded.
+
+Conduits are connected in a circuit, and can move items from their
+inventory to another conduit in the same circuit.
+
+When a conduit node is placed it has a simple form that asks for a channel.
+This channel is both the digilines' channel and the target id of this
+conduit within the circuit. A conduit does not have to be given a name.
+Most of them are just used to connect other conduits together.
+
+Transfer of items takes 0.1 seconds per conduit node moved.
+
+Also acts as a digilines conductor. If the hopper mod is loaded, will
+take items from the top and sides, and release them from the bottom.
+
+Only the owner can dig or access the form of the locked version.
+
+UI
+
+Channel - digilines channel/target id of circuit.
+Target - target id/channel of circuit this circuit will transfer to.
+Automatic - if checked transfers next item every second without command.
+Top right 16 slot inventory - storage of items.
+Bottom 32 slot inventory - player's inventory.
+
+Mesecons
+	Transfers the next item when power is turned on to the target circuit.
+
+Digilines messages
+"target <id>"
+	Set the target of the conduit. id should be the channel of another
+	conduit on the same circiut. This takes a moment to take effect, so
+	delay any transfers.
+
+"targets"
+	Conduit will send a digilines message with its own channel in the form:
+	{
+		action = "targets",
+		targets = { ... } -- list of string channels of all other conduits
+								-- with a channel on the same circuit.
+	}
+
+"transfer"
+	Simple transfer. Transfers the next item in the inventory to the target
+	circuit (same as mesecons power).
+
+table message
+{
+	action = "transfer",
+	target = "<channel>",
+	slot = <number>,
+	item = "<itemname>"
+}
+
+	If target is not given, the circuit's set target is used.
+
+	slot should be a number between 1 to 16. If the slot is empty nothing
+	is transferred.
+
+	item should be the registered item name. If the circuit's inventory
+	does not contain any nothing is transferred.
+
+	Only slot or item should be given. If both are given slot is used. If
+	neither are given the next item in the inventory is transferred.
