@@ -54,3 +54,7 @@ v0.1.8
 	must now set velocity, can use force parameter.
 *	Removed spawning from this mod. Created lwcomponents_spawners to
 	register spawers.
+
+
+v0.1.9
+*	Fixed infotext on various nodes.

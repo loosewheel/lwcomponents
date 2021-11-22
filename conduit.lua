@@ -396,7 +396,7 @@ local function after_place_node_locked (pos, placer, itemstack, pointed_thing)
 		local meta = minetest.get_meta (pos)
 
 		meta:set_string ("owner", placer:get_player_name ())
-		meta:set_string ("infotext", "Dropper (owned by "..placer:get_player_name ()..")")
+		meta:set_string ("infotext", "Conduit (owned by "..placer:get_player_name ()..")")
 	end
 
 	-- If return true no item is taken from itemstack
