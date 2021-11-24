@@ -95,6 +95,7 @@ minetest.register_node ("lwcomponents:player_button", {
 	"lwplayer_button_side.png",
 	"lwplayer_button.png"
 	},
+	use_texture_alpha = "clip",
 	paramtype = "light",
 	paramtype2 = "facedir",
 	legacy_wallmounted = true,
@@ -143,6 +144,7 @@ minetest.register_node ("lwcomponents:player_button_off", {
 	"lwplayer_button_side.png",
 	"lwplayer_button.png"
 	},
+	use_texture_alpha = "clip",
 	paramtype = "light",
 	paramtype2 = "facedir",
 	legacy_wallmounted = true,
@@ -192,6 +194,7 @@ minetest.register_node ("lwcomponents:player_button_on", {
 	"lwplayer_button_side.png",
 	"lwplayer_button_on.png"
 	},
+	use_texture_alpha = "clip",
 	paramtype = "light",
 	paramtype2 = "facedir",
 	legacy_wallmounted = true,
