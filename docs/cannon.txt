@@ -1,0 +1,63 @@
+Cannon
+------
+This item is available without digilines or mesecons as it can be used
+manually.
+
+Contains a single inventory slot and shoots an item on command.
+If the hopper mod is loaded, will take items from the top and sides, and
+release them from the bottom.
+
+Cannon rotation range:
+side to side - +/-60 degrees (- = left, + = right)
+down to up: -20 to 50 degrees (- = down, + = up)
+
+To spawn entities from cannons include the lwcomponents_spawners mod.
+
+Only the owner can dig or access the form of the locked version.
+
+UI
+
+Channel - digilines channel of cannon.
+Hide - hides the form so the cannon can be used manually, double right click
+		 any other face besides the rear to bring up the form.
+Controller - digistuff game controller digilines channel.
+Top 1 slot inventory - storage of items to shoot.
+Bottom 32 slot inventory - player's inventory.
+
+Manual control
+Place some items in the single slot, and click the Hide button. On the
+rear panel their are 4 gray buttons. Right clicking them turns the barrel
+in that direction 10 degrees. aux + right click turns 1 degree. Clicking
+the red button fires an item. To bring up the form again double right click
+any other face besides the rear.
+
+Digistuff game controller
+Connect a game controller to the cannon with digilines cable. Enter the
+game controller's channel in the Controller field of the cannon's form
+(click Set). Your turning movements turn the cannon's barrel in the
+direction the cannon is facing. The movements have an increased sensitivity
+(x3) to try and keep the target in your view. Punching shoots an item.
+The game controller updates every 0.2 seconds, so a quick punch may not
+register. A locked cannon can only be controlled by it's owner with a game
+controller.
+
+Mesecons
+	Shoots an item when power is turned on.
+
+Digilines messages
+
+"pitch <n>"
+	Sets the pitch of the barrel. n should be between -20 to 50, and will
+	be clipped to this range.
+	eg. "pitch 22"
+
+"rotation <n>"
+	Sets the rotation of the barrel. n should be between -60 to 60, and will
+	be clipped to this range.
+	eg. "rotation 45"
+
+"fire"
+	Shoots an item.
+
+*	Note: turning the barrel is animated and takes 0.1 seconds per 10
+			degrees of movement. A fire command while moving is ignored.
