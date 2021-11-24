@@ -1,4 +1,4 @@
-# Allow dispensers to spawn mobs instead of spawners.
+# Allow dispensers and cannons to spawn mobs instead of spawners.
 lwcomponents_spawn_mobs (Spawn mobs) bool true
 
 # Issue errors when handler's of other mods fail.

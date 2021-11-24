@@ -69,6 +69,8 @@ public domain.
 
 player button images derived from mesecons button image.
 
+cannon firing sound from tnt, released under CC BY-SA 3.0 and CC0 1.0
+
 All other media, or media not covered by a licence, is licensed
 Attribution-ShareAlike 3.0 Unported (CC BY-SA 3.0)
 

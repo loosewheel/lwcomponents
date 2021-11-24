@@ -158,11 +158,12 @@ local function dispense_item (pos, node, slot)
 						if not obj then
 							obj = minetest.add_item (spawn_pos, item)
 
-							obj:set_velocity (dispense_velocity (node))
+							if obj then
+								obj:set_velocity (dispense_velocity (node))
+							end
 						end
 
 						if obj then
-
 							stack:set_count (stack:get_count () - 1)
 							inv:set_stack ("main", slot, stack)
 

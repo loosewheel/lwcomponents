@@ -3,6 +3,27 @@ local S = utils.S
 
 
 
+minetest.register_craft( {
+	output = "lwcomponents:cannon",
+	recipe = {
+		{ "default:steel_ingot", "default:steel_ingot", "default:steel_ingot" },
+		{ "default:chest", "default:wood", "" },
+		{ "default:copper_ingot", "default:stone", "" },
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:cannon_locked",
+	recipe = {
+		{ "default:steel_ingot", "default:steel_ingot", "default:steel_ingot" },
+		{ "default:chest_locked", "default:wood", "" },
+		{ "default:copper_ingot", "default:stone", "" },
+	},
+})
+
+
+
 if utils.digilines_supported or utils.mesecon_supported then
 
 minetest.register_craft( {

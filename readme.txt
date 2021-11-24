@@ -13,7 +13,7 @@ CC BY-SA 3.0
 
 Version
 =======
-0.1.9
+0.1.10
 
 
 Minetest Version
@@ -63,6 +63,7 @@ Various components for mesecons and digilines.
 *	Hologram, projects a hologram above the hologram node.
 *	Fan, blows any entity, player or drop in front of the fan.
 *	Conduit, connected in a circuit to move items.
+*	Cannons, shots an item on command with directional aiming.
 *	Digiswitch, digilines controlled mesecons power.
 *	Movefloor, similar to vertical mesecons movestone.
 *	Solid color conductor blocks, same as Solid Color Block but also mesecons
@@ -84,7 +85,7 @@ the relevant mod is loaded.
 The mod supports the following settings:
 
 Spawn mobs
-	Allow dispensers to spawn mobs instead of spawners.
+	Allow dispensers and cannons to spawn mobs instead of spawners.
 	Default: true
 
 Alert handler errors
