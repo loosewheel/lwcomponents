@@ -63,7 +63,7 @@ Various components for mesecons and digilines.
 *	Hologram, projects a hologram above the hologram node.
 *	Fan, blows any entity, player or drop in front of the fan.
 *	Conduit, connected in a circuit to move items.
-*	Cannons, shoots an item on command with directional aiming.
+*	Cannon, shoots an item on command with directional aiming.
 *	Digiswitch, digilines controlled mesecons power.
 *	Movefloor, similar to vertical mesecons movestone.
 *	Solid color conductor blocks, same as Solid Color Block but also mesecons
