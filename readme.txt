@@ -69,7 +69,8 @@ Various components for mesecons and digilines.
 *	Solid color conductor blocks, same as Solid Color Block but also mesecons
 	and digilines conductor.
 
-To spawn entities from dispensers include the lwcomponents_spawners mod.
+To spawn entities from dispensers and cannons include the
+lwcomponents_spawners mod.
 
 See the docs folder for details on each item.
 
