@@ -180,6 +180,25 @@ end
 
 
 
+local function aim_barrel_delayed (pos, aimpos)
+	local x = tonumber (aimpos.x) or 0
+	local y = tonumber (aimpos.y) or 0
+	local z = tonumber (aimpos.z) or 0
+
+	if z < 1 then
+		return
+	end
+
+	local angle = vector.dir_to_rotation (aimpos)
+
+	local rot = math.floor (math.deg (-angle.y) + 0.5)
+	local pitch = math.floor (math.deg (angle.x) + 0.5)
+
+	set_barrel_angle_delayed (pos, pitch, rot)
+end
+
+
+
 local function fire_cannon (pos)
 	local meta = minetest.get_meta (pos)
 
@@ -764,6 +783,12 @@ local function digilines_support ()
 									msg.pitch and msg.yaw and msg.name and msg.look_vector then
 
 									process_controller_input (pos, msg)
+
+								elseif type (msg.action) == "string" and msg.action == "aim" and
+									type (msg.aim) == "table" then
+
+									aim_barrel_delayed (pos, msg.aim)
+
 								end
 
 							end

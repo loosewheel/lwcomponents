@@ -62,3 +62,8 @@ v0.1.9
 
 v0.1.10
 *	Added cannons.
+
+
+v0.1.11
+*	Fix to breakers (?).
+*	Added position aiming to cannons.

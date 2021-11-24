@@ -138,9 +138,9 @@ local function can_break_node (pos, breakpos)
 			if node_def then
 				-- try tool first
 				local tool = get_tool (pos)
+				local dig_params = nil
 
 				if tool then
-					local dig_params = nil
 					local tool_def = minetest.registered_items[tool:get_name ()]
 
 					if tool_def then
