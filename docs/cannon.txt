@@ -9,7 +9,7 @@ release them from the bottom.
 
 Cannon rotation range:
 side to side - +/-60 degrees (- = left, + = right)
-down to up: -20 to 50 degrees (- = down, + = up)
+down to up: -20 to 70 degrees (- = down, + = up)
 
 To spawn entities from cannons include the lwcomponents_spawners mod.
 
@@ -21,6 +21,7 @@ Channel - digilines channel of cannon.
 Hide - hides the form so the cannon can be used manually, double right click
 		 any other face besides the rear to bring up the form.
 Controller - digistuff game controller digilines channel.
+Sensitive - if checked game controller movements have a x3 sensitivity.
 Top 1 slot inventory - storage of items to shoot.
 Bottom 32 slot inventory - player's inventory.
 
@@ -35,11 +36,11 @@ Digistuff game controller
 Connect a game controller to the cannon with digilines cable. Enter the
 game controller's channel in the Controller field of the cannon's form
 (click Set). Your turning movements turn the cannon's barrel in the
-direction the cannon is facing. The movements have an increased sensitivity
-(x3) to try and keep the target in your view. Punching shoots an item.
-The game controller updates every 0.2 seconds, so a quick punch may not
-register. A locked cannon can only be controlled by it's owner with a game
-controller.
+direction the cannon is facing. If Sensitive is checked the movements
+have an increased sensitivity (x3) to try and keep the target in your view,
+otherwise x1. Punching shoots an item. The game controller updates every
+0.2 seconds, so a quick punch may not register. A locked cannon can only
+be controlled by it's owner with a game controller.
 
 Mesecons
 	Shoots an item when power is turned on.
@@ -47,7 +48,7 @@ Mesecons
 Digilines messages
 
 "pitch <n>"
-	Sets the pitch of the barrel. n should be between -20 to 50, and will
+	Sets the pitch of the barrel. n should be between -20 to 70, and will
 	be clipped to this range.
 	eg. "pitch 22"
 
@@ -56,8 +57,47 @@ Digilines messages
 	be clipped to this range.
 	eg. "rotation 45"
 
+table - aim position
+{
+	action = "aim",
+	aim = { x, y, z }
+}
+	x is the horizontal left (negative) to right. 0 is straight ahead.
+	y is the vertical down (negative) to up. 0 is straight ahead.
+	z is the depth. Must be > 0 or ignored. 1 is the position directly in
+	front of the cannon.
+	*	The cannon barrel's height is 0.65 above the cannon's placed position.
+		When aiming for height, if the cannon's base height is taken as -0.5,
+		and consider height from there. This allows for the barrel height
+		and a little drop in the projectile at close range.
+
 "fire"
 	Shoots an item.
 
 *	Note: turning the barrel is animated and takes 0.1 seconds per 10
 			degrees of movement. A fire command while moving is ignored.
+
+
+Three shells are provided for cannons.
+
+Shell
+This shell has a 70% chance of destroying a node within a radius of 2 from
+the impact, a 5% chance a flammable node will be set on fire within a
+radius of 2 (if fire is installed), and damages players and entities within
+a radius of 4 with a maximum of 20 damage points.
+
+
+Soft Shell
+This shell has a 50% chance of destroying only soft (buildable_to) nodes,
+such as grass, within a radius of 2 from the impact, a 5% chance a flammable
+node will be set on fire within a radius of 2 (if fire is installed), and
+damages players and entities within a radius of 4 with a maximum of 20
+damage points.
+
+
+Fire Shell
+* This item is only available if fire is installed.
+This shell does not destroying nodes, has a 70% chance of setting a node
+on fire, whether its flammable or not within a radius of 2, and damages
+players and entities within a radius of 4 with a maximum of 20 damage
+points.
