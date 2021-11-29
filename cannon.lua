@@ -5,7 +5,7 @@ local S = utils.S
 
 local cannon_force = 20
 local min_pitch = -20
-local max_pitch = 50
+local max_pitch = 70
 local min_rotation = -60
 local max_rotation = 60
 
@@ -298,6 +298,7 @@ local function process_controller_input (pos, input)
 			local pitch = input.pitch * -180 / math.pi
 			local node_rot = vector.dir_to_rotation (minetest.facedir_to_dir ((node.param2 + 2) % 4))
 			local rot = (input.yaw - node_rot.y) * 180 / math.pi
+			local sensitivity = (meta:get_string ("sensitive") == "true" and 3) or 1
 
 			while rot > 180 do
 				rot = rot - 360
@@ -311,8 +312,8 @@ local function process_controller_input (pos, input)
 				rot = -rot
 			end
 
-			set_barrel_pitch (pos, pitch * 3)
-			set_barrel_rotation (pos, rot * 3)
+			set_barrel_pitch (pos, pitch * sensitivity)
+			set_barrel_rotation (pos, rot * sensitivity)
 
 			if input.dig then
 				fire_cannon (pos)
@@ -323,15 +324,19 @@ end
 
 
 
-local function get_formspec ()
+local function get_formspec (pos)
+	local meta = minetest.get_meta (pos)
+	local sensitive = (meta and meta:get_string ("sensitive")) or "false"
+
 	return
 	"formspec_version[3]\n"..
 	"size[11.75,10.75;true]\n"..
 	"field[1.0,1.0;4.0,0.8;channel;Channel;${channel}]\n"..
 	"button[5.5,1.0;2.0,0.8;setchannel;Set]\n"..
 	"button[8.5,1.0;2.0,0.8;hide;Hide]\n"..
-	"field[1.0,3.0;4.0,0.8;controller;Controller;${controller}]\n"..
-	"button[5.5,3.0;2.0,0.8;setcontroller;Set]\n"..
+	"field[1.0,2.6;4.0,0.8;controller;Controller;${controller}]\n"..
+	"button[5.5,2.6;2.0,0.8;setcontroller;Set]\n"..
+	"checkbox[1.3,3.8;sensitive;Sensitive;"..sensitive.."]\n"..
 	"list[context;main;9.0,2.75;1,1;]\n"..
 	"list[current_player;main;1.0,5.0;8,4;]\n"..
 	"listring[]"
@@ -365,6 +370,7 @@ local function on_construct (pos)
 	if barrel then
 		set_barrel_rotation (pos, 0)
 		set_barrel_pitch (pos, 0)
+		barrel:set_armor_groups ({ immortal = 1 })
 	end
 
 	minetest.set_node (blank_pos, { name = "lwcomponents:cannon_blank" })
@@ -392,13 +398,15 @@ end
 local function after_place_node (pos, placer, itemstack, pointed_thing)
 	local meta = minetest.get_meta (pos)
 
+	meta:set_string ("sensitive", "true")
 	meta:set_string ("inventory", "{ main = { } }")
-	meta:set_string ("formspec", get_formspec ())
 
 	local inv = meta:get_inventory ()
 
 	inv:set_size ("main", 1)
 	inv:set_width ("main", 1)
+
+	meta:set_string ("formspec", get_formspec (pos))
 
 	-- If return true no item is taken from itemstack
 	return false
@@ -542,6 +550,15 @@ local function on_receive_fields (pos, formname, fields, sender)
 			meta:set_string ("formspec", "")
 		end
 	end
+
+	if fields.sensitive ~= nil then
+		local meta = minetest.get_meta (pos)
+
+		if meta then
+			meta:set_string ("sensitive", fields.sensitive)
+			meta:set_string ("formspec", get_formspec (pos))
+		end
+	end
 end
 
 
@@ -660,29 +677,26 @@ local function on_rightclick (pos, node, clicker, itemstack, pointed_thing)
 				if hz == 0.5 and hy >= -0.5 and hy <= 0.2 then
 					local angle = get_barrel_angle  (pos)
 
-					if hx >= -0.5 and hx <= -0.25 and hy >= -0.25 and hy <= -0.0625 then
-						-- left
-						set_barrel_rotation (pos, angle.y + inc)
-
-					elseif hx >= 0.25 and hx <= 0.5 and hy >= -0.25 and hy <= -0.0625 then
-						-- right
-						set_barrel_rotation (pos, angle.y - inc)
-
-					elseif hx >= -0.125 and hx <= 0.125 and hy >= 0.0 and hy <= 0.1875 then
-						-- up
-						set_barrel_pitch (pos, angle.x + inc)
-
-					elseif hx >= -0.125 and hx <= 0.125 and hy >= -0.5 and hy <= -0.3125 then
-						-- down
-						set_barrel_pitch (pos, angle.x - inc)
-
-					elseif hx >= -0.125 and hx <= 0.125 and hy >= -0.25 and hy <= -0.0625 then
-						-- fire
-						fire_cannon (pos)
-
+					if angle then
+						if hx >= -0.5 and hx <= -0.25 and hy >= -0.25 and hy <= -0.0625 then
+							-- left
+							set_barrel_rotation (pos, angle.y + inc)
+						elseif hx >= 0.25 and hx <= 0.5 and hy >= -0.25 and hy <= -0.0625 then
+							-- right
+							set_barrel_rotation (pos, angle.y - inc)
+						elseif hx >= -0.125 and hx <= 0.125 and hy >= 0.0 and hy <= 0.1875 then
+							-- up
+							set_barrel_pitch (pos, angle.x + inc)
+						elseif hx >= -0.125 and hx <= 0.125 and hy >= -0.5 and hy <= -0.3125 then
+							-- down
+							set_barrel_pitch (pos, angle.x - inc)
+						elseif hx >= -0.125 and hx <= 0.125 and hy >= -0.25 and hy <= -0.0625 then
+							-- fire
+							fire_cannon (pos)
+						end
 					end
 				else
-					meta:set_string ("formspec", get_formspec ())
+					meta:set_string ("formspec", get_formspec (pos))
 				end
 			end
 		end
@@ -839,6 +853,8 @@ minetest.register_node("lwcomponents:cannon_blank", {
 	drop = "",
 	groups = { not_in_creative_inventory = 1 },
 	paramtype = "light",
+	-- unaffected by explosions
+	on_blast = function() end,
 })
 
 
@@ -858,6 +874,8 @@ minetest.register_node("lwcomponents:cannon_blank_fire", {
 	drop = "",
 	groups = { not_in_creative_inventory = 1 },
 	paramtype = "light",
+	-- unaffected by explosions
+	on_blast = function() end,
 })
 
 
@@ -877,7 +895,7 @@ minetest.register_node("lwcomponents:cannon", {
 		type = "fixed",
 		fixed = {
 			{ -0.09, 0, -0.09, 0.09, 0.5, 0.09 },
-			{ -0.5, -0.1875, -0.5, 0.5, 0.125, 0.5 },
+			{ -0.5, -0.25, -0.5, 0.5, 0.125, 0.5 },
 			{ -0.4375, -0.1875, -0.4375, 0.4375, 0.1875, 0.5 },
 			{ -0.5, -0.5, 0.3125, 0.5, 0.125, 0.5 },
 			{ -0.5, -0.5, -0.5, -0.3125, 0.125, -0.3125 },
@@ -939,7 +957,7 @@ minetest.register_node("lwcomponents:cannon_locked", {
 		type = "fixed",
 		fixed = {
 			{ -0.09, 0, -0.09, 0.09, 0.5, 0.09 },
-			{ -0.5, -0.1875, -0.5, 0.5, 0.125, 0.5 },
+			{ -0.5, -0.25, -0.5, 0.5, 0.125, 0.5 },
 			{ -0.4375, -0.1875, -0.4375, 0.4375, 0.1875, 0.5 },
 			{ -0.5, -0.5, 0.3125, 0.5, 0.125, 0.5 },
 			{ -0.5, -0.5, -0.5, -0.3125, 0.125, -0.3125 },
@@ -1022,6 +1040,10 @@ minetest.register_entity ("lwcomponents:cannon_barrel", {
 
 	on_punch = function (self, puncher, time_from_last_punch, tool_capabilities, dir)
 		return true
+	end,
+
+	on_blast = function (self, damage)
+		return false, false, nil
 	end,
 })
 

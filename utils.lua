@@ -321,7 +321,7 @@ function utils.is_creative (player)
 
 	if player and player:is_player () then
 		return minetest.is_creative_enabled (player:get_player_name ()) or
-				 minetest.check_player_privs (placer, "creative")
+				 minetest.check_player_privs (player, "creative")
 	end
 
 	return false

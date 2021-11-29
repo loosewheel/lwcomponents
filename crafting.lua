@@ -23,6 +23,35 @@ minetest.register_craft( {
 })
 
 
+minetest.register_craft( {
+	output = "lwcomponents:cannon_shell 10",
+	recipe = {
+		{ "default:steel_ingot", "default:steel_ingot" },
+		{ "", "default:coalblock" },
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:cannon_soft_shell 10",
+	recipe = {
+		{ "default:steel_ingot", "default:steel_ingot" },
+		{ "default:copper_lump", "default:coalblock" },
+	},
+})
+
+
+if minetest.global_exists ("fire") then
+minetest.register_craft( {
+	output = "lwcomponents:cannon_fire_shell 10",
+	recipe = {
+		{ "default:steel_ingot", "default:steel_ingot" },
+		{ "default:iron_lump", "default:coalblock" },
+	},
+})
+end
+
+
 
 if utils.digilines_supported or utils.mesecon_supported then
 

@@ -1,4 +1,4 @@
-local version = "0.1.11"
+local version = "0.1.12"
 local mod_storage = minetest.get_mod_storage ()
 
 
@@ -15,8 +15,9 @@ end
 local utils = { }
 local modpath = minetest.get_modpath ("lwcomponents")
 
-loadfile (modpath.."/utils.lua") (utils, mod_storage)
 loadfile (modpath.."/settings.lua") (utils)
+loadfile (modpath.."/utils.lua") (utils, mod_storage)
+loadfile (modpath.."/explode.lua") (utils)
 loadfile (modpath.."/api.lua") (utils)
 utils.connections = loadfile (modpath.."/connections.lua") ()
 loadfile (modpath.."/dropper.lua") (utils)
@@ -32,6 +33,7 @@ loadfile (modpath.."/deployer.lua") (utils)
 loadfile (modpath.."/fan.lua") (utils)
 loadfile (modpath.."/conduit.lua") (utils, mod_storage)
 loadfile (modpath.."/cannon.lua") (utils)
+loadfile (modpath.."/cannon_shell.lua") (utils)
 loadfile (modpath.."/extras.lua") (utils)
 loadfile (modpath.."/digiswitch.lua") (utils)
 loadfile (modpath.."/movefloor.lua") (utils)

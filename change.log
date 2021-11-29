@@ -67,3 +67,10 @@ v0.1.10
 v0.1.11
 *	Fix to breakers (?).
 *	Added position aiming to cannons.
+
+
+v0.1.12
+*	Added sensitivity option for game controller in cannons.
+*	Added cannon shells.
+*	Fixed bug in utils.is_creative.
+*	Increased cannon pitch to -20 to 70.
