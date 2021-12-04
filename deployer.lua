@@ -73,7 +73,7 @@ end
 
 
 
-local function place_node (itemname, pos)
+local function place_node (item, pos)
 	local node = minetest.get_node_or_nil ({ x = pos.x, y = pos.y - 1, z = pos.z })
 
 	if not node then
@@ -100,8 +100,8 @@ local function place_node (itemname, pos)
 		end
 	end
 
-	local stack = ItemStack (itemname)
-	local itemdef = utils.find_item_def (itemname)
+	local stack = ItemStack (item)
+	local itemdef = utils.find_item_def (stack:get_name ())
 
 	if stack and itemdef then
 		local placed = false
@@ -122,23 +122,23 @@ local function place_node (itemname, pos)
 		end
 
 		if itemdef and itemdef.on_place then
-			local result, msg = pcall (itemdef.on_place, stack, nil, pointed_thing)
+			local result, leftover = pcall (itemdef.on_place, stack, nil, pointed_thing)
 
 			placed = result
 
 			if not placed then
 				if utils.settings.alert_handler_errors then
-					minetest.log ("error", "on_place handler for "..itemname.." crashed - "..msg)
+					minetest.log ("error", "on_place handler for "..stack:get_name ().." crashed - "..leftover)
 				end
 			end
 		end
 
 		if not placed then
-			if not minetest.registered_nodes[itemname] then
+			if not minetest.registered_nodes[stack:get_name ()] then
 				return false
 			end
 
-			minetest.set_node (pos, { name = itemname, param1 = 0, param2 = 0 })
+			minetest.set_node (pos, { name = stack:get_name (), param1 = 0, param2 = 0 })
 
 			if itemdef and itemdef.after_place_node then
 				local result, msg = pcall (itemdef.after_place_node, pos, nil, stack, pointed_thing)
@@ -154,9 +154,11 @@ local function place_node (itemname, pos)
 				pcall (minetest.sound_play, itemdef.sounds.place, { pos = pos })
 			end
 		end
+
+		return true
 	end
 
-	return true
+	return false
 end
 
 
@@ -219,7 +221,7 @@ local function deploy_item (pos, node, slot, range)
 					local deploypos = get_deploy_pos (pos, node.param2, range)
 
 					if item and deploypos then
-						if place_node (name, deploypos) then
+						if place_node (stack, deploypos) then
 							stack:set_count (stack:get_count () - 1)
 							inv:set_stack ("main", slot, stack)
 

@@ -74,3 +74,7 @@ v0.1.12
 *	Added cannon shells.
 *	Fixed bug in utils.is_creative.
 *	Increased cannon pitch to -20 to 70.
+
+
+v0.1.13
+*	Removed optional dependency lwdrops.

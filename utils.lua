@@ -67,43 +67,6 @@ end
 
 
 
--- check for lwdrops
-if minetest.global_exists ("lwdrops") then
-	utils.lwdrops_supported = true
-	utils.on_destroy = lwdrops.on_destroy
-	utils.item_pickup = lwdrops.item_pickup
-	utils.item_drop = lwdrops.item_drop
-else
-	utils.lwdrops_supported = false
-
-	-- dummy
-	utils.on_destroy = function (itemstack)
-	end
-
-	utils.item_pickup = function (entity, cleanup)
-		local stack = nil
-
-		if entity and entity.name and entity.name == "__builtin:item" and
-			entity.itemstring and entity.itemstring ~= "" then
-
-			stack = ItemStack (entity.itemstring)
-
-			if cleanup ~= false then
-				entity.itemstring = ""
-				entity.object:remove ()
-			end
-		end
-
-		return stack
-	end
-
-	utils.item_drop = function (itemstack, dropper, pos)
-		return minetest.item_drop (itemstack, dropper, pos)
-	end
-end
-
-
-
 -- check for unifieddyes
 if minetest.global_exists ("unifieddyes") then
 	utils.unifieddyes_supported = true
@@ -134,6 +97,45 @@ if minetest.global_exists ("digistuff") then
 	utils.digistuff_supported = true
 else
 	utils.digistuff_supported = false
+end
+
+
+
+function utils.on_destroy (itemstack)
+	local stack = ItemStack (itemstack)
+
+	if stack and stack:get_count () > 0 then
+		local def = utils.find_item_def (stack:get_name ())
+
+		if def and def.on_destroy then
+			def.on_destroy (stack)
+		end
+	end
+end
+
+
+
+function utils.item_pickup (entity, cleanup)
+	local stack = nil
+
+	if entity and entity.name and entity.name == "__builtin:item" and
+		entity.itemstring and entity.itemstring ~= "" then
+
+		stack = ItemStack (entity.itemstring)
+
+		if cleanup ~= false then
+			entity.itemstring = ""
+			entity.object:remove ()
+		end
+	end
+
+	return stack
+end
+
+
+
+function utils.item_drop (itemstack, dropper, pos)
+	return minetest.item_drop (itemstack, dropper, pos)
 end
 
 

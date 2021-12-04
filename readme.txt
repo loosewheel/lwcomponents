@@ -13,7 +13,7 @@ CC BY-SA 3.0
 
 Version
 =======
-0.1.12
+0.1.13
 
 
 Minetest Version
@@ -28,7 +28,6 @@ default
 
 Optional Dependencies
 =====================
-lwdrops
 mesecons
 digilines
 unifieddyes
