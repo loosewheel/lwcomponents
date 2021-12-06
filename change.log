@@ -78,3 +78,7 @@ v0.1.12
 
 v0.1.13
 *	Removed optional dependency lwdrops.
+
+
+v0.1.14
+*	Calls on_drop when item is dropped.
