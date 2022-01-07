@@ -82,3 +82,8 @@ v0.1.13
 
 v0.1.14
 *	Calls on_drop when item is dropped.
+
+
+v0.1.15
+*	Fixed bug call to clear_map in fan on_blast.
+*	Added pistons.

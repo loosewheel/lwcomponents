@@ -218,6 +218,26 @@ minetest.register_craft( {
 	},
 })
 
+
+minetest.register_craft({
+	output = "lwcomponents:piston 2",
+	recipe = {
+		{ "group:wood", "group:wood", "group:wood" },
+		{ "default:cobble", "default:steel_ingot", "default:cobble" },
+		{ "default:stone", "default:copper_ingot", "default:stone" },
+	}
+})
+
+
+minetest.register_craft({
+	output = "lwcomponents:piston_sticky",
+	recipe = {
+		{"group:sapling"},
+		{"lwcomponents:piston"},
+	}
+})
+
+
 end -- utils.digilines_supported or utils.mesecon_supported
 
 

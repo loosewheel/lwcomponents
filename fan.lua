@@ -199,13 +199,9 @@ local function on_blast (pos, intensity)
 	if meta then
 		if intensity >= 1.0 then
 
-			clear_map (pos)
-
 			minetest.remove_node (pos)
 
 		else -- intensity < 1.0
-
-			clear_map (pos)
 
 			local node = minetest.get_node_or_nil (pos)
 			if node then

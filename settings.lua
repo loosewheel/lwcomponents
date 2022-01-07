@@ -9,6 +9,9 @@ utils.settings.spawn_mobs =
 utils.settings.alert_handler_errors =
 	minetest.settings:get_bool ("lwcomponents_alert_handler_errors", true)
 
+utils.settings.max_piston_nodes =
+	tonumber(minetest.settings:get("lwcomponents_max_piston_nodes") or 15)
+
 
 
 --

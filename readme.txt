@@ -13,7 +13,7 @@ CC BY-SA 3.0
 
 Version
 =======
-0.1.14
+0.1.15
 
 
 Minetest Version
@@ -63,6 +63,7 @@ Various components for mesecons and digilines.
 *	Fan, blows any entity, player or drop in front of the fan.
 *	Conduit, connected in a circuit to move items.
 *	Cannon, shoots an item on command with directional aiming (plus 3 shells).
+*	Double (optionally single) reach pistons and sticky pistons.
 *	Digiswitch, digilines controlled mesecons power.
 *	Movefloor, similar to vertical mesecons movestone.
 *	Solid color conductor blocks, same as Solid Color Block but also mesecons
@@ -92,6 +93,9 @@ Alert handler errors
 	Issue errors when handler's of other mods fail.
 	Default: true
 
+Maximum piston nodes
+	Maximum nodes a piston can push.
+	Default: 15
 
 
 ------------------------------------------------------------------------
