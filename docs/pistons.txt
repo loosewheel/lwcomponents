@@ -1,0 +1,31 @@
+Pistons and sticky pistons
+--------------------------
+* These blocks are only available if digilines and/or mesecons are loaded.
+
+Pistons push up to the setting Maximum piston nodes (default 15) in front
+of the pusher when extended. Sticky piston draw back a single node in
+front of the pusher when retracted. Piston also act as a digilines
+conductor.
+
+UI
+
+Channel - digilines channel of piston.
+Single move - pusher extends 1 node if checked, otherwise 2 nodes.
+
+Mesecons
+	Piston extends while power is turned on.
+
+Digilines messages
+
+"extend n"
+	Extends the piston pusher to extent n (0, 1 or 2). If n is not given
+	pusher extends to maximum extent. 0 is retracted.
+
+"retract"
+	Same as 'extend 0'.
+
+"single"
+	Sets piston to single move mode.
+
+"double"
+	Sets piston to double move mode.
