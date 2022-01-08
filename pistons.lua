@@ -94,7 +94,9 @@ local function push_nodes (pos, extent)
 				return false
 			end
 
-			if tnode.name == "air" then
+			local tdef = utils.find_item_def (tnode.name)
+
+			if tnode.name == "air" or (tdef and not tdef.walkable) then
 				count = i - 1
 				break
 			end
@@ -150,8 +152,10 @@ local function pull_node (pos, extent)
 		local vec = direction_vector (node)
 		local cpos = vector.add (pos, vector.multiply (vec, extent))
 		local cnode = utils.get_far_node (cpos)
+		local cdef = cnode and utils.find_item_def (cnode.name)
 
-		if cnode and cnode ~= "air" then
+		if cnode and cnode.name ~= "air" and cdef and cdef.walkable then
+
 			local cmeta = minetest.get_meta (cpos)
 
 			if cmeta then
@@ -182,8 +186,11 @@ local function place_blank (pos, extent)
 		local vec = direction_vector (node)
 		local blank_pos = vector.add (pos, vector.multiply (vec, extent))
 		local blank_node = utils.get_far_node (blank_pos)
+		local blank_def = blank_node and utils.find_item_def (blank_node.name)
 
-		if blank_node and blank_node.name == "air" then
+		if blank_node and blank_node.name == "air" or
+			(blank_def and not blank_def.walkable) then
+
 			minetest.set_node (blank_pos,
 									 {
 										name = "lwcomponents:piston_blank_"..tostring (extent),
@@ -680,7 +687,7 @@ minetest.register_node("lwcomponents:piston_blank_2", {
 
 
 minetest.register_node("lwcomponents:piston", {
-	description = S("Piston"),
+	description = S("Double Piston"),
 	tiles = { "lwcomponents_piston_top.png", "lwcomponents_piston_bottom.png",
 				 "lwcomponents_piston_right.png", "lwcomponents_piston_left.png",
 				 "lwcomponents_piston_base.png", "lwcomponents_piston_pusher.png" },
@@ -710,7 +717,7 @@ minetest.register_node("lwcomponents:piston", {
 
 
 minetest.register_node("lwcomponents:piston_1", {
-	description = S("Piston"),
+	description = S("Double Piston"),
 	drawtype = "mesh",
 	mesh = "piston_normal_1.obj",
 	tiles = { "lwcomponents_piston.png" },
@@ -757,7 +764,7 @@ minetest.register_node("lwcomponents:piston_1", {
 
 
 minetest.register_node("lwcomponents:piston_2", {
-	description = S("Piston"),
+	description = S("Double Piston"),
 	drawtype = "mesh",
 	mesh = "piston_normal_2.obj",
 	tiles = { "lwcomponents_piston.png" },
@@ -804,7 +811,7 @@ minetest.register_node("lwcomponents:piston_2", {
 
 
 minetest.register_node("lwcomponents:piston_sticky", {
-	description = S("Sticky Piston"),
+	description = S("Double Sticky Piston"),
 	tiles = { "lwcomponents_piston_top.png", "lwcomponents_piston_bottom.png",
 				 "lwcomponents_piston_right.png", "lwcomponents_piston_left.png",
 				 "lwcomponents_piston_base.png", "lwcomponents_piston_pusher_sticky.png" },
@@ -834,7 +841,7 @@ minetest.register_node("lwcomponents:piston_sticky", {
 
 
 minetest.register_node("lwcomponents:piston_sticky_1", {
-	description = S("Sticky Piston"),
+	description = S("Double Sticky Piston"),
 	drawtype = "mesh",
 	mesh = "piston_sticky_1.obj",
 	tiles = { "lwcomponents_piston.png" },
@@ -881,7 +888,7 @@ minetest.register_node("lwcomponents:piston_sticky_1", {
 
 
 minetest.register_node("lwcomponents:piston_sticky_2", {
-	description = S("Sticky Piston"),
+	description = S("Double Sticky Piston"),
 	drawtype = "mesh",
 	mesh = "piston_sticky_2.obj",
 	tiles = { "lwcomponents_piston.png" },

@@ -87,3 +87,7 @@ v0.1.14
 v0.1.15
 *	Fixed bug call to clear_map in fan on_blast.
 *	Added pistons.
+
+
+v0.1.16
+*	Fixed piston interaction with non-walkable nodes.
