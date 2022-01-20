@@ -52,7 +52,7 @@ local function push_entities (pos, vec)
 		if tnode.name == "air" then
 			can_move = true
 		else
-			tdef = utils.find_item_def (tnode.name)
+			local tdef = utils.find_item_def (tnode.name)
 
 			can_move = tdef and not tdef.walkable
 		end

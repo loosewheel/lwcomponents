@@ -91,3 +91,7 @@ v0.1.15
 
 v0.1.16
 *	Fixed piston interaction with non-walkable nodes.
+
+
+v0.1.17
+*	Fixed unintended global variable in pistons.lua.
