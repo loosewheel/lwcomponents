@@ -3,5 +3,5 @@ Mesecons Through Wire
 * This block is only available if mesecons is loaded.
 
 Will transmit mesecons power when placed one to two blocks apart opposing
-each, through solid blocks or open space. Can also be used as a mesecons
+each other, through solid blocks or open space. Can also be used as a mesecons
 crossover.
