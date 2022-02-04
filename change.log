@@ -95,3 +95,6 @@ v0.1.16
 
 v0.1.17
 *	Fixed unintended global variable in pistons.lua.
+
+v0.1.18
+*	Added mesecons through wire.

@@ -49,7 +49,21 @@ minetest.register_craft( {
 		{ "default:iron_lump", "default:coalblock" },
 	},
 })
-end
+end -- minetest.global_exists ("fire")
+
+
+
+if utils.mesecon_supported then
+
+minetest.register_craft( {
+	output = "lwcomponents:through_wire_off 2",
+	recipe = {
+		{ "", "mesecons:wire_00000000_off" },
+		{ "mesecons:wire_00000000_off", "" },
+	},
+})
+
+end -- utils.mesecon_supported
 
 
 

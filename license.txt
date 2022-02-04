@@ -13,6 +13,8 @@ without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 See the GNU Lesser General Public License for more details:
 https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
 
+Mesecons through wire code was adapted from mesecons_receiver.
+
 
 
 lwsiren-buzz.ogg

@@ -13,7 +13,7 @@ CC BY-SA 3.0
 
 Version
 =======
-0.1.17
+0.1.18
 
 
 Minetest Version
@@ -66,6 +66,7 @@ Various components for mesecons and digilines.
 *	Double (optionally single) reach pistons and sticky pistons.
 *	Digiswitch, digilines controlled mesecons power.
 *	Movefloor, similar to vertical mesecons movestone.
+*	Mesecons Through Wire, transmits through 1 to 2 solid blocks.
 *	Solid color conductor blocks, same as Solid Color Block but also mesecons
 	and digilines conductor.
 
