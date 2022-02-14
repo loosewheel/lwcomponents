@@ -1,0 +1,41 @@
+Camera
+------
+* This block is only available if digilines is loaded.
+
+Cameras take an image in the direction they are facing. The colors in the
+image represent what is being viewed. Nodes are gray, entities are blue and
+players are green. The closer they are to the camera the brighter the color.
+The viewing distance of the camera is 1 to 16 nodes. Also acts as a
+digilines conductor.
+
+Only the owner can dig or access the form of the locked version.
+
+UI
+
+Channel - digilines channel of camera.
+Distance - the viewing distance forward from the camera (1 t0 16).
+Resolution - the image resolution (for both width and height).
+
+Digilines messages
+
+"scan"
+	Sends a digilines message with the camera's channel and a table of the
+	image as the message (see below).
+
+"distance n"
+	Sets the viewing distance of the camera. Will be clipped between 1 and
+	16.
+
+"resolution n"
+	Sets the image resolution of the camera.
+
+The image is an indexed table of indexed tables. Each inner table is one
+line of the image ordered top to bottom. There are resolution number of
+lines. Each line has a string value for each pixel of that line left to
+right. The string is a hex color string eg. "00FF00". There are resolution
+number of pixels per line.
+
+The image format is compatible with digistuff's digiscreens and lwcomputers'
+digiscreens and digipanels. It is best to set the resolution of the camera
+to the resolution of the display, then the image from the camera can be sent
+straight to the display device.
