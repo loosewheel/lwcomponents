@@ -23,10 +23,10 @@ local function get_entity_dims (obj)
 	local dims = { -0.5, 0, -0.5, 0.5, 2, 0.5 }
 
 	if obj.get_luaentity then
-		entity = obj:get_luaentity ()
+		local entity = obj:get_luaentity ()
 
 		if entity and entity.name then
-			def = minetest.registered_entities[entity.name]
+			local def = minetest.registered_entities[entity.name]
 
 			if def and type (def.collisionbox) == "table" then
 
