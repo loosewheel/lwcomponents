@@ -165,7 +165,7 @@ local function detect (pos)
 		local object = minetest.get_objects_inside_radius (pos, radius + 0.5)
 		local detected_list = { }
 
-		for i = 1, #object do
+		for i = 1, #object, 1 do
 			if object[i]:is_player () then
 
 				-- player

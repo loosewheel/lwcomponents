@@ -295,6 +295,24 @@ minetest.register_craft( {
 	},
 })
 
+
+minetest.register_craft( {
+	output = "lwcomponents:camera",
+	recipe = {
+		{ "default:copper_ingot", "default:iron_lump" },
+		{ "default:chest", "default:stone" },
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:camera_locked",
+	recipe = {
+		{ "default:copper_ingot", "default:iron_lump" },
+		{ "default:chest_locked", "default:stone" },
+	},
+})
+
 end -- utils.digilines_supported
 
 
