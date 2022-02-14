@@ -21,6 +21,7 @@ end
 
 local function get_entity_dims (obj)
 	local dims = { -0.5, 0, -0.5, 0.5, 2, 0.5 }
+	local found = false
 
 	if obj.get_luaentity then
 		local entity = obj:get_luaentity ()
@@ -36,19 +37,23 @@ local function get_entity_dims (obj)
 							def.collisionbox[4] or 0.5,
 							def.collisionbox[5] or 0.5,
 							def.collisionbox[6] or 0.5 }
+
+				found = true
 			end
 		end
 	end
 
-	local props = obj:get_properties ()
-	if props and props.collisionbox and type (props.collisionbox) == "table" then
+	if not found then
+		local props = obj:get_properties ()
+		if props and props.collisionbox and type (props.collisionbox) == "table" then
 
-		dims = { props.collisionbox[1] or -0.5,
-					props.collisionbox[2] or -0.5,
-					props.collisionbox[3] or -0.5,
-					props.collisionbox[4] or 0.5,
-					props.collisionbox[5] or 0.5,
-					props.collisionbox[6] or 0.5 }
+			dims = { props.collisionbox[1] or -0.5,
+						props.collisionbox[2] or -0.5,
+						props.collisionbox[3] or -0.5,
+						props.collisionbox[4] or 0.5,
+						props.collisionbox[5] or 0.5,
+						props.collisionbox[6] or 0.5 }
+		end
 	end
 
 	dims[1] = math.min (dims[1], dims[3])
