@@ -140,9 +140,10 @@ local function camera_scan (pos, resolution, distance)
 						tpos = vector.round ({ x = horz + pos.x, y = pos.y - vert, z = (dist * dir.z) + pos.z })
 					end
 
-
 					if last_pos and vector.equals (last_pos, tpos) then
-						image[y][x] = last_color
+						if last_color then
+							image[y][x] = last_color
+						end
 					else
 						local entity = get_entity (tpos)
 
@@ -151,13 +152,11 @@ local function camera_scan (pos, resolution, distance)
 
 							last_color = string.format ("00%02X00", color)
 							image[y][x] = last_color
-							last_pos = tpos
 						elseif entity == 2 then
 							local color = (((distance - dist) / distance) * 98) + 30
 
 							last_color = string.format ("0000%02X", color)
 							image[y][x] = last_color
-							last_pos = tpos
 						else
 							local node = utils.get_far_node (tpos)
 
@@ -166,12 +165,13 @@ local function camera_scan (pos, resolution, distance)
 
 								last_color = string.format ("%02X%02X%02X", color, color, color)
 								image[y][x] = last_color
-								last_pos = tpos
 							else
-								last_pos = nil
+								last_color = nil
 							end
 						end
 					end
+
+					last_pos = tpos
 				end
 			end
 		end
@@ -198,8 +198,6 @@ local function send_scan (pos)
 													 channel,
 													 image)
 		end
-
-
 	end
 end
 
@@ -208,14 +206,14 @@ end
 local function after_place_node (pos, placer, itemstack, pointed_thing)
 	local meta = minetest.get_meta (pos)
 	local spec =
-	"formspec_version[3]\n"..
-	"size[8.5,5.5;true]\n"..
-	"field[1.0,1.0;4.0,0.8;channel;Channel;${channel}]\n"..
-	"button[5.5,1.0;2.0,0.8;setchannel;Set]\n"..
-	"field[1.0,2.5;4.0,0.8;distance;Distance;${distance}]\n"..
-	"button[5.5,2.5;2.0,0.8;setdistance;Set]\n"..
-	"field[1.0,4.0;4.0,0.8;resolution;Resolution;${resolution}]\n"..
-	"button[5.5,4.0;2.0,0.8;setresolution;Set]\n"
+	"formspec_version[3]"..
+	"size[8.5,5.5;true]"..
+	"field[1.0,1.0;4.0,0.8;channel;Channel;${channel}]"..
+	"button[5.5,1.0;2.0,0.8;setchannel;Set]"..
+	"field[1.0,2.5;4.0,0.8;distance;Distance;${distance}]"..
+	"button[5.5,2.5;2.0,0.8;setdistance;Set]"..
+	"field[1.0,4.0;4.0,0.8;resolution;Resolution;${resolution}]"..
+	"button[5.5,4.0;2.0,0.8;setresolution;Set]"
 
 	meta:set_string ("formspec", spec)
 	meta:set_string ("distance", "5")
@@ -271,7 +269,7 @@ local function on_receive_fields (pos, formname, fields, sender)
 		local meta = minetest.get_meta (pos)
 
 		if meta then
-			local resolution = math.max (tonumber (fields.resolution) or 1, 1)
+			local resolution = math.min (math.max (tonumber (fields.resolution) or 1, 1), 128)
 			fields.resolution = tostring (resolution)
 
 			meta:set_string ("resolution", tostring (resolution))
@@ -375,10 +373,12 @@ local function digilines_support ()
 								send_scan (pos)
 
 							elseif m[1] == "distance" then
-								meta:set_string ("distance", tostring (tonumber (m[2] or 5) or 5))
+								local distance = math.min (math.max (tonumber (m[2] or 5) or 5, 1), 16)
+								meta:set_string ("distance", tostring (distance))
 
 							elseif m[1] == "resolution" then
-								meta:set_string ("resolution", tostring (tonumber (m[2] or 16) or 16))
+								local resolution = math.min (math.max (tonumber (m[2] or 16) or 16, 1), 128)
+								meta:set_string ("resolution", tostring (resolution))
 
 							end
 						end

@@ -96,9 +96,15 @@ v0.1.16
 v0.1.17
 *	Fixed unintended global variable in pistons.lua.
 
+
 v0.1.18
 *	Added mesecons through wire.
 
 
 v0.1.19
 *	Added camera.
+
+
+v0.1.20
+*	Valid distance and resolution for camera set by digilines message.
+*	Imposed maximum resolution of 128 for cameras.
