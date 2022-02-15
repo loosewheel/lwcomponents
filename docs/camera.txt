@@ -13,8 +13,8 @@ Only the owner can dig or access the form of the locked version.
 UI
 
 Channel - digilines channel of camera.
-Distance - the viewing distance forward from the camera (1 t0 16).
-Resolution - the image resolution (for both width and height).
+Distance - the viewing distance forward from the camera (1 to 16).
+Resolution - the image resolution (for both width and height, 1 to 128).
 
 Digilines messages
 
