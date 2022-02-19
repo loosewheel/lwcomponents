@@ -1,6 +1,6 @@
 MoveFloor
 ---------
-* This block is only available if mesecons and mesecons_mvps is loaded.
+* This block is only available if mesecons is loaded.
 
 The MoveFloor block responds to a mesecons power source in the 4 horizontal
 directions. If the power source is one higher the MoveFloor moves up to
