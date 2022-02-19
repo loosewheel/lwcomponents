@@ -120,6 +120,9 @@ local function push_nodes (pos, extent)
 			end
 
 			local tmeta = cmeta:to_table ()
+			local ctimer = minetest.get_node_timer (cpos)
+			local ctimeout = (ctimer and ctimer:get_timeout ()) or 0
+			local celapsed = (ctimer and ctimer:get_elapsed ()) or 0
 
 			push_entities (cpos, vec)
 
@@ -134,6 +137,14 @@ local function push_nodes (pos, extent)
 				end
 
 				cmeta:from_table (tmeta)
+			end
+
+			if ctimeout > 0 then
+				ctimer = minetest.get_node_timer (last)
+
+				if ctimer then
+					ctimer:set (ctimeout, celapsed)
+				end
 			end
 
 			last = cpos
@@ -161,6 +172,9 @@ local function pull_node (pos, extent)
 			if cmeta then
 				local tpos = vector.subtract (cpos, vec)
 				local tmeta = cmeta:to_table ()
+				local ctimer = minetest.get_node_timer (cpos)
+				local ctimeout = (ctimer and ctimer:get_timeout ()) or 0
+				local celapsed = (ctimer and ctimer:get_elapsed ()) or 0
 
 				minetest.remove_node (cpos)
 				minetest.set_node (tpos, cnode)
@@ -170,6 +184,14 @@ local function pull_node (pos, extent)
 
 					if cmeta then
 						cmeta:from_table (tmeta)
+					end
+				end
+
+				if ctimeout > 0 then
+					ctimer = minetest.get_node_timer (tpos)
+
+					if ctimer then
+						ctimer:set (ctimeout, celapsed)
 					end
 				end
 			end

@@ -332,7 +332,7 @@ end -- utils.digilines_supported and utils.digistuff_supported
 
 
 
-if utils.mesecon_supported and mesecon.mvps_push then
+if utils.mesecon_supported then
 
 minetest.register_craft ({
    output = "lwcomponents:movefloor",
@@ -343,7 +343,7 @@ minetest.register_craft ({
    }
 })
 
-end -- utils.mesecon_supported and mesecon.mvps_push
+end -- utils.mesecon_supported
 
 
 

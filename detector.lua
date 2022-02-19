@@ -130,7 +130,7 @@ end
 
 local function get_entity_height (objref)
 	if objref.get_luaentity then
-		entity = objref:get_luaentity ()
+		local entity = objref:get_luaentity ()
 
 		if entity and entity.name then
 			def = minetest.registered_entities[entity.name]
