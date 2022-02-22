@@ -1,0 +1,99 @@
+Storage
+-------
+
+Storage is accommodated with two nodes, Storage Unit and Storage Indexer.
+Storage units can be interacted with like a basic chest, each with 32 slots,
+and visually join together when placed adjacent to each other. Units are
+generally accessed via indexers, which action all adjoining units as a
+single storage block. Multiple indexers can action a single storage block.
+
+Only the owner can dig or access the form of the locked versions.
+
+Unowned indexers can only access unowned units. Owned indexers can access
+units of the same owner or unowned units.
+
+UI
+Search - top left.
+List - left.
+Channel - digilines channel of indexer.
+Input - middle.
+Output - top right.
+Filter - center right.
+Player inventor - lower right.
+
+When the UI is accessed the storage is scanned, and its contents are
+displayed in the list. The list contains the following columns:
+Item button - pressing will place one of these items from storage into the
+				  output.
+10 button - pressing will place 10 of the item.
+<stack> button - pressing places a full stack.
+Count - the total number of this item in storage.
+Description - description of the item.
+
+Note that the 10 and stack buttons may vary in number or not appear
+depending on the requirements of that item.
+
+The form does not update while open. A request for more items than in
+storage will only deliver the amount in storage.
+
+Terms can be entered into the search field, and when enter is pressed or
+the Search button is pressed, only items whose description contains these
+terms are shown in the list. That is if they match any of the space
+separated terms.
+
+Any items placed into the input are placed into storage. If the filter
+is clear all items are accepted. If the filter contains items only these
+items will be accepted. Any items not accepted or that do not fit into
+storage are placed into the output.
+
+When items are placed into the filter a copy is used and the item returns
+to where it was taken from. When items are removed from the filter they
+are disposed of.
+
+Hoppers placed to the top or sides of an indexer will feed items into the
+input. Hoppers placed below an indexer will take items from the output.
+
+Every 20 inputs the storage is consolidated to minimize fragmentation.
+
+
+Digilines messages
+
+"output <item> <count>"
+or
+{
+	action = "output",
+	item = "<item>",
+	count = <count>
+}
+	Moves the item/s to the output. If count is omitted defaults to 1. If
+	the requested amount is greater than in storage, only the stored amount
+	is moved.
+
+
+"inventory"
+	Sends a digilines message with it's own channel in the following form:
+	{
+		action = "inventory",
+		inventory = {
+			<items>
+		}
+	}
+		The inventory key is an indexed list of items in storage. Each item
+		entry is a table with the following keys:
+		{
+			name -- string, the name of the item, as <mod>:<name>
+			description -- string, description of the item, same as in UI
+			count -- number, the total number of this item in storage
+			custom -- true if a custom item (has metadata), false if not
+			pallet_index -- string if the item has a pallet index, otherwise nil
+			id -- string, unique id of the item in storage
+		}
+			The description is derived in the following manner: from a custom
+			description in metadata; if none then the short description from
+			the item's definition; if none then the description from the item's
+			definition; if none then the item's name, as <mod>:<name>.
+
+Note: When sending output messages the simple item name, as <mod>:<name>,
+will work for most items, but not for custom items. With custom items, or
+to play it safe, use the table form of the output message and set the item
+field with the id field for the item from a returned inventory.
