@@ -24,6 +24,44 @@ minetest.register_craft( {
 
 
 minetest.register_craft( {
+	output = "lwcomponents:storage_unit 2",
+	recipe = {
+		{ "default:steel_ingot", "group:wood", "group:wood" },
+		{ "group:wood", "", "group:wood" },
+		{ "group:wood", "group:wood", "default:chest" },
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:storage_unit_locked 2",
+	recipe = {
+		{ "default:steel_ingot", "group:wood", "group:wood" },
+		{ "group:wood", "", "group:wood" },
+		{ "group:wood", "group:wood", "default:chest_locked" },
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:storage_indexer",
+	recipe = {
+		{ "default:steel_ingot", "group:wood" },
+		{ "group:wood", "default:chest" }
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:storage_indexer_locked",
+	recipe = {
+		{ "default:steel_ingot", "group:wood" },
+		{ "group:wood", "default:chest_locked" }
+	},
+})
+
+
+minetest.register_craft( {
 	output = "lwcomponents:cannon_shell 10",
 	recipe = {
 		{ "default:steel_ingot", "default:steel_ingot" },

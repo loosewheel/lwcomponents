@@ -82,6 +82,9 @@ public domain.
 camera lens images derived from images from https://openclipart.org, which
 is public domain.
 
+storage nodes images derived from images from https://openclipart.org, which
+is public domain.
+
 player button images derived from mesecons button image.
 
 cannon firing and explosion sound from tnt (TumeniNodes/steveygos93),

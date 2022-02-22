@@ -10,7 +10,10 @@ utils.settings.alert_handler_errors =
 	minetest.settings:get_bool ("lwcomponents_alert_handler_errors", true)
 
 utils.settings.max_piston_nodes =
-	tonumber(minetest.settings:get("lwcomponents_max_piston_nodes") or 15)
+	tonumber (minetest.settings:get ("lwcomponents_max_piston_nodes") or 15)
+
+utils.settings.default_stack_max =
+	tonumber (minetest.settings:get ("default_stack_max")) or 99
 
 
 

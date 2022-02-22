@@ -114,3 +114,7 @@ v0.1.21
 *	Minor bug fix, movefloor global.
 *	Fixed movefloor so player doesn't fall through floor.
 *	Transfer timer in moved nodes for pistons.
+
+
+v0.1.22
+*	Added storage.

@@ -13,7 +13,7 @@ CC BY-SA 3.0
 
 Version
 =======
-0.1.21
+0.1.22
 
 
 Minetest Version
@@ -67,6 +67,7 @@ Various components for mesecons and digilines.
 *	Digiswitch, digilines controlled mesecons power.
 *	Movefloor, similar to vertical mesecons movestone.
 *	Camera, takes a representative image.
+*	Storage, indexed storage units.
 *	Mesecons Through Wire, transmits through 1 to 2 solid blocks.
 *	Solid color conductor blocks, same as Solid Color Block but also mesecons
 	and digilines conductor.
