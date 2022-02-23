@@ -3,11 +3,13 @@ Breaker
 * This block is only available if digilines and/or mesecons are loaded.
 
 Breakers dig the node up to 5 nodes directly in front of them and drop
-the item at the back of them. The node is only dug if the breaker has a
-tool that can dig it or if it can be dug by hand, and there are no nodes
-before of it. ie. cannot dig 2nd node if 1st node has something in it.
-The tool is worn if used. Also acts as a digilines conductor. If the
-hopper mod is loaded, will take tools from the top and sides.
+the item at the back of them, or into a pipeworks tube if one is placed
+behind it. The node is only dug if the breaker has a tool that can dig it
+or if it can be dug by hand, and there are no nodes before of it. ie.
+cannot dig 2nd node if 1st node has something in it. The tool is worn if
+used. Also acts as a digilines conductor. If the hopper mod is loaded,
+will take tools from the top and sides. Pipeworks tubes can push items
+into and pull items from the inventory.
 
 Only the owner can dig or access the form of the locked version.
 

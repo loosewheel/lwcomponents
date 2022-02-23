@@ -7,6 +7,7 @@ node is only placed if there are no nodes before of it which are not
 replaceable. ie. cannot place 2nd node if 1st node has something in it.
 Also acts as a digilines conductor. If the hopper mod is loaded, will
 take items from the top and sides, and release them from the bottom.
+Pipeworks tubes can push items into and pull items from the inventory.
 
 Only the owner can dig or access the form of the locked version.
 

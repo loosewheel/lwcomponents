@@ -5,7 +5,8 @@ manually.
 
 Contains a single inventory slot and shoots an item on command.
 If the hopper mod is loaded, will take items from the top and sides, and
-release them from the bottom.
+release them from the bottom. Pipeworks tubes can push items into and pull
+items from the inventory.
 
 Cannon rotation range:
 side to side - +/-60 degrees (- = left, + = right)

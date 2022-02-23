@@ -4,7 +4,8 @@ Dropper
 
 Contains an inventory and drops an item on command. Also acts as a
 digilines conductor. If the hopper mod is loaded, will take items from the
-top and sides, and release them from the bottom.
+top and sides, and release them from the bottom. Pipeworks tubes can push
+items into and pull items from the inventory.
 
 Only the owner can dig or access the form of the locked version.
 

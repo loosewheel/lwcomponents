@@ -53,6 +53,9 @@ are disposed of.
 Hoppers placed to the top or sides of an indexer will feed items into the
 input. Hoppers placed below an indexer will take items from the output.
 
+Pipeworks tubes can push items into the input, and pull items from the
+output.
+
 Every 20 inputs the storage is consolidated to minimize fragmentation.
 
 

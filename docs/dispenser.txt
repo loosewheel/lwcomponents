@@ -4,7 +4,8 @@ Dispenser
 
 Contains an inventory and dispenses (with velocity) an item on command.
 Also acts as a digilines conductor. If the hopper mod is loaded, will take
-items from the top and sides, and release them from the bottom.
+items from the top and sides, and release them from the bottom. Pipeworks
+tubes can push items into and pull items from the inventory.
 
 To spawn entities from dispensers include the lwcomponents_spawners mod.
 
