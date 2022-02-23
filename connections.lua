@@ -293,6 +293,40 @@ end
 
 
 
+function connections:get_id_list ()
+	local list = { }
+
+	for spos, data in pairs (self.connector_list) do
+		if data.id then
+			list[#list + 1] =
+			{
+				pos = minetest.string_to_pos (spos),
+				id = data.id
+			}
+		end
+	end
+
+	return list
+end
+
+
+
+function connections:get_full_list ()
+	local list = { }
+
+	for spos, data in pairs (self.connector_list) do
+		list[#list + 1] =
+		{
+			pos = minetest.string_to_pos (spos),
+			id = data.id
+		}
+	end
+
+	return list
+end
+
+
+
 return connections
 
 

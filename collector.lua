@@ -148,7 +148,7 @@ end
 
 
 
-local function after_place_node (pos, placer, itemstack, pointed_thing)
+local function after_place_base (pos, placer, itemstack, pointed_thing)
 	local meta = minetest.get_meta (pos)
 	local is_off = itemstack and (itemstack:get_name () == "lwcomponents:collector" or
 											itemstack:get_name () == "lwcomponents:collector_locked")
@@ -162,6 +162,13 @@ local function after_place_node (pos, placer, itemstack, pointed_thing)
 	inv:set_width ("main", 4)
 	inv:set_size ("filter", 8)
 	inv:set_width ("filter", 2)
+end
+
+
+
+local function after_place_node (pos, placer, itemstack, pointed_thing)
+	after_place_base (pos, placer, itemstack, pointed_thing)
+	utils.pipeworks_after_place (pos)
 
 	-- If return true no item is taken from itemstack
 	return false
@@ -170,7 +177,7 @@ end
 
 
 local function after_place_node_locked (pos, placer, itemstack, pointed_thing)
-	after_place_node (pos, placer, itemstack, pointed_thing)
+	after_place_base (pos, placer, itemstack, pointed_thing)
 
 	if placer and placer:is_player () then
 		local meta = minetest.get_meta (pos)
@@ -178,6 +185,8 @@ local function after_place_node_locked (pos, placer, itemstack, pointed_thing)
 		meta:set_string ("owner", placer:get_player_name ())
 		meta:set_string ("infotext", "Collector (owned by "..placer:get_player_name ()..")")
 	end
+
+	utils.pipeworks_after_place (pos)
 
 	-- If return true no item is taken from itemstack
 	return false
@@ -427,12 +436,120 @@ end
 
 
 
+local function pipeworks_support ()
+	if utils.pipeworks_supported then
+		return
+		{
+			priority = 100,
+			input_inventory = "main",
+			connect_sides = { left = 1, right = 1, front = 1, back = 1, bottom = 1, top = 1 },
+
+			insert_object = function (pos, node, stack, direction)
+				local meta = minetest.get_meta (pos)
+				local inv = (meta and meta:get_inventory ()) or nil
+
+				if inv then
+					return inv:add_item ("main", stack)
+				end
+
+				return stack
+			end,
+
+			can_insert = function (pos, node, stack, direction)
+				local meta = minetest.get_meta (pos)
+				local inv = (meta and meta:get_inventory ()) or nil
+
+				if inv then
+					return inv:room_for_item ("main", stack)
+				end
+
+				return false
+			end,
+
+			can_remove = function (pos, node, stack, dir)
+				-- returns the maximum number of items of that stack that can be removed
+				local meta = minetest.get_meta (pos)
+				local inv = (meta and meta:get_inventory ()) or nil
+
+				if inv then
+					local slots = inv:get_size ("main")
+
+					for i = 1, slots, 1 do
+						local s = inv:get_stack ("main", i)
+
+						if s and not s:is_empty () and utils.is_same_item (stack, s) then
+							return s:get_count ()
+						end
+					end
+				end
+
+				return 0
+			end,
+
+			remove_items = function (pos, node, stack, dir, count)
+				-- removes count items and returns them
+				local meta = minetest.get_meta (pos)
+				local inv = (meta and meta:get_inventory ()) or nil
+				local left = count
+
+				if inv then
+					local slots = inv:get_size ("main")
+
+					for i = 1, slots, 1 do
+						local s = inv:get_stack ("main", i)
+
+						if s and not s:is_empty () and utils.is_same_item (s, stack) then
+							if s:get_count () > left then
+								s:set_count (s:get_count () - left)
+								inv:set_stack ("main", i, s)
+								left = 0
+							else
+								left = left - s:get_count ()
+								inv:set_stack ("main", i, nil)
+							end
+						end
+
+						if left == 0 then
+							break
+						end
+					end
+				end
+
+				local result = ItemStack (stack)
+				result:set_count (count - left)
+
+				return result
+			end
+		}
+	end
+
+	return nil
+end
+
+
+
+local collector_groups = { cracky = 3 }
+if utils.pipeworks_supported then
+	collector_groups.tubedevice = 1
+	collector_groups.tubedevice_receiver = 1
+end
+
+
+
+local collector_on_groups = { cracky = 3, not_in_creative_inventory = 1 }
+if utils.pipeworks_supported then
+	collector_on_groups.tubedevice = 1
+	collector_on_groups.tubedevice_receiver = 1
+end
+
+
+
 minetest.register_node("lwcomponents:collector", {
 	description = S("Collector"),
 	tiles = { "lwcollector.png", "lwcollector.png", "lwcollector.png",
 				 "lwcollector.png", "lwcollector.png", "lwcollector.png"},
 	is_ground_content = false,
-	groups = { cracky = 3 },
+	groups = table.copy (collector_groups),
 	sounds = default.node_sound_stone_defaults (),
 	paramtype = "none",
 	param1 = 0,
@@ -441,11 +558,13 @@ minetest.register_node("lwcomponents:collector", {
 	_digistuff_channelcopier_fieldname = "channel",
 
 	digiline = digilines_support (),
+	tube = pipeworks_support (),
 
 	on_destruct = on_destruct,
 	on_receive_fields = on_receive_fields,
 	after_place_node = after_place_node,
 	can_dig = can_dig,
+	after_dig_node = utils.pipeworks_after_dig,
 	on_blast = on_blast,
 	on_timer = on_timer,
 	on_rightclick = on_rightclick
@@ -458,7 +577,7 @@ minetest.register_node("lwcomponents:collector_locked", {
 	tiles = { "lwcollector.png", "lwcollector.png", "lwcollector.png",
 				 "lwcollector.png", "lwcollector.png", "lwcollector.png"},
 	is_ground_content = false,
-	groups = { cracky = 3 },
+	groups = table.copy (collector_groups),
 	sounds = default.node_sound_stone_defaults (),
 	paramtype = "none",
 	param1 = 0,
@@ -467,11 +586,13 @@ minetest.register_node("lwcomponents:collector_locked", {
 	_digistuff_channelcopier_fieldname = "channel",
 
 	digiline = digilines_support (),
+	tube = pipeworks_support (),
 
 	on_destruct = on_destruct,
 	on_receive_fields = on_receive_fields,
 	after_place_node = after_place_node_locked,
 	can_dig = can_dig,
+	after_dig_node = utils.pipeworks_after_dig,
 	on_blast = on_blast,
 	on_timer = on_timer,
 	on_rightclick = on_rightclick
@@ -484,7 +605,7 @@ minetest.register_node("lwcomponents:collector_on", {
 	tiles = { "lwcollector_on.png", "lwcollector_on.png", "lwcollector_on.png",
 				 "lwcollector_on.png", "lwcollector_on.png", "lwcollector_on.png"},
 	is_ground_content = false,
-	groups = { cracky = 3, not_in_creative_inventory = 1 },
+	groups = table.copy (collector_on_groups),
 	sounds = default.node_sound_stone_defaults (),
 	paramtype = "none",
 	param1 = 0,
@@ -493,11 +614,13 @@ minetest.register_node("lwcomponents:collector_on", {
 	_digistuff_channelcopier_fieldname = "channel",
 
 	digiline = digilines_support (),
+	tube = pipeworks_support (),
 
 	on_destruct = on_destruct,
 	on_receive_fields = on_receive_fields,
 	after_place_node = after_place_node,
 	can_dig = can_dig,
+	after_dig_node = utils.pipeworks_after_dig,
 	on_blast = on_blast,
 	on_timer = on_timer,
 	on_rightclick = on_rightclick
@@ -510,7 +633,7 @@ minetest.register_node("lwcomponents:collector_locked_on", {
 	tiles = { "lwcollector_on.png", "lwcollector_on.png", "lwcollector_on.png",
 				 "lwcollector_on.png", "lwcollector_on.png", "lwcollector_on.png"},
 	is_ground_content = false,
-	groups = { cracky = 3, not_in_creative_inventory = 1 },
+	groups = table.copy (collector_on_groups),
 	sounds = default.node_sound_stone_defaults (),
 	paramtype = "none",
 	param1 = 0,
@@ -519,11 +642,13 @@ minetest.register_node("lwcomponents:collector_locked_on", {
 	_digistuff_channelcopier_fieldname = "channel",
 
 	digiline = digilines_support (),
+	tube = pipeworks_support (),
 
 	on_destruct = on_destruct,
 	on_receive_fields = on_receive_fields,
 	after_place_node = after_place_node_locked,
 	can_dig = can_dig,
+	after_dig_node = utils.pipeworks_after_dig,
 	on_blast = on_blast,
 	on_timer = on_timer,
 	on_rightclick = on_rightclick

@@ -70,21 +70,21 @@ end
 
 
 
-local function is_same_item (stack1, stack2)
-	local copy1 = ItemStack (stack1)
-	local copy2 = ItemStack (stack2)
+--local function is_same_item (stack1, stack2)
+	--local copy1 = ItemStack (stack1)
+	--local copy2 = ItemStack (stack2)
 
-	if copy1 and copy2 then
-		copy1:set_count (1)
-		copy2:set_count (1)
+	--if copy1 and copy2 then
+		--copy1:set_count (1)
+		--copy2:set_count (1)
 
-		if copy1:to_string () == copy2:to_string () then
-			return true
-		end
-	end
+		--if copy1:to_string () == copy2:to_string () then
+			--return true
+		--end
+	--end
 
-	return false
-end
+	--return false
+--end
 
 
 
@@ -143,7 +143,7 @@ local function add_drops (drops, drop)
 			if item and not item:is_empty () then
 				local existing = drops[item:get_name ()]
 
-				if existing and is_same_item (item, existing) then
+				if existing and utils.is_same_item (item, existing) then
 					existing:set_count (existing:get_count () + item:get_count ())
 				else
 					drops[item:get_name ()] = item
@@ -228,48 +228,74 @@ end
 local function explode_entities (pos, radius, damage, drops)
 	local objs = minetest.get_objects_inside_radius (pos, radius)
 
-	for _, obj in pairs (objs) do
-		local obj_pos = obj:get_pos ()
-		local dir = vector.direction (pos, obj_pos)
-		local dist = vector.length (vector.subtract (obj_pos, pos))
-		local vel = vector.multiply (dir, ((radius + 1) - dist) / (radius + 1) * damage * 5)
+	for _, obj in ipairs (objs) do
+		-- could be detached player from controller
+		if obj.get_pos and obj:get_pos () then
+			local obj_pos = obj:get_pos ()
+			local dir = vector.direction (pos, obj_pos)
+			local dist = vector.length (vector.subtract (obj_pos, pos))
+			local vel = vector.multiply (dir, ((radius + 1) - dist) / (radius + 1) * damage * 5)
 
-		if entity_is_drop (obj) then
-			obj:add_velocity (vel)
-
-		elseif not obj:get_armor_groups ().immortal then
-
-			local ent_damage = ((radius - dist) / radius * damage / 2) + (damage / 2)
-			local reason = { type = "set_hp", from = "lwcomponents" }
-
-			if obj:is_player() then
+			if entity_is_drop (obj) then
 				obj:add_velocity (vel)
 
-				obj:set_hp (obj:get_hp() - ent_damage, reason)
+			elseif not obj:get_armor_groups ().immortal then
 
-			else
-				local luaobj = obj:get_luaentity()
+				local ent_damage = ((radius - dist) / radius * damage / 2) + (damage / 2)
+				local reason = { type = "set_hp", from = "lwcomponents" }
 
-				-- object might have disappeared somehow
-				if luaobj then
-					local do_damage = true
-					local do_knockback = true
-					local entity_drops = {}
-					local objdef = minetest.registered_entities[luaobj.name]
+				if obj:is_player() then
+					local parent = obj:get_attach ()
 
-					if objdef and objdef.on_blast then
-						do_damage, do_knockback, entity_drops = objdef.on_blast (luaobj, ent_damage)
+					if parent then
+						obj:set_detach ()
 					end
 
-					if do_knockback then
-						obj:add_velocity (vel)
-					end
+					obj:add_velocity (vel)
+					obj:set_hp (obj:get_hp () - ent_damage, reason)
 
-					if do_damage then
-						obj:set_hp (obj:get_hp() - ent_damage, reason)
-					end
+				else
+					local luaobj = obj:get_luaentity ()
 
-					add_drops (drops, entity_drops)
+					-- object might have disappeared somehow
+					if luaobj then
+						if luaobj.name == "digistuff:controller_entity" then
+							for _, child in ipairs (obj:get_children ()) do
+								if child:is_player () then
+									local def = utils.find_item_def ("digistuff:controller_programmed")
+
+									if def and def.on_rightclick then
+										def.on_rightclick (obj:get_pos (), ItemStack (), child)
+
+										local ent_damage = ((radius - dist) / radius * damage / 2) + (damage / 2)
+										local reason = { type = "set_hp", from = "lwcomponents" }
+
+										child:add_velocity (vel)
+										child:set_hp (child:get_hp () - ent_damage, reason)
+									end
+								end
+							end
+						else
+							local do_damage = true
+							local do_knockback = true
+							local entity_drops = {}
+							local objdef = minetest.registered_entities[luaobj.name]
+
+							if objdef and objdef.on_blast then
+								do_damage, do_knockback, entity_drops = objdef.on_blast (luaobj, ent_damage)
+							end
+
+							if do_knockback then
+								obj:add_velocity (vel)
+							end
+
+							if do_damage then
+								obj:set_hp (obj:get_hp() - ent_damage, reason)
+							end
+
+							add_drops (drops, entity_drops)
+						end
+					end
 				end
 			end
 		end
@@ -404,7 +430,7 @@ function utils.boom (pos,									-- center of explosion
 	if not utils.is_protected (pos, nil) then
 		local center_node = utils.get_far_node (pos)
 
-		if not node or node.name == "air" then
+		if not center_node or center_node.name == "air" then
 			center_free = true
 		end
 	end

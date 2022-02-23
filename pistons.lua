@@ -635,7 +635,18 @@ local function mesecon_support ()
 		{
 			effector =
 			{
-				rules = utils.mesecon_default_rules,
+				rules = function (node)
+					local dir = vector.multiply (minetest.facedir_to_dir (node.param2), -1)
+					local rules = table.copy (utils.mesecon_default_rules)
+
+					for i = #rules, 1, -1 do
+						if vector.equals (rules[i], dir) then
+							table.remove (rules, i)
+						end
+					end
+
+					return rules
+				end,
 
 				action_on = function (pos, node)
 					-- do something to turn the effector on
@@ -716,7 +727,7 @@ minetest.register_node("lwcomponents:piston", {
 	is_ground_content = false,
 	groups = { cracky = 3 },
 	sounds = default.node_sound_stone_defaults (),
-	paramtype = "none",
+	paramtype = "light",
 	param1 = 0,
 	paramtype2 = "facedir",
 	param2 = 0,
@@ -763,7 +774,7 @@ minetest.register_node("lwcomponents:piston_1", {
 	is_ground_content = false,
 	groups = { cracky = 3 , not_in_creative_inventory = 1 },
 	sounds = default.node_sound_stone_defaults (),
-	paramtype = "none",
+	paramtype = "light",
 	param1 = 0,
 	paramtype2 = "facedir",
 	param2 = 0,
@@ -810,7 +821,7 @@ minetest.register_node("lwcomponents:piston_2", {
 	is_ground_content = false,
 	groups = { cracky = 3 , not_in_creative_inventory = 1 },
 	sounds = default.node_sound_stone_defaults (),
-	paramtype = "none",
+	paramtype = "light",
 	param1 = 0,
 	paramtype2 = "facedir",
 	param2 = 0,
@@ -840,7 +851,7 @@ minetest.register_node("lwcomponents:piston_sticky", {
 	is_ground_content = false,
 	groups = { cracky = 3 },
 	sounds = default.node_sound_stone_defaults (),
-	paramtype = "none",
+	paramtype = "light",
 	param1 = 0,
 	paramtype2 = "facedir",
 	param2 = 0,
@@ -887,7 +898,7 @@ minetest.register_node("lwcomponents:piston_sticky_1", {
 	is_ground_content = false,
 	groups = { cracky = 3 , not_in_creative_inventory = 1 },
 	sounds = default.node_sound_stone_defaults (),
-	paramtype = "none",
+	paramtype = "light",
 	param1 = 0,
 	paramtype2 = "facedir",
 	param2 = 0,
@@ -934,7 +945,7 @@ minetest.register_node("lwcomponents:piston_sticky_2", {
 	is_ground_content = false,
 	groups = { cracky = 3 , not_in_creative_inventory = 1 },
 	sounds = default.node_sound_stone_defaults (),
-	paramtype = "none",
+	paramtype = "light",
 	param1 = 0,
 	paramtype2 = "facedir",
 	param2 = 0,

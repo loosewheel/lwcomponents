@@ -12,6 +12,10 @@ local conduit_interval = 1.0
 local conduit_connections = utils.connections:new (mod_storage, "conduit_connections")
 
 
+-- forward declare
+local run_initialize_forward = nil
+
+
 
 local function get_target_list (pos)
 	local tlist = conduit_connections:get_connected_ids (pos)
@@ -62,15 +66,18 @@ local function deliver_slot (pos, slot)
 			local item = inv:get_stack ("transfer", slot)
 
 			if transfer_data[slot] and item and not item:is_empty () then
-				local tmeta = minetest.get_meta (transfer_data[slot].pos)
+				local tnode = utils.get_far_node (transfer_data[slot].pos)
 
-				if tmeta then
-					local tinv = tmeta:get_inventory ()
+				if tnode and (tnode.name == "lwcomponents:conduit" or
+								  tnode.name == "lwcomponents:conduit_locked") then
+					local tmeta = minetest.get_meta (transfer_data[slot].pos)
 
-					if tinv then
-						tinv:add_item ("main", item)
+					if tmeta then
+						local tinv = tmeta:get_inventory ()
 
-						--send_conduit_message (pos, target, slot)
+						if tinv then
+							tinv:add_item ("main", item)
+						end
 					end
 				end
 			end
@@ -138,7 +145,7 @@ end
 
 
 
-local function delivered_earliest (pos)
+local function deliver_earliest (pos)
 	local meta = minetest.get_meta (pos)
 
 	if meta then
@@ -194,7 +201,8 @@ local function add_to_send_list (pos, item, destpos, distance)
 	local slot = get_transfer_free_slot (pos)
 
 	while slot < 1 do
-		delivered_earliest (pos)
+		deliver_earliest (pos)
+		slot = get_transfer_free_slot (pos)
 	end
 
 	local meta = minetest.get_meta (pos)
@@ -210,15 +218,11 @@ local function add_to_send_list (pos, item, destpos, distance)
 				due = minetest.get_us_time () + (transfer_rate * 1000000 * distance)
 			}
 
-			inv:add_item ("transfer", item)
+			inv:set_stack ("transfer", slot, item)
 
 			meta:set_string ("transfer_data", minetest.serialize (transfer_data))
 
-			local timer = minetest.get_node_timer (pos)
-
-			if not timer:is_started () then
-				timer:start (conduit_interval)
-			end
+			run_initialize_forward (pos)
 		end
 	end
 end
@@ -292,8 +296,6 @@ local function send_to_target (pos, target, slot)
 									stack:set_count (stack:get_count () - 1)
 									inv:set_stack ("main", slot, stack)
 
-									--send_conduit_message (pos, target, slot)
-
 									return true, target, slot
 								end
 							end
@@ -309,20 +311,42 @@ end
 
 
 
-local function run_conduit (pos)
+local function run_conduit (pos, id)
+	local node = utils.get_far_node (pos)
+
+	if node and (node.name == "lwcomponents:conduit" or
+					 node.name == "lwcomponents:conduit_locked") then
+		local meta = minetest.get_meta (pos)
+
+		if meta and id == meta:get_int ("conduit_id") then
+			local automatic = meta:get_string ("automatic") == "true"
+
+			if automatic then
+				send_to_target (pos)
+			end
+
+			if run_deliveries (pos) or automatic then
+				minetest.after (conduit_interval, run_conduit, pos, id)
+			else
+				meta:set_int ("run_active", 0)
+			end
+		end
+	end
+end
+
+
+
+local function run_initialize (pos)
 	local meta = minetest.get_meta (pos)
-	local automatic = false
 
 	if meta then
-		automatic = meta:get_string ("automatic") == "true"
+		if meta:get_int ("run_active") == 0 then
+			meta:set_int ("run_active", 1)
+			minetest.after (conduit_interval, run_conduit, pos, meta:get_int ("conduit_id"))
+		end
 	end
-
-	if automatic then
-		send_to_target (pos)
-	end
-
-	return run_deliveries (pos) or automatic
 end
+run_initialize_forward = run_initialize
 
 
 
@@ -362,7 +386,7 @@ end
 
 
 
-local function after_place_node (pos, placer, itemstack, pointed_thing)
+local function after_place_base (pos, placer, itemstack, pointed_thing)
 	local meta = minetest.get_meta (pos)
 	local spec =
 	"formspec_version[3]"..
@@ -374,6 +398,7 @@ local function after_place_node (pos, placer, itemstack, pointed_thing)
 	meta:set_string ("formspec", spec)
 	meta:set_string ("transfer_data", minetest.serialize({ }))
 	meta:set_string ("automatic", "false")
+	meta:set_int ("conduit_id", math.random (1000000))
 
 	local inv = meta:get_inventory ()
 
@@ -382,6 +407,13 @@ local function after_place_node (pos, placer, itemstack, pointed_thing)
 
 	inv:set_size ("transfer", 32)
 	inv:set_width ("transfer", 8)
+end
+
+
+
+local function after_place_node (pos, placer, itemstack, pointed_thing)
+	after_place_base (pos, placer, itemstack, pointed_thing)
+	utils.pipeworks_after_place (pos)
 
 	-- If return true no item is taken from itemstack
 	return false
@@ -390,7 +422,7 @@ end
 
 
 local function after_place_node_locked (pos, placer, itemstack, pointed_thing)
-	after_place_node (pos, placer, itemstack, pointed_thing)
+	after_place_base (pos, placer, itemstack, pointed_thing)
 
 	if placer and placer:is_player () then
 		local meta = minetest.get_meta (pos)
@@ -398,6 +430,8 @@ local function after_place_node_locked (pos, placer, itemstack, pointed_thing)
 		meta:set_string ("owner", placer:get_player_name ())
 		meta:set_string ("infotext", "Conduit (owned by "..placer:get_player_name ()..")")
 	end
+
+	utils.pipeworks_after_place (pos)
 
 	-- If return true no item is taken from itemstack
 	return false
@@ -492,11 +526,7 @@ local function on_receive_fields (pos, formname, fields, sender)
 			meta:set_string ("automatic", fields.automatic)
 			meta:set_string ("formspec", get_formspec (pos))
 
-			local timer = minetest.get_node_timer (pos)
-
-			if not timer:is_started () then
-				timer:start (conduit_interval)
-			end
+			run_initialize (pos)
 		end
 	end
 end
@@ -592,12 +622,6 @@ end
 
 
 
-local function on_timer (pos, elapsed)
-	return run_conduit (pos)
-end
-
-
-
 local function digilines_support ()
 	if utils.digilines_supported then
 		return
@@ -671,12 +695,112 @@ end
 
 
 
+local function pipeworks_support ()
+	if utils.pipeworks_supported then
+		return
+		{
+			priority = 100,
+			input_inventory = "main",
+			connect_sides = { left = 1, right = 1, front = 1, back = 1, bottom = 1, top = 1 },
+
+			insert_object = function (pos, node, stack, direction)
+				local meta = minetest.get_meta (pos)
+				local inv = (meta and meta:get_inventory ()) or nil
+
+				if inv then
+					return inv:add_item ("main", stack)
+				end
+
+				return stack
+			end,
+
+			can_insert = function (pos, node, stack, direction)
+				local meta = minetest.get_meta (pos)
+				local inv = (meta and meta:get_inventory ()) or nil
+
+				if inv then
+					return inv:room_for_item ("main", stack)
+				end
+
+				return false
+			end,
+
+			can_remove = function (pos, node, stack, dir)
+				-- returns the maximum number of items of that stack that can be removed
+				local meta = minetest.get_meta (pos)
+				local inv = (meta and meta:get_inventory ()) or nil
+
+				if inv then
+					local slots = inv:get_size ("main")
+
+					for i = 1, slots, 1 do
+						local s = inv:get_stack ("main", i)
+
+						if s and not s:is_empty () and utils.is_same_item (stack, s) then
+							return s:get_count ()
+						end
+					end
+				end
+
+				return 0
+			end,
+
+			remove_items = function (pos, node, stack, dir, count)
+				-- removes count items and returns them
+				local meta = minetest.get_meta (pos)
+				local inv = (meta and meta:get_inventory ()) or nil
+				local left = count
+
+				if inv then
+					local slots = inv:get_size ("main")
+
+					for i = 1, slots, 1 do
+						local s = inv:get_stack ("main", i)
+
+						if s and not s:is_empty () and utils.is_same_item (s, stack) then
+							if s:get_count () > left then
+								s:set_count (s:get_count () - left)
+								inv:set_stack ("main", i, s)
+								left = 0
+							else
+								left = left - s:get_count ()
+								inv:set_stack ("main", i, nil)
+							end
+						end
+
+						if left == 0 then
+							break
+						end
+					end
+				end
+
+				local result = ItemStack (stack)
+				result:set_count (count - left)
+
+				return result
+			end
+		}
+	end
+
+	return nil
+end
+
+
+
+local conduit_groups = { cracky = 3 }
+if utils.pipeworks_supported then
+	conduit_groups.tubedevice = 1
+	conduit_groups.tubedevice_receiver = 1
+end
+
+
+
 minetest.register_node("lwcomponents:conduit", {
 	description = S("Conduit"),
 	drawtype = "glasslike_framed",
 	tiles = { "lwconduit_edge.png", "lwconduit.png" },
 	is_ground_content = false,
-	groups = { cracky = 3 },
+	groups = table.copy (conduit_groups),
 	sounds = default.node_sound_stone_defaults (),
 	paramtype = "none",
 	param1 = 0,
@@ -687,14 +811,15 @@ minetest.register_node("lwcomponents:conduit", {
 
 	mesecons = mesecon_support (),
 	digiline = digilines_support (),
+	tube = pipeworks_support (),
 
 	on_construct = on_construct,
 	on_destruct = on_destruct,
 	on_receive_fields = on_receive_fields,
 	after_place_node = after_place_node,
 	can_dig = can_dig,
+	after_dig_node = utils.pipeworks_after_dig,
 	on_blast = on_blast,
-	on_timer = on_timer,
 	on_rightclick = on_rightclick
 })
 
@@ -705,7 +830,7 @@ minetest.register_node("lwcomponents:conduit_locked", {
 	drawtype = "glasslike_framed",
 	tiles = { "lwconduit_edge.png", "lwconduit.png" },
 	is_ground_content = false,
-	groups = { cracky = 3 },
+	groups = table.copy (conduit_groups),
 	sounds = default.node_sound_stone_defaults (),
 	paramtype = "none",
 	param1 = 0,
@@ -716,14 +841,15 @@ minetest.register_node("lwcomponents:conduit_locked", {
 
 	mesecons = mesecon_support (),
 	digiline = digilines_support (),
+	tube = pipeworks_support (),
 
 	on_construct = on_construct,
 	on_destruct = on_destruct,
 	on_receive_fields = on_receive_fields,
 	after_place_node = after_place_node_locked,
 	can_dig = can_dig,
+	after_dig_node = utils.pipeworks_after_dig,
 	on_blast = on_blast,
-	on_timer = on_timer,
 	on_rightclick = on_rightclick
 })
 
@@ -742,6 +868,62 @@ utils.hopper_add_container({
 	{"bottom", "lwcomponents:conduit_locked", "main"}, -- insert items below from hopper above
 	{"side", "lwcomponents:conduit_locked", "main"}, -- insert items from hopper at side
 })
+
+
+
+-- legacy code v0.1.23 (24-2-22)
+local function convert_conduits ()
+	local list = conduit_connections:get_full_list ()
+
+	for _, data in ipairs (list) do
+		local node = utils.get_far_node (data.pos)
+
+		if node and (node.name == "lwcomponents:conduit" or
+						 node.name == "lwcomponents:conduit_locked") then
+			local meta = minetest.get_meta (data.pos)
+
+			if meta then
+				if meta:get_int ("conduit_id") == 0 then
+					meta:set_int ("conduit_id", math.random (1000000))
+
+					if meta:get_string ("automatic") == "true" then
+						meta:set_int ("run_active", 1)
+					else
+						local inv = meta:get_inventory ()
+
+						if inv and not inv:is_empty ("transfer") then
+							meta:set_int ("run_active", 1)
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+
+
+local function restart_conduits ()
+	convert_conduits ()
+
+	local list = conduit_connections:get_id_list ()
+
+	for _, data in ipairs (list) do
+		local meta = minetest.get_meta (data.pos)
+
+		if meta and meta:get_int ("run_active") ~= 0 then
+			minetest.after (conduit_interval + (math.random (9) / 10),
+								 run_conduit, data.pos, meta:get_int ("conduit_id"))
+		end
+	end
+
+end
+
+
+
+minetest.register_on_mods_loaded (function ()
+	minetest.after (3.0, restart_conduits)
+end)
 
 
 

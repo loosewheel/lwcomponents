@@ -118,3 +118,20 @@ v0.1.21
 
 v0.1.22
 *	Added storage.
+
+
+v0.1.23
+*	Fixed storage indexer not taking items from storage properly.
+*	Added pipeworks support for:
+		Storage Indexer
+		Dropper
+		Collector
+		Dispenser
+		Breaker
+		Deployer
+		Cannon
+		Conduit
+*	Conduits now work in unloaded blocks.
+*	Fixed conduits sending items in groups.
+*	Fixed player attached to controller moving forever when they get blown up.
+*	Fixed pistons being powered from the pusher side.

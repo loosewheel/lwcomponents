@@ -226,7 +226,9 @@ minetest.register_node ("lwcomponents:player_button_on", {
 	},
 
 	after_destruct = digistuff.remove_receiver,
---	on_rightclick = player_button_push,
+	on_rightclick = function (pos, node, clicker, itemstack, pointed_thing)
+		-- so clicking when depressed doesn't place node
+	end,
 	on_timer = player_button_turnoff,
 })
 

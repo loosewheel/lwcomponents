@@ -410,7 +410,6 @@ local function after_place_node (pos, placer, itemstack, pointed_thing)
 	local is_off = itemstack and (itemstack:get_name () == "lwcomponents:detector" or
 											itemstack:get_name () == "lwcomponents:detector_locked")
 
-	meta:set_string ("inventory", "{ main = { }, filter = { } }")
 	meta:set_string ("formspec", get_form_spec (is_off, 1, 0, 0, 0, 0, 1))
 
 	meta:set_string ("entities", "false")

@@ -222,6 +222,35 @@ end
 
 
 
+local function eject_item (pos, stack, eject_pos)
+	if utils.pipeworks_supported then
+		local node = utils.get_far_node (eject_pos)
+
+		if node and minetest.get_item_group (node.name, "tube") > 0 then
+			local owner = nil
+			local meta = minetest.get_meta (pos)
+
+			if meta then
+				local o = meta:get_string ("owner")
+
+				if o ~= "" then
+					owner = o
+				end
+			end
+
+			local vel = vector.subtract (eject_pos, pos)
+
+			pipeworks.tube_inject_item (pos, pos, vel, stack, owner)
+
+			return
+		end
+	end
+
+	utils.item_drop (stack, nil, eject_pos)
+end
+
+
+
 local function break_node (pos, range)
 	local node = minetest.get_node_or_nil (pos)
 
@@ -242,7 +271,7 @@ local function break_node (pos, range)
 						local eject_pos = get_breaker_side (pos, node.param2, "back")
 
 						for i = 1, #drops do
-							utils.item_drop (drops[i], nil, eject_pos)
+							eject_item (pos, drops[i], eject_pos)
 						end
 
 						add_wear (pos, wear)
@@ -324,7 +353,7 @@ end
 
 
 
-local function after_place_node (pos, placer, itemstack, pointed_thing)
+local function after_place_base (pos, placer, itemstack, pointed_thing)
 	local meta = minetest.get_meta (pos)
 	local spec =
 	"formspec_version[3]\n"..
@@ -342,6 +371,13 @@ local function after_place_node (pos, placer, itemstack, pointed_thing)
 
 	inv:set_size ("tool", 1)
 	inv:set_width ("tool", 1)
+end
+
+
+
+local function after_place_node (pos, placer, itemstack, pointed_thing)
+	after_place_base (pos, placer, itemstack, pointed_thing)
+	utils.pipeworks_after_place (pos)
 
 	-- If return true no item is taken from itemstack
 	return false
@@ -350,7 +386,7 @@ end
 
 
 local function after_place_node_locked (pos, placer, itemstack, pointed_thing)
-	after_place_node (pos, placer, itemstack, pointed_thing)
+	after_place_base (pos, placer, itemstack, pointed_thing)
 
 	if placer and placer:is_player () then
 		local meta = minetest.get_meta (pos)
@@ -358,6 +394,8 @@ local function after_place_node_locked (pos, placer, itemstack, pointed_thing)
 		meta:set_string ("owner", placer:get_player_name ())
 		meta:set_string ("infotext", "Breaker (owned by "..placer:get_player_name ()..")")
 	end
+
+	utils.pipeworks_after_place (pos)
 
 	-- If return true no item is taken from itemstack
 	return false
@@ -577,12 +615,126 @@ end
 
 
 
+local function pipeworks_support ()
+	if utils.pipeworks_supported then
+		return
+		{
+			priority = 100,
+			input_inventory = "tool",
+			connect_sides = { left = 1, right = 1, back = 1, bottom = 1, top = 1 },
+
+			insert_object = function (pos, node, stack, direction)
+				local meta = minetest.get_meta (pos)
+				local inv = (meta and meta:get_inventory ()) or nil
+
+				if inv then
+					return inv:add_item ("tool", stack)
+				end
+
+				return stack
+			end,
+
+			can_insert = function (pos, node, stack, direction)
+				if stack and not stack:is_empty () then
+					local def = utils.find_item_def (stack:get_name ())
+
+					if def and def.tool_capabilities then
+						local meta = minetest.get_meta (pos)
+						local inv = (meta and meta:get_inventory ()) or nil
+
+						if inv then
+							return inv:room_for_item ("tool", stack)
+						end
+					end
+				end
+
+				return false
+			end,
+
+			can_remove = function (pos, node, stack, dir)
+				-- returns the maximum number of items of that stack that can be removed
+				local meta = minetest.get_meta (pos)
+				local inv = (meta and meta:get_inventory ()) or nil
+
+				if inv then
+					local slots = inv:get_size ("tool")
+
+					for i = 1, slots, 1 do
+						local s = inv:get_stack ("tool", i)
+
+						if s and not s:is_empty () and utils.is_same_item (stack, s) then
+							return s:get_count ()
+						end
+					end
+				end
+
+				return 0
+			end,
+
+			remove_items = function (pos, node, stack, dir, count)
+				-- removes count items and returns them
+				local meta = minetest.get_meta (pos)
+				local inv = (meta and meta:get_inventory ()) or nil
+				local left = count
+
+				if inv then
+					local slots = inv:get_size ("tool")
+
+					for i = 1, slots, 1 do
+						local s = inv:get_stack ("tool", i)
+
+						if s and not s:is_empty () and utils.is_same_item (s, stack) then
+							if s:get_count () > left then
+								s:set_count (s:get_count () - left)
+								inv:set_stack ("tool", i, s)
+								left = 0
+							else
+								left = left - s:get_count ()
+								inv:set_stack ("tool", i, nil)
+							end
+						end
+
+						if left == 0 then
+							break
+						end
+					end
+				end
+
+				local result = ItemStack (stack)
+				result:set_count (count - left)
+
+				return result
+			end
+		}
+	end
+
+	return nil
+end
+
+
+
+local breaker_groups = { cracky = 3 }
+if utils.pipeworks_supported then
+	breaker_groups.tubedevice = 1
+	breaker_groups.tubedevice_receiver = 1
+end
+
+
+
+local breaker_on_groups = { cracky = 3, not_in_creative_inventory = 1 }
+if utils.pipeworks_supported then
+	breaker_on_groups.tubedevice = 1
+	breaker_on_groups.tubedevice_receiver = 1
+end
+
+
+
 minetest.register_node("lwcomponents:breaker", {
 	description = S("Breaker"),
 	tiles = { "lwbreaker.png", "lwbreaker.png", "lwbreaker.png",
 				 "lwbreaker.png", "lwbreaker_rear.png", "lwbreaker_face.png"},
 	is_ground_content = false,
-	groups = { cracky = 3 },
+	groups = table.copy (breaker_groups),
 	sounds = default.node_sound_stone_defaults (),
 	paramtype = "none",
 	param1 = 0,
@@ -594,9 +746,11 @@ minetest.register_node("lwcomponents:breaker", {
 
 	mesecons = mesecon_support (),
 	digiline = digilines_support (),
+	tube = pipeworks_support (),
 
 	on_receive_fields = on_receive_fields,
 	can_dig = can_dig,
+	after_dig_node = utils.pipeworks_after_dig,
 	after_place_node = after_place_node,
 	on_blast = on_blast,
 	on_timer = on_timer,
@@ -611,7 +765,7 @@ minetest.register_node("lwcomponents:breaker_locked", {
 	tiles = { "lwbreaker.png", "lwbreaker.png", "lwbreaker.png",
 				 "lwbreaker.png", "lwbreaker_rear.png", "lwbreaker_face.png"},
 	is_ground_content = false,
-	groups = { cracky = 3 },
+	groups = table.copy (breaker_groups),
 	sounds = default.node_sound_stone_defaults (),
 	paramtype = "none",
 	param1 = 0,
@@ -623,9 +777,11 @@ minetest.register_node("lwcomponents:breaker_locked", {
 
 	mesecons = mesecon_support (),
 	digiline = digilines_support (),
+	tube = pipeworks_support (),
 
 	on_receive_fields = on_receive_fields,
 	can_dig = can_dig,
+	after_dig_node = utils.pipeworks_after_dig,
 	after_place_node = after_place_node_locked,
 	on_blast = on_blast,
 	on_timer = on_timer,
@@ -641,7 +797,7 @@ minetest.register_node("lwcomponents:breaker_on", {
 	tiles = { "lwbreaker.png", "lwbreaker.png", "lwbreaker.png",
 				 "lwbreaker.png", "lwbreaker_rear.png", "lwbreaker_face_on.png"},
 	is_ground_content = false,
-	groups = { cracky = 3, not_in_creative_inventory = 1 },
+	groups = table.copy (breaker_on_groups),
 	sounds = default.node_sound_stone_defaults (),
 	paramtype = "none",
 	param1 = 0,
@@ -654,9 +810,11 @@ minetest.register_node("lwcomponents:breaker_on", {
 
 	mesecons = mesecon_support (),
 	digiline = digilines_support (),
+	tube = pipeworks_support (),
 
 	on_receive_fields = on_receive_fields,
 	can_dig = can_dig,
+	after_dig_node = utils.pipeworks_after_dig,
 	after_place_node = after_place_node,
 	on_blast = on_blast,
 	on_timer = on_timer,
@@ -671,7 +829,7 @@ minetest.register_node("lwcomponents:breaker_locked_on", {
 	tiles = { "lwbreaker.png", "lwbreaker.png", "lwbreaker.png",
 				 "lwbreaker.png", "lwbreaker_rear.png", "lwbreaker_face_on.png"},
 	is_ground_content = false,
-	groups = { cracky = 3, not_in_creative_inventory = 1 },
+	groups = table.copy (breaker_on_groups),
 	sounds = default.node_sound_stone_defaults (),
 	paramtype = "none",
 	param1 = 0,
@@ -684,9 +842,11 @@ minetest.register_node("lwcomponents:breaker_locked_on", {
 
 	mesecons = mesecon_support (),
 	digiline = digilines_support (),
+	tube = pipeworks_support (),
 
 	on_receive_fields = on_receive_fields,
 	can_dig = can_dig,
+	after_dig_node = utils.pipeworks_after_dig,
 	after_place_node = after_place_node_locked,
 	on_blast = on_blast,
 	on_timer = on_timer,

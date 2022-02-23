@@ -101,6 +101,21 @@ end
 
 
 
+-- check for pipeworks
+if minetest.global_exists ("pipeworks") then
+	utils.pipeworks_supported = true
+	utils.pipeworks_after_place = pipeworks.after_place
+	utils.pipeworks_after_dig = pipeworks.after_dig
+else
+	utils.pipeworks_supported = false
+	utils.pipeworks_after_place = function (pos)
+	end
+	utils.pipeworks_after_dig = function (pos)
+	end
+end
+
+
+
 function utils.on_destroy (itemstack)
 	local stack = ItemStack (itemstack)
 
@@ -206,6 +221,22 @@ function utils.find_item_def (name)
 	end
 
 	return def
+end
+
+
+
+function utils.is_same_item (item1, item2)
+	local copy1 = ItemStack (stack1)
+	local copy2 = ItemStack (stack2)
+
+	if copy1 and copy2 then
+		copy1:set_count (1)
+		copy2:set_count (1)
+
+		return copy1:to_string () == copy2:to_string ()
+	end
+
+	return false
 end
 
 

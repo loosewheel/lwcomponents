@@ -371,18 +371,6 @@ end
 
 
 
-local function is_same_item (item1, item2)
-	local copy1 = ItemStack (item1)
-	local copy2 = ItemStack (item2)
-
-	copy1:set_count (1)
-	copy2:set_count (1)
-
-	return copy1:to_string () == copy2:to_string ()
-end
-
-
-
 local function output_items (pos, name, count)
 	if count < 1 then
 		return 0
@@ -427,14 +415,14 @@ local function output_items (pos, name, count)
 			if tinv then
 				local s = tinv:get_stack ("main", item[i].slot)
 
-				if is_same_item (name, s) then
+				if utils.is_same_item (name, s) then
 					if s:get_count () > left then
-						left = 0
 						s:set_count (s:get_count () - left)
 						tinv:set_stack ("main", item[i].slot, s)
+						left = 0
 					else
-						left = left - s:get_count ()
 						tinv:set_stack ("main", item[i].slot, nil)
+						left = left - s:get_count ()
 					end
 				end
 
@@ -464,7 +452,7 @@ local function consolidate_itemstacks (item1, item2)
 	local copy1 = ItemStack (item1)
 	local copy2 = ItemStack (item2)
 
-	if is_same_item (copy1, copy2) then
+	if utils.is_same_item (copy1, copy2) then
 		local count = copy1:get_stack_max () - copy1:get_count ()
 
 		if count > copy2:get_count () then
@@ -852,7 +840,7 @@ end
 
 
 
-local function indexer_after_place_node (pos, placer, itemstack, pointed_thing)
+local function indexer_after_place_base (pos, placer, itemstack, pointed_thing)
 	local meta = minetest.get_meta (pos)
 
 	meta:set_string ("inventory", "{ input = { }, output = { }, filter = { } }")
@@ -866,6 +854,13 @@ local function indexer_after_place_node (pos, placer, itemstack, pointed_thing)
 	inv:set_width ("output", 4)
 	inv:set_size ("filter", 8)
 	inv:set_width ("filter", 2)
+end
+
+
+
+local function indexer_after_place_node (pos, placer, itemstack, pointed_thing)
+	indexer_after_place_base (pos, placer, itemstack, pointed_thing)
+	utils.pipeworks_after_place (pos)
 
 	-- If return true no item is taken from itemstack
 	return false
@@ -874,7 +869,7 @@ end
 
 
 local function indexer_after_place_node_locked (pos, placer, itemstack, pointed_thing)
-	indexer_after_place_node (pos, placer, itemstack, pointed_thing)
+	indexer_after_place_base (pos, placer, itemstack, pointed_thing)
 
 	if placer and placer:is_player () then
 		local meta = minetest.get_meta (pos)
@@ -882,6 +877,8 @@ local function indexer_after_place_node_locked (pos, placer, itemstack, pointed_
 		meta:set_string ("owner", placer:get_player_name ())
 		meta:set_string ("infotext", "Storage Indexer (owned by "..placer:get_player_name ()..")")
 	end
+
+	utils.pipeworks_after_place (pos)
 
 	-- If return true no item is taken from itemstack
 	return false
@@ -1261,6 +1258,108 @@ end
 
 
 
+local function pipeworks_support ()
+	if utils.pipeworks_supported then
+		return
+		{
+			priority = 100,
+			input_inventory = "output",
+			connect_sides = { left = 1, right = 1, front = 1, back = 1, bottom = 1, top = 1 },
+
+			insert_object = function (pos, node, stack, direction)
+				local meta = minetest.get_meta (pos)
+				local inv = (meta and meta:get_inventory ()) or nil
+
+				if inv then
+					store_input_delayed (pos)
+
+					return inv:add_item ("input", stack)
+				end
+
+				return stack
+			end,
+
+			can_insert = function (pos, node, stack, direction)
+				local meta = minetest.get_meta (pos)
+				local inv = (meta and meta:get_inventory ()) or nil
+
+				if inv then
+					return inv:room_for_item ("input", stack)
+				end
+
+				return false
+			end,
+
+			can_remove = function (pos, node, stack, dir)
+				-- returns the maximum number of items of that stack that can be removed
+				local meta = minetest.get_meta (pos)
+				local inv = (meta and meta:get_inventory ()) or nil
+
+				if inv then
+					local slots = inv:get_size ("output")
+
+					for i = 1, slots, 1 do
+						local s = inv:get_stack ("output", i)
+
+						if s and not s:is_empty () and utils.is_same_item (stack, s) then
+							return s:get_count ()
+						end
+					end
+				end
+
+				return 0
+			end,
+
+			remove_items = function (pos, node, stack, dir, count)
+				-- removes count items and returns them
+				local meta = minetest.get_meta (pos)
+				local inv = (meta and meta:get_inventory ()) or nil
+				local left = count
+
+				if inv then
+					local slots = inv:get_size ("output")
+
+					for i = 1, slots, 1 do
+						local s = inv:get_stack ("output", i)
+
+						if s and not s:is_empty () and utils.is_same_item (s, stack) then
+							if s:get_count () > left then
+								s:set_count (s:get_count () - left)
+								inv:set_stack ("output", i, s)
+								left = 0
+							else
+								left = left - s:get_count ()
+								inv:set_stack ("output", i, nil)
+							end
+						end
+
+						if left == 0 then
+							break
+						end
+					end
+				end
+
+				local result = ItemStack (stack)
+				result:set_count (count - left)
+
+				return result
+			end
+		}
+	end
+
+	return nil
+end
+
+
+
+local indexer_groups = { choppy = 2 }
+if utils.pipeworks_supported then
+	indexer_groups.tubedevice = 1
+	indexer_groups.tubedevice_receiver = 1
+end
+
+
+
 minetest.register_node("lwcomponents:storage_indexer", {
 	description = S("Storage Indexer"),
 	drawtype = "normal",
@@ -1268,7 +1367,7 @@ minetest.register_node("lwcomponents:storage_indexer", {
 				 "lwcomponents_storage_indexer.png", "lwcomponents_storage_indexer.png",
 				 "lwcomponents_storage_indexer.png", "lwcomponents_storage_indexer.png",},
 	is_ground_content = false,
-	groups = { choppy = 2 },
+	groups = table.copy (indexer_groups),
 	sounds = default.node_sound_wood_defaults (),
 	paramtype = "none",
 	param1 = 0,
@@ -1278,10 +1377,12 @@ minetest.register_node("lwcomponents:storage_indexer", {
 	_digistuff_channelcopier_fieldname = "channel",
 
 	digiline = digilines_support (),
+	tube = pipeworks_support (),
 
 	on_receive_fields = indexer_on_receive_fields,
 	after_place_node = indexer_after_place_node,
 	can_dig = indexer_can_dig,
+	after_dig_node = utils.pipeworks_after_dig,
 	on_blast = indexer_on_blast,
 	on_rightclick = indexer_on_rightclick,
 	on_metadata_inventory_put = indexer_on_metadata_inventory_put,
@@ -1300,7 +1401,7 @@ minetest.register_node("lwcomponents:storage_indexer_locked", {
 				 "lwcomponents_storage_indexer.png", "lwcomponents_storage_indexer.png",
 				 "lwcomponents_storage_indexer.png", "lwcomponents_storage_indexer.png",},
 	is_ground_content = false,
-	groups = { choppy = 2 },
+	groups = table.copy (indexer_groups),
 	sounds = default.node_sound_wood_defaults (),
 	paramtype = "none",
 	param1 = 0,
@@ -1310,10 +1411,12 @@ minetest.register_node("lwcomponents:storage_indexer_locked", {
 	_digistuff_channelcopier_fieldname = "channel",
 
 	digiline = digilines_support (),
+	tube = pipeworks_support (),
 
 	on_receive_fields = indexer_on_receive_fields,
 	after_place_node = indexer_after_place_node_locked,
 	can_dig = indexer_can_dig,
+	after_dig_node = utils.pipeworks_after_dig,
 	on_blast = indexer_on_blast,
 	on_rightclick = indexer_on_rightclick,
 	on_metadata_inventory_put = indexer_on_metadata_inventory_put,
