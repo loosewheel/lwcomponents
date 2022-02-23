@@ -34,6 +34,7 @@ unifieddyes
 intllib
 hopper
 digistuff
+pipeworks
 
 
 Installation
