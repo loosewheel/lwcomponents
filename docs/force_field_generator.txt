@@ -1,0 +1,67 @@
+Force Field Generator
+---------------------
+
+Force field generators repel players and mobs within a given radius from
+the generator. The radius can be 5 to 25 and is in all directions. An
+'electric dome' appears marking the field. The generator consumes fuel
+relative to the radius. A radius of 25 uses 1 coal in 10 seconds, 5 uses
+1 coal in 50 seconds. Each time an entity is repelled it cost 1 fuel value
+(1/40 of a coal). Any players or mobs permitted inside the field can be
+added to the Permit list. Each entry must be on a new line with no extra
+spaces. Empty lines (not even a space) are ignored. The mob's registered
+name or tag can be used. The owner of a locked generator will not be
+repelled. When something is repelled it takes a small amount of damage.
+
+Only the owner can dig or access the form of the locked version.
+
+UI
+Channel - digilines channel of generator.
+Radius - the node radius to repel, in every direction. 5 to 25.
+Permit - list of players or mobs to allow within field. Mobs can be registered
+			entity name or tag.
+Start/Stop button - starts and stops the field.
+Fuel - single slot inventory.
+Player inventor - 32 slot inventory at bottom.
+
+
+Mesecons
+	Turns the generator on and off.
+
+
+Digilines messages
+
+"start"
+	Start the generator.
+
+"stop"
+	Stop the generator.
+
+"radius n"
+	Set the radius to n, where n is a number between 5 to 25.
+
+"add <name>"
+	Add a name to the permit list.
+
+"remove <name>"
+	Remove a name from the permit list.
+
+"status"
+	Query the status of the generator. The generator will send a digilines
+	message with its own channel as the following table:
+	{
+		action = "status",
+		state = "on" | "off",
+		radius = n, -- radius as number
+		permit =
+		{
+			<list of names>
+		},
+		fuel =
+		{
+			name = name, -- eg. "default:coal_lump", will be "" if empty
+			count = n, -- count of fuel
+		}
+	}
+
+
+Hoppers and pipeworks tubes can be used to push or pull the fuel.

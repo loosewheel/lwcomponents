@@ -70,7 +70,8 @@ or
 }
 	Moves the item/s to the output. If count is omitted defaults to 1. If
 	the requested amount is greater than in storage, only the stored amount
-	is moved.
+	is moved. If the requested amount is greater than a full stack of the
+	item a full stack is moved.
 
 
 "inventory"
