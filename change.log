@@ -135,3 +135,12 @@ v0.1.23
 *	Fixed conduits sending items in groups.
 *	Fixed player attached to controller moving forever when they get blown up.
 *	Fixed pistons being powered from the pusher side.
+
+
+v0.1.24
+*	Limited requested count from storage indexer from digilines message to max stack.
+*	Fixed receptor state in detector.
+*	Fixed receptor state in digiswitch.
+*	Fixed bug in utils.is_same_item ().
+*	Added force field generators.
+*	Removed immortal from cannon shells (shells test for same type of shell and ignore).

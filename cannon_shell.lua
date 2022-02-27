@@ -153,8 +153,13 @@ local function register_shell (name, description, texture, inventory_image,
 						end
 
 					elseif c.type == "object" then
+						local c_name = (c.object.get_luaentity and
+											 c.object:get_luaentity () and
+											 c.object:get_luaentity ().name) or ""
+						local s_name = (self.name) or ""
+
 						-- explode at this pos
-						if c.object:get_armor_groups ().immortal then
+						if c.object:get_armor_groups ().immortal or s_name == c_name then
 							self.object:set_velocity (c.old_velocity)
 						else
 							explode_pos = vector.new (c.object:get_pos ())
@@ -198,7 +203,6 @@ local function register_shell (name, description, texture, inventory_image,
 				local obj = minetest.add_entity (spawn_pos, name.."_entity")
 
 				if obj then
-					obj:set_armor_groups ({ immortal = 1 })
 					obj:set_acceleration ({ x = 0, y = -9.81, z = 0 })
 					obj:set_rotation (vector.dir_to_rotation (vector.multiply (spawner_dir, shell_speed)))
 					obj:set_velocity (vector.multiply (spawner_dir, shell_speed))

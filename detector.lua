@@ -18,6 +18,12 @@ local function mesecons_on (pos)
 		if meta:get_int ("power_on") == 0 then
 			utils.mesecon_receptor_on (pos, utils.mesecon_default_rules)
 			meta:set_int ("power_on", 1)
+			local node = utils.get_far_node (pos)
+
+			if node then
+				node.param1 = 1
+				minetest.swap_node (pos, node)
+			end
 		end
 	end
 end
@@ -31,6 +37,12 @@ local function mesecons_off (pos)
 		if meta:get_int ("power_on") ~= 0 then
 			utils.mesecon_receptor_off (pos, utils.mesecon_default_rules)
 			meta:set_int ("power_on", 0)
+			local node = utils.get_far_node (pos)
+
+			if node then
+				node.param1 = 0
+				minetest.swap_node (pos, node)
+			end
 		end
 	end
 end
@@ -692,8 +704,10 @@ local function mesecon_support ()
 		{
 			receptor =
 			{
-				state = utils.mesecon_state_off,
-				rules = utils.mesecon_default_rules
+				state = utils.mesecon_state_on,
+				rules = function (node)
+					return (node.param1 == 0 and { }) or utils.mesecon_default_rules
+				end
 			}
 		}
 	end

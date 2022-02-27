@@ -15,7 +15,7 @@ local function get_cannon_barrel (pos)
 	local barrel_pos = { x = pos.x, y = pos.y + 0.65, z = pos.z }
 	local objects = minetest.get_objects_inside_radius (barrel_pos, 0.1)
 
-	for i = 1, #objects do
+	for i = 1, #objects, 1 do
 		if not objects[i]:is_player () then
 			if objects[i].get_luaentity and objects[i]:get_luaentity () and
 				objects[i]:get_luaentity ().name and

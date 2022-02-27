@@ -13,7 +13,7 @@ CC BY-SA 3.0
 
 Version
 =======
-0.1.23
+0.1.24
 
 
 Minetest Version
@@ -69,6 +69,7 @@ Various components for mesecons and digilines.
 *	Movefloor, similar to vertical mesecons movestone.
 *	Camera, takes a representative image.
 *	Storage, indexed storage units.
+*	Force Field Generator, repels players and mobs within a radius.
 *	Mesecons Through Wire, transmits through 1 to 2 solid blocks.
 *	Solid color conductor blocks, same as Solid Color Block but also mesecons
 	and digilines conductor.

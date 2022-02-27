@@ -70,24 +70,6 @@ end
 
 
 
---local function is_same_item (stack1, stack2)
-	--local copy1 = ItemStack (stack1)
-	--local copy2 = ItemStack (stack2)
-
-	--if copy1 and copy2 then
-		--copy1:set_count (1)
-		--copy2:set_count (1)
-
-		--if copy1:to_string () == copy2:to_string () then
-			--return true
-		--end
-	--end
-
-	--return false
---end
-
-
-
 local function dig_node (pos, toolname)
 	local node = utils.get_far_node (pos)
 	local dig = false
@@ -335,7 +317,7 @@ local function add_effects (pos, radius, drops)
 		collisiondetection = false,
 		vertical = false,
 		texture = "lwcomponents_boom.png",
-		glow = 15,
+		glow = 14,
 	})
 
 	minetest.add_particlespawner ({

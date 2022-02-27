@@ -62,6 +62,26 @@ minetest.register_craft( {
 
 
 minetest.register_craft( {
+	output = "lwcomponents:force_field",
+	recipe = {
+		{ "default:steel_ingot", "default:mese_crystal", "group:wood" },
+		{ "default:mese_crystal", "default:diamondblock", "default:mese_crystal" },
+		{ "default:stone", "default:mese_crystal", "default:chest" }
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:force_field_locked",
+	recipe = {
+		{ "default:steel_ingot", "default:mese_crystal", "group:wood" },
+		{ "default:mese_crystal", "default:diamondblock", "default:mese_crystal" },
+		{ "default:stone", "default:mese_crystal", "default:chest_locked" }
+	},
+})
+
+
+minetest.register_craft( {
 	output = "lwcomponents:cannon_shell 10",
 	recipe = {
 		{ "default:steel_ingot", "default:steel_ingot" },

@@ -226,8 +226,8 @@ end
 
 
 function utils.is_same_item (item1, item2)
-	local copy1 = ItemStack (stack1)
-	local copy2 = ItemStack (stack2)
+	local copy1 = ItemStack (item1)
+	local copy2 = ItemStack (item2)
 
 	if copy1 and copy2 then
 		copy1:set_count (1)

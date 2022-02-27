@@ -389,6 +389,11 @@ local function output_items (pos, name, count)
 	end
 
 	local stack = ItemStack (name)
+
+	if stack:get_stack_max () < count then
+		count = stack:get_stack_max ()
+	end
+
 	stack:set_count (count)
 
 	while stack:get_count () > 0 do
@@ -738,7 +743,7 @@ local function get_formspec_list (pos)
 		}
 	end
 
-	local foo = table.sort (list , function (e1, e2)
+	table.sort (list , function (e1, e2)
 		return (e1.description:lower () < e2.description:lower ())
 	end)
 
