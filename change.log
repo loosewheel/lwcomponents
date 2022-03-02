@@ -144,3 +144,12 @@ v0.1.24
 *	Fixed bug in utils.is_same_item ().
 *	Added force field generators.
 *	Removed immortal from cannon shells (shells test for same type of shell and ignore).
+
+
+v0.1.25
+*	Added hoppers.
+*	Added "inventory" message to conduits.
+*	Removed digilines or mesecons requirement for conduits.
+*	Improved unescaping item description.
+*	Fixed custom item output from storage.
+*	Added filtering to conduit forms.

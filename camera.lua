@@ -7,18 +7,6 @@ if utils.digilines_supported then
 
 
 
-local function is_drop (obj)
-	if obj then
-		local entity = obj.get_luaentity and obj:get_luaentity ()
-
-		return (entity and entity.name and entity.name == "__builtin:item")
-	end
-
-	return false
-end
-
-
-
 local function get_entity_dims (obj)
 	local dims = { -0.5, 0, -0.5, 0.5, 2, 0.5 }
 	local found = false
@@ -88,7 +76,7 @@ local function get_entity (pos)
 					end
 				end
 
-				if not is_drop (obj) then
+				if not utils.is_drop (obj) then
 					local epos =  vector.new (obj:get_pos ())
 					local dims = get_entity_dims (obj)
 

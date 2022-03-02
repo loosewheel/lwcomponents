@@ -3,17 +3,13 @@ local S = utils.S
 
 
 
-if utils.digilines_supported or utils.mesecon_supported then
-
-
-
 local transfer_rate = 0.1
 local conduit_interval = 1.0
 local conduit_connections = utils.connections:new (mod_storage, "conduit_connections")
 
 
 -- forward declare
-local run_initialize_forward = nil
+local run_initialize = nil
 
 
 
@@ -51,6 +47,34 @@ local function send_targets_message (pos)
 			end
 		end
 	end
+end
+
+
+
+local function get_target_for_item (meta, inv, stack)
+	if meta then
+		if inv then
+			local slots = inv:get_size ("filter")
+
+			for slot = 1, slots, 1 do
+				local s = inv:get_stack ("filter", slot)
+
+				if s and not s:is_empty () and utils.is_same_item (s, stack) then
+					local target = meta:get_string ("target"..slot)
+
+					if target ~= "" then
+						return target
+					end
+				end
+			end
+		end
+
+		if meta:get_string ("target") ~= "" then
+			return meta:get_string ("target")
+		end
+	end
+
+	return nil
 end
 
 
@@ -222,7 +246,7 @@ local function add_to_send_list (pos, item, destpos, distance)
 
 			meta:set_string ("transfer_data", minetest.serialize (transfer_data))
 
-			run_initialize_forward (pos)
+			run_initialize (pos)
 		end
 	end
 end
@@ -235,9 +259,7 @@ local function send_to_target (pos, target, slot)
 	if meta then
 		local inv = meta:get_inventory ()
 
-		target = (target and tostring (target)) or meta:get_string ("target")
-
-		if inv and target:len () > 0 then
+		if inv then
 			if not slot then
 				local slots = inv:get_size ("main")
 
@@ -245,8 +267,10 @@ local function send_to_target (pos, target, slot)
 					local stack = inv:get_stack ("main", i)
 
 					if not stack:is_empty () and stack:get_count () > 0 then
-						slot = i
-						break
+						if target or get_target_for_item (meta, inv, stack) then
+							slot = i
+							break
+						end
 					end
 				end
 
@@ -275,11 +299,14 @@ local function send_to_target (pos, target, slot)
 			if slot then
 				local stack = inv:get_stack ("main", slot)
 
-				if not stack:is_empty () and stack:get_count () > 0 then
+				if stack and not stack:is_empty () then
 					local name = stack:get_name ()
 					local item = ItemStack (stack)
 
-					if item then
+					target = (target and tostring (target)) or
+								get_target_for_item (meta, inv, stack)
+
+					if item and target then
 						item:set_count (1)
 
 						local tpos, distance = conduit_connections:is_connected (pos, target)
@@ -311,32 +338,74 @@ end
 
 
 
+local function get_formspec (pos)
+	local meta = minetest.get_meta (pos)
+	local automatic = "false"
+	local filters = ""
+
+	if meta then
+		automatic = meta:get_string ("automatic")
+	end
+
+	for i = 1, 8, 1 do
+		filters = string.format ("%sfield[12.7,%0.2f;3.0,0.8;target%d;;${target%d}]"..
+										 "button[15.9,%0.2f;1.5,0.8;settarget%d;Set]",
+										 filters,
+										 (i * 1.25) + 0.35,
+										 i,
+										 i,
+										 (i * 1.25) + 0.35,
+										 i)
+	end
+
+	return
+		"formspec_version[3]"..
+		"size[18.4,12.25;true]"..
+		"field[1.0,1.5;3.0,0.8;channel;Channel;${channel}]"..
+		"button[4.2,1.5;1.5,0.8;setchannel;Set]"..
+		"field[1.0,3.0;3.0,0.8;target;Target;${target}]"..
+		"button[4.2,3.0;1.5,0.8;settarget;Set]"..
+		"checkbox[1.0,4.5;automatic;Automatic;"..automatic.."]"..
+		"list[context;main;6.0,1.0;4,4;]"..
+		"list[current_player;main;1.0,6.5;8,4;]"..
+		"listring[]"..
+		"label[11.5,1.25;Filter]"..
+		"list[context;filter;11.5,1.5;1,8;]"..
+		filters
+end
+
+
+
 local function run_conduit (pos, id)
 	local node = utils.get_far_node (pos)
 
-	if node and (node.name == "lwcomponents:conduit" or
-					 node.name == "lwcomponents:conduit_locked") then
-		local meta = minetest.get_meta (pos)
+	if node then
+		if node.name == "lwcomponents:conduit" or
+				node.name == "lwcomponents:conduit_locked" then
+			local meta = minetest.get_meta (pos)
 
-		if meta and id == meta:get_int ("conduit_id") then
-			local automatic = meta:get_string ("automatic") == "true"
+			if meta and id == meta:get_int ("conduit_id") then
+				local automatic = meta:get_string ("automatic") == "true"
 
-			if automatic then
-				send_to_target (pos)
+				if automatic then
+					send_to_target (pos)
+				end
+
+				if run_deliveries (pos) or automatic then
+					minetest.after (conduit_interval, run_conduit, pos, id)
+				else
+					meta:set_int ("run_active", 0)
+				end
 			end
-
-			if run_deliveries (pos) or automatic then
-				minetest.after (conduit_interval, run_conduit, pos, id)
-			else
-				meta:set_int ("run_active", 0)
-			end
+		else
+			conduit_connections:remove_node (pos)
 		end
 	end
 end
 
 
 
-local function run_initialize (pos)
+run_initialize = function (pos)
 	local meta = minetest.get_meta (pos)
 
 	if meta then
@@ -346,29 +415,96 @@ local function run_initialize (pos)
 		end
 	end
 end
-run_initialize_forward = run_initialize
 
 
 
-local function get_formspec (pos)
-	local meta = minetest.get_meta (pos)
-	local automatic = "false"
+local function count_table_keys (t)
+	local count = 0
 
-	if meta then
-		automatic = meta:get_string ("automatic")
+	for k, v in pairs (t) do
+		count = count + 1
 	end
 
-	return
-		"formspec_version[3]\n"..
-		"size[11.75,12.25;true]\n"..
-		"field[1.0,1.5;3.0,0.8;channel;Channel;${channel}]\n"..
-		"button[4.2,1.5;1.5,0.8;setchannel;Set]\n"..
-		"field[1.0,3.0;3.0,0.8;target;Target;${target}]\n"..
-		"button[4.2,3.0;1.5,0.8;settarget;Set]\n"..
-		"checkbox[1.0,4.5;automatic;Automatic;"..automatic.."]\n"..
-		"list[context;main;6.0,1.0;4,4;]\n"..
-		"list[current_player;main;1.0,6.5;8,4;]\n"..
-		"listring[]"
+	return count
+end
+
+
+
+local function send_inventory_message (pos)
+	if utils.digilines_supported then
+		local meta = minetest.get_meta (pos)
+		local inv = (meta and meta:get_inventory ()) or nil
+
+		if meta and inv then
+			local channel = meta:get_string ("channel")
+
+			if channel:len () > 0 then
+				local inventory = { }
+				local slots = inv:get_size ("main")
+
+				for slot = 1, slots, 1 do
+					local stack = inv:get_stack ("main", slot)
+
+					if stack and not stack:is_empty () then
+						local name = stack:get_name ()
+						local description = nil
+						local custom = false
+						local pallet_index = nil
+						local tstack = stack:to_table ()
+
+						if tstack and tstack.meta and count_table_keys (tstack.meta) > 0 then
+							custom = true
+
+							pallet_index = tstack.meta.palette_index
+						end
+
+						if stack:get_short_description () ~= "" then
+							description = stack:get_short_description ()
+						elseif stack:get_description () ~= "" then
+							description = stack:get_description ()
+						else
+							description = name
+
+							local def = utils.find_item_def (name)
+
+							if def then
+								if def.short_description then
+									description = def.short_description
+								elseif def.description then
+									description = def.description
+								end
+							end
+						end
+
+						inventory[slot] =
+						{
+							name = stack:get_name (),
+							description = utils.unescape_description (description),
+							count = stack:get_count (),
+							custom = custom,
+							pallet_index = pallet_index,
+						}
+					else
+						inventory[slot] =
+						{
+							name = "",
+							description = "",
+							count = 0,
+							custom = false,
+							pallet_index = nil,
+						}
+					end
+				end
+
+				utils.digilines_receptor_send (pos,
+														 utils.digilines_default_rules,
+														 channel,
+														 { action = "inventory",
+															inventory = inventory })
+			end
+		end
+	end
+
 end
 
 
@@ -394,7 +530,7 @@ local function after_place_base (pos, placer, itemstack, pointed_thing)
 	"field[0.5,1.0;6.0,0.8;channel;Channel;${channel}]"..
 	"button[2.0,2.3;3.0,0.8;setchannel;Set]"
 
-	meta:set_string ("inventory", "{ main = { }, transfer = { } }")
+	meta:set_string ("inventory", "{ main = { }, transfer = { }, filter = { } }")
 	meta:set_string ("formspec", spec)
 	meta:set_string ("transfer_data", minetest.serialize({ }))
 	meta:set_string ("automatic", "false")
@@ -407,6 +543,9 @@ local function after_place_base (pos, placer, itemstack, pointed_thing)
 
 	inv:set_size ("transfer", 32)
 	inv:set_width ("transfer", 8)
+
+	inv:set_size ("filter", 8)
+	inv:set_width ("filter", 1)
 end
 
 
@@ -526,7 +665,23 @@ local function on_receive_fields (pos, formname, fields, sender)
 			meta:set_string ("automatic", fields.automatic)
 			meta:set_string ("formspec", get_formspec (pos))
 
+			if fields.automatic == "true" then
+				meta:set_int ("run_active", 0)
+			end
+
 			run_initialize (pos)
+		end
+	end
+
+	for i = 1, 8, 1 do
+		if fields[string.format ("settarget%d", i)] then
+			local meta = minetest.get_meta (pos)
+
+			if meta then
+				local name = string.format ("target%d", i)
+
+				meta:set_string (name, fields[name])
+			end
 		end
 	end
 end
@@ -622,6 +777,87 @@ end
 
 
 
+local function allow_metadata_inventory_put (pos, listname, index, stack, player)
+	if listname == "filter" then
+		local meta = minetest.get_meta (pos)
+
+		if meta then
+			local inv = meta:get_inventory ()
+
+			if inv then
+				inv:set_stack ("filter", index, ItemStack (stack:get_name ()))
+			end
+		end
+
+		return 0
+	end
+
+	return stack:get_stack_max ()
+end
+
+
+
+local function allow_metadata_inventory_take (pos, listname, index, stack, player)
+	if listname == "filter" then
+		local meta = minetest.get_meta (pos)
+
+		if meta then
+			local inv = meta:get_inventory ()
+
+			if inv then
+				inv:set_stack ("filter", index, nil)
+			end
+		end
+
+		return 0
+	end
+
+	return stack:get_stack_max ()
+end
+
+
+
+local function allow_metadata_inventory_move (pos, from_list, from_index,
+															 to_list, to_index, count, player)
+	local meta = minetest.get_meta (pos)
+
+	if meta then
+		local inv = meta:get_inventory ()
+
+		if inv then
+			if from_list == "filter" then
+				if to_list == "filter" then
+					return 1
+				end
+
+				inv:set_stack ("filter", from_index, nil)
+
+				return 0
+
+			elseif to_list == "filter" then
+				local stack = inv:get_stack (from_list, from_index)
+
+				if stack and not stack:is_empty () then
+					inv:set_stack ("filter", to_index, ItemStack (stack:get_name ()))
+				end
+
+				return 0
+
+			else
+				local stack = inv:get_stack (from_list, from_index)
+
+				if stack and not stack:is_empty () then
+					return stack:get_stack_max ()
+				end
+			end
+		end
+	end
+
+	return utils.settings.default_stack_max
+end
+
+
+
 local function digilines_support ()
 	if utils.digilines_supported then
 		return
@@ -654,6 +890,9 @@ local function digilines_support ()
 
 								elseif m[1] == "transfer" then
 									send_to_target (pos)
+
+								elseif m[1] == "inventory" then
+									send_inventory_message (pos)
 
 								end
 
@@ -797,12 +1036,48 @@ end
 
 minetest.register_node("lwcomponents:conduit", {
 	description = S("Conduit"),
-	drawtype = "glasslike_framed",
-	tiles = { "lwconduit_edge.png", "lwconduit.png" },
+	tiles = { "lwconduit.png" },
+	drawtype = "nodebox",
+	node_box = {
+		type = "connected",
+		fixed = 				{ -0.375, -0.375, -0.375, 0.375, 0.375, 0.375 }, -- body
+		connect_top = 		{ -0.3125, 0.3125, -0.3125, 0.3125, 0.5, 0.3125 }, -- top
+		connect_bottom =	{-0.3125, -0.5, -0.3125, 0.3125, -0.3125, 0.3125}, -- down
+		connect_front = 	{ -0.3125, -0.3125, -0.5, 0.3125, 0.3125, -0.3125 }, -- front
+		connect_back =  	{ -0.3125, -0.3125, 0.5, 0.3125, 0.3125, 0.3125 }, -- back
+		connect_left =  	{ -0.5, -0.3125, -0.3125, -0.3125, 0.3125, 0.3125 }, -- left
+		connect_right = 	{ 0.3125, -0.3125, -0.3125, 0.5, 0.3125, 0.3125 }, -- right
+	},
+	connect_sides = { "top", "bottom", "front", "back", "left", "right" },
+	connects_to = { "lwcomponents:conduit", "lwcomponents:conduit_locked",
+						 "lwcomponents:hopper", "lwcomponents:hopper_horz",
+						 "hopper:hopper", "hopper:hopper_side",
+						 "group:tube", "pipeworks:filter", "pipeworks:mese_filter",
+						 "pipeworks:digiline_filter" },
+	selection_box = {
+		type = "connected",
+		fixed = 				{ -0.375, -0.375, -0.375, 0.375, 0.375, 0.375 }, -- body
+		connect_top = 		{ -0.3125, 0.3125, -0.3125, 0.3125, 0.5, 0.3125 }, -- top
+		connect_bottom =	{-0.3125, -0.5, -0.3125, 0.3125, -0.3125, 0.3125}, -- down
+		connect_front = 	{ -0.3125, -0.3125, -0.5, 0.3125, 0.3125, -0.3125 }, -- front
+		connect_back =  	{ -0.3125, -0.3125, 0.5, 0.3125, 0.3125, 0.3125 }, -- back
+		connect_left =  	{ -0.5, -0.3125, -0.3125, -0.3125, 0.3125, 0.3125 }, -- left
+		connect_right = 	{ 0.3125, -0.3125, -0.3125, 0.5, 0.3125, 0.3125 }, -- right
+	},
+	collision_box = {
+		type = "connected",
+		fixed = 				{ -0.375, -0.375, -0.375, 0.375, 0.375, 0.375 }, -- body
+		connect_top = 		{ -0.3125, 0.3125, -0.3125, 0.3125, 0.5, 0.3125 }, -- top
+		connect_bottom =	{-0.3125, -0.5, -0.3125, 0.3125, -0.3125, 0.3125}, -- down
+		connect_front = 	{ -0.3125, -0.3125, -0.5, 0.3125, 0.3125, -0.3125 }, -- front
+		connect_back =  	{ -0.3125, -0.3125, 0.5, 0.3125, 0.3125, 0.3125 }, -- back
+		connect_left =  	{ -0.5, -0.3125, -0.3125, -0.3125, 0.3125, 0.3125 }, -- left
+		connect_right = 	{ 0.3125, -0.3125, -0.3125, 0.5, 0.3125, 0.3125 }, -- right
+	},
 	is_ground_content = false,
 	groups = table.copy (conduit_groups),
 	sounds = default.node_sound_stone_defaults (),
-	paramtype = "none",
+	paramtype = "light",
 	param1 = 0,
 	paramtype2 = "none",
 	param2 = 0,
@@ -820,19 +1095,59 @@ minetest.register_node("lwcomponents:conduit", {
 	can_dig = can_dig,
 	after_dig_node = utils.pipeworks_after_dig,
 	on_blast = on_blast,
-	on_rightclick = on_rightclick
+	on_rightclick = on_rightclick,
+	allow_metadata_inventory_put = allow_metadata_inventory_put,
+	allow_metadata_inventory_take = allow_metadata_inventory_take,
+	allow_metadata_inventory_move = allow_metadata_inventory_move
+
 })
 
 
 
 minetest.register_node("lwcomponents:conduit_locked", {
 	description = S("Conduit (locked)"),
-	drawtype = "glasslike_framed",
-	tiles = { "lwconduit_edge.png", "lwconduit.png" },
+	tiles = { "lwconduit.png" },
+	drawtype = "nodebox",
+	node_box = {
+		type = "connected",
+		fixed = 				{ -0.375, -0.375, -0.375, 0.375, 0.375, 0.375 }, -- body
+		connect_top = 		{ -0.3125, 0.3125, -0.3125, 0.3125, 0.5, 0.3125 }, -- top
+		connect_bottom =	{-0.3125, -0.5, -0.3125, 0.3125, -0.3125, 0.3125}, -- down
+		connect_front = 	{ -0.3125, -0.3125, -0.5, 0.3125, 0.3125, -0.3125 }, -- front
+		connect_back =  	{ -0.3125, -0.3125, 0.5, 0.3125, 0.3125, 0.3125 }, -- back
+		connect_left =  	{ -0.5, -0.3125, -0.3125, -0.3125, 0.3125, 0.3125 }, -- left
+		connect_right = 	{ 0.3125, -0.3125, -0.3125, 0.5, 0.3125, 0.3125 }, -- right
+	},
+	connect_sides = { "top", "bottom", "front", "back", "left", "right" },
+	connects_to = { "lwcomponents:conduit", "lwcomponents:conduit_locked",
+						 "lwcomponents:hopper", "lwcomponents:hopper_horz",
+						 "hopper:hopper", "hopper:hopper_side",
+						 "group:tube", "pipeworks:filter", "pipeworks:mese_filter",
+						 "pipeworks:digiline_filter" },
+	selection_box = {
+		type = "connected",
+		fixed = 				{ -0.375, -0.375, -0.375, 0.375, 0.375, 0.375 }, -- body
+		connect_top = 		{ -0.3125, 0.3125, -0.3125, 0.3125, 0.5, 0.3125 }, -- top
+		connect_bottom =	{-0.3125, -0.5, -0.3125, 0.3125, -0.3125, 0.3125}, -- down
+		connect_front = 	{ -0.3125, -0.3125, -0.5, 0.3125, 0.3125, -0.3125 }, -- front
+		connect_back =  	{ -0.3125, -0.3125, 0.5, 0.3125, 0.3125, 0.3125 }, -- back
+		connect_left =  	{ -0.5, -0.3125, -0.3125, -0.3125, 0.3125, 0.3125 }, -- left
+		connect_right = 	{ 0.3125, -0.3125, -0.3125, 0.5, 0.3125, 0.3125 }, -- right
+	},
+	collision_box = {
+		type = "connected",
+		fixed = 				{ -0.375, -0.375, -0.375, 0.375, 0.375, 0.375 }, -- body
+		connect_top = 		{ -0.3125, 0.3125, -0.3125, 0.3125, 0.5, 0.3125 }, -- top
+		connect_bottom =	{-0.3125, -0.5, -0.3125, 0.3125, -0.3125, 0.3125}, -- down
+		connect_front = 	{ -0.3125, -0.3125, -0.5, 0.3125, 0.3125, -0.3125 }, -- front
+		connect_back =  	{ -0.3125, -0.3125, 0.5, 0.3125, 0.3125, 0.3125 }, -- back
+		connect_left =  	{ -0.5, -0.3125, -0.3125, -0.3125, 0.3125, 0.3125 }, -- left
+		connect_right = 	{ 0.3125, -0.3125, -0.3125, 0.5, 0.3125, 0.3125 }, -- right
+	},
 	is_ground_content = false,
 	groups = table.copy (conduit_groups),
 	sounds = default.node_sound_stone_defaults (),
-	paramtype = "none",
+	paramtype = "light",
 	param1 = 0,
 	paramtype2 = "none",
 	param2 = 0,
@@ -850,7 +1165,10 @@ minetest.register_node("lwcomponents:conduit_locked", {
 	can_dig = can_dig,
 	after_dig_node = utils.pipeworks_after_dig,
 	on_blast = on_blast,
-	on_rightclick = on_rightclick
+	on_rightclick = on_rightclick,
+	allow_metadata_inventory_put = allow_metadata_inventory_put,
+	allow_metadata_inventory_take = allow_metadata_inventory_take,
+	allow_metadata_inventory_move = allow_metadata_inventory_move
 })
 
 
@@ -896,6 +1214,25 @@ local function convert_conduits ()
 						end
 					end
 				end
+
+				-- added v0.1.25 (2-3-22)
+				local tmeta = meta:to_table ()
+
+				if tmeta and tmeta.inventory then
+					if not tmeta.inventory.filter then
+						tmeta.inventory.filter =
+						{
+							[1] = "", [2] = "", [3] = "", [4] = "",
+							[5] = "", [6] = "", [7] = "", [8] = ""
+						}
+
+						meta:from_table (tmeta)
+
+						if meta:get_string ("channel") ~= "" then
+							meta:set_string ("formspec", get_formspec (data.pos))
+						end
+					end
+				end
 			end
 		end
 	end
@@ -912,7 +1249,7 @@ local function restart_conduits ()
 		local meta = minetest.get_meta (data.pos)
 
 		if meta and meta:get_int ("run_active") ~= 0 then
-			minetest.after (conduit_interval + (math.random (9) / 10),
+			minetest.after (conduit_interval + (math.random (10) / 10),
 								 run_conduit, data.pos, meta:get_int ("conduit_id"))
 		end
 	end
@@ -927,4 +1264,4 @@ end)
 
 
 
-end -- utils.digilines_supported or utils.mesecon_supported
+--

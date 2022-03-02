@@ -232,18 +232,6 @@ end
 
 
 
-local function is_drop (obj)
-	if obj then
-		local entity = obj.get_luaentity and obj:get_luaentity ()
-
-		return (entity and entity.name and entity.name == "__builtin:item")
-	end
-
-	return false
-end
-
-
-
 local function run_zap (pos)
 	minetest.sound_play ("lwforce_field_zap", { pos = pos, max_hear_distance = 10, gain = 1.0 })
 
@@ -290,7 +278,7 @@ local function run_field (pos, elapsed)
 			local obj_pos = (obj.get_pos and obj:get_pos ()) or nil
 
 			if obj_pos and not obj:get_armor_groups ().immortal then
-				if not is_drop (obj) and not minetest.is_protected (obj_pos, owner) then
+				if not utils.is_drop (obj) and not minetest.is_protected (obj_pos, owner) then
 
 					if obj:is_player () then
 						if not exclude[obj:get_player_name ()] then

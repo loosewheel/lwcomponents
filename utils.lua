@@ -225,6 +225,40 @@ end
 
 
 
+function utils.table_equal (t1, t2)
+	for k, v in pairs (t1) do
+		if type (t2[k]) ~= type (v) then
+			return false
+		end
+
+		if type (v) == "table" then
+			if not utils.table_equal (v, t2[k]) then
+				return false
+			end
+		elseif v ~= t2[k] then
+			return false
+		end
+	end
+
+	for k, v in pairs (t2) do
+		if type (t1[k]) ~= type (v) then
+			return false
+		end
+
+		if type (v) == "table" then
+			if not utils.table_equal (v, t1[k]) then
+				return false
+			end
+		elseif v ~= t1[k] then
+			return false
+		end
+	end
+
+	return true
+end
+
+
+
 function utils.is_same_item (item1, item2)
 	local copy1 = ItemStack (item1)
 	local copy2 = ItemStack (item2)
@@ -233,7 +267,42 @@ function utils.is_same_item (item1, item2)
 		copy1:set_count (1)
 		copy2:set_count (1)
 
-		return copy1:to_string () == copy2:to_string ()
+		return utils.table_equal (copy1:to_table (), copy2:to_table ())
+	end
+
+	return false
+end
+
+
+
+function utils.unescape_description (description)
+	description = description:gsub (string.char (27, 70), ""):
+									  gsub (string.char (27, 69), ""):
+									  gsub ("\n", " ")
+
+	local first = description:find (string.char (27, 40, 84, 64), 1, true)
+	while first do
+		local last = description:find (")", first + 4, true)
+
+		if not last then
+			last = first + 3
+		end
+
+		description = description:sub (1, first - 1)..description:sub (last + 1)
+
+		first = description:find (string.char (27, 40, 84, 64), 1, true)
+	end
+
+	return description
+end
+
+
+
+function utils.is_drop (obj)
+	if obj then
+		local entity = obj.get_luaentity and obj:get_luaentity ()
+
+		return (entity and entity.name and entity.name == "__builtin:item")
 	end
 
 	return false

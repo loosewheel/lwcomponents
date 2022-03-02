@@ -82,6 +82,26 @@ minetest.register_craft( {
 
 
 minetest.register_craft( {
+	output = "lwcomponents:conduit 5",
+	recipe = {
+		{ "default:stone", "", "default:stone" },
+		{ "", "default:chest", "" },
+		{ "default:stone", "default:steel_ingot", "default:stone" },
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:conduit_locked 5",
+	recipe = {
+		{ "default:stone", "", "default:stone" },
+		{ "", "default:chest_locked", "" },
+		{ "default:stone", "default:steel_ingot", "default:stone" },
+	},
+})
+
+
+minetest.register_craft( {
 	output = "lwcomponents:cannon_shell 10",
 	recipe = {
 		{ "default:steel_ingot", "default:steel_ingot" },
@@ -100,6 +120,7 @@ minetest.register_craft( {
 
 
 if minetest.global_exists ("fire") then
+
 minetest.register_craft( {
 	output = "lwcomponents:cannon_fire_shell 10",
 	recipe = {
@@ -107,6 +128,7 @@ minetest.register_craft( {
 		{ "default:iron_lump", "default:coalblock" },
 	},
 })
+
 end -- minetest.global_exists ("fire")
 
 
@@ -123,6 +145,18 @@ minetest.register_craft( {
 
 end -- utils.mesecon_supported
 
+
+if utils.hopper_supported then
+
+minetest.register_craft( {
+	output = "lwcomponents:hopper",
+	recipe = {
+		{ "default:stone", "default:steel_ingot", "default:stone" },
+		{ "", "default:stone", "" },
+	},
+})
+
+end
 
 
 if utils.digilines_supported or utils.mesecon_supported then
@@ -267,26 +301,6 @@ minetest.register_craft( {
 	recipe = {
 		{ "default:chest_locked", "default:steel_ingot" },
 		{ "default:copper_ingot", "default:steel_ingot" },
-	},
-})
-
-
-minetest.register_craft( {
-	output = "lwcomponents:conduit 5",
-	recipe = {
-		{ "default:stone", "", "default:stone" },
-		{ "", "default:chest", "" },
-		{ "default:stone", "default:steel_ingot", "default:stone" },
-	},
-})
-
-
-minetest.register_craft( {
-	output = "lwcomponents:conduit_locked 5",
-	recipe = {
-		{ "default:stone", "", "default:stone" },
-		{ "", "default:chest_locked", "" },
-		{ "default:stone", "default:steel_ingot", "default:stone" },
 	},
 })
 

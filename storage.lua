@@ -200,20 +200,6 @@ local consolidation_interval = 20
 
 
 
-local function unescape_description (description)
-	if description:sub (1, 4) == string.char (27, 40, 84, 64) then
-		local last = description:find (")", 5, true)
-
-		if last then
-			description = description:sub (last + 1, -1)
-		end
-	end
-
-	return description:gsub (string.char (27, 70), ""):gsub (string.char (27, 69), "")
-end
-
-
-
 local function unit_inventory (pos, owner, inv_list)
 	local node = utils.get_far_node (pos)
 
@@ -333,15 +319,14 @@ local function get_stock_list (pos)
 
 		if tstack and tstack.meta and count_table_keys (tstack.meta) > 0 then
 			custom = true
-
-			if stack:get_meta ():get_string ("description") ~= "" then
-				description = stack:get_meta ():get_string ("description")
-			end
-
 			pallet_index = tstack.meta.palette_index
 		end
 
-		if not description then
+		if stack:get_short_description () ~= "" then
+			description = stack:get_short_description ()
+		elseif stack:get_description () ~= "" then
+			description = stack:get_description ()
+		else
 			description = name
 
 			local def = utils.find_item_def (name)
@@ -358,7 +343,7 @@ local function get_stock_list (pos)
 		list[#list + 1] =
 		{
 			name = stack:get_name (),
-			description = unescape_description (description),
+			description = utils.unescape_description (description),
 			id = k,
 			count = v.count,
 			custom = custom,
@@ -721,8 +706,11 @@ local function get_formspec_list (pos)
 		local stack = ItemStack (k)
 		local smeta = stack:get_meta ()
 
-		if smeta and smeta:get_string ("description") ~= "" then
-			description = smeta:get_string ("description")
+
+		if stack:get_short_description () ~= "" then
+			description = stack:get_short_description ()
+		elseif stack:get_description () ~= "" then
+			description = stack:get_description ()
 		else
 			local def = utils.find_item_def (stack:get_name ())
 
@@ -738,7 +726,7 @@ local function get_formspec_list (pos)
 		list[#list + 1] =
 		{
 			item = k,
-			description = unescape_description (description),
+			description = utils.unescape_description (description),
 			count = v.count
 		}
 	end
