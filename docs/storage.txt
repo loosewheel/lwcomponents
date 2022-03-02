@@ -52,6 +52,9 @@ are disposed of.
 
 Hoppers placed to the top or sides of an indexer will feed items into the
 input. Hoppers placed below an indexer will take items from the output.
+Note, when a hopper from the hopper mod is used to place items into the
+input, if the player that placed the hopper leaves the game the input will
+not be pulled into storage.
 
 Pipeworks tubes can push items into the input, and pull items from the
 output.
@@ -92,10 +95,9 @@ or
 			pallet_index -- string if the item has a pallet index, otherwise nil
 			id -- string, unique id of the item in storage
 		}
-			The description is derived in the following manner: from a custom
-			description in metadata; if none then the short description from
-			the item's definition; if none then the description from the item's
-			definition; if none then the item's name, as <mod>:<name>.
+			The description is derived from the short description, if none
+			then the description, and if none then the item's name, as
+			<mod>:<name>.
 
 Note: When sending output messages the simple item name, as <mod>:<name>,
 will work for most items, but not for custom items. With custom items, or

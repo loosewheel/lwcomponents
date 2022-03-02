@@ -1,35 +1,47 @@
 Conduit
 -------
-* This block is only available if digilines and/or mesecons are loaded.
 
 Conduits are connected in a circuit, and can move items from their
 inventory to another conduit in the same circuit.
 
 When a conduit node is placed it has a simple form that asks for a channel.
 This channel is both the digilines' channel and the target id of this
-conduit within the circuit. A conduit does not have to be given a name.
+conduit within the circuit. A conduit does not have to be given a channel.
 Most of them are just used to connect other conduits together.
 
 Transfer of items takes 0.1 seconds per conduit node moved, and will work
 in unloaded blocks.
 
-Also acts as a digilines conductor. If the hopper mod is loaded, will
-take items from the top and sides, and release them from the bottom.
+Filtering of items can be done by placing an item into a filter slot and
+setting a target for that item. If an item is not filtered it is sent to
+the main target. Filtering can also be implemented through digilines.
+
+Conduits also act as a digilines conductor. If the hopper mod is loaded,
+the conduit will take items from the top and sides, and release them from
+the bottom. Be aware that hoppers from the hopper mod have some deficits
+that can cause some nodes from this mod to not function correctly in
+multi-player environments. The hoppers from this mod are more compatible.
 Pipeworks tubes can push items into and pull items from the inventory.
+
+Note that if a sending conduit is moved (as with a piston) while in the
+process of sending items, when the conduit is moved back into a circuit
+a duplicate of the last sent item/s can be resent.
 
 
 Only the owner can dig or access the form of the locked version.
 
 UI
 
-Channel - digilines channel/target id of circuit.
-Target - target id/channel of circuit this circuit will transfer to.
+Channel - digilines channel/target id of conduit.
+Target - target id/channel of conduit this conduit will transfer to.
 Automatic - if checked transfers next item every second without command.
-Top right 16 slot inventory - storage of items.
+Top center 16 slot inventory - storage of items.
 Bottom 32 slot inventory - player's inventory.
+Filter - 8 vertical slot inventory on the right, each with their accompanying
+			target field.
 
 Mesecons
-	Transfers the next item when power is turned on to the target circuit.
+	Transfers the next item when power is turned on to the target conduit.
 
 Digilines messages
 "target <id>"
@@ -47,7 +59,7 @@ Digilines messages
 
 "transfer"
 	Simple transfer. Transfers the next item in the inventory to the target
-	circuit (same as mesecons power).
+	conduit (same as mesecons power).
 
 table message
 {
@@ -57,13 +69,41 @@ table message
 	item = "<itemname>"
 }
 
-	If target is not given, the circuit's set target is used.
+	If target is not given, the conduit determines the target from it's
+	own settings.
 
 	slot should be a number between 1 to 16. If the slot is empty nothing
 	is transferred.
 
-	item should be the registered item name. If the circuit's inventory
+	item should be the registered item name. If the conduit's inventory
 	does not contain any nothing is transferred.
 
 	Only slot or item should be given. If both are given slot is used. If
 	neither are given the next item in the inventory is transferred.
+
+"inventory"
+	Sends a digilines message with it's own channel in the following form:
+	{
+		action = "inventory",
+		inventory = {
+			<items>
+		}
+	}
+		The inventory key is an indexed list of items in the conduit in slot
+		order. Each item entry is a table with the following keys:
+		{
+			name -- string, the name of the item, as <mod>:<name>
+			description -- string, description of the item, same as in UI
+			count -- number, the total number of this item in storage
+			custom -- true if a custom item (has metadata), false if not
+			pallet_index -- string if the item has a pallet index, otherwise nil
+		}
+			The description is derived from the short description, if none
+			then the description, and if none then the item's name, as
+			<mod>:<name>.
+
+Note: When sending transfer messages the simple item name, as <mod>:<name>,
+will work for most items, but not for custom items. With custom items, or
+to play it safe, use the table form of the transfer message and use the
+index for the item from an inventory message as the slot for the transfer
+message.

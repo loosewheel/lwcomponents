@@ -1,0 +1,12 @@
+Hopper
+------
+* This block is only available if the hopper mod is loaded.
+
+This version of a hopper will transfer items from a drop or inventory in
+the node at the wide end of the hopper to the inventory in the node at the
+narrow end of the hopper. The hopper has no inventory itself, and always
+moves items one at a time, every second. These hoppers cannot be chained
+to transfer items, but work in unloaded blocks. This hopper uses the
+hopper mod's registered list of nodes, and should work with nodes with
+hopper support. These hoppers can be rotated with a screwdriver, but
+function as their typical placement when rotated.

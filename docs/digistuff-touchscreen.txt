@@ -1,0 +1,160 @@
+
+1st right click - set channel, can't be changed after that.
+Following right clicks displays touchscreen form.
+
+Sent message as a table. Each command can be sent individually or as
+indexes of a table to run as batch.
+
+
+Clears the current form.
+{
+	command = "clear"
+}
+
+
+Adds elements to the form. The form is size[10,8]. The parameters are as
+for formspec (see api docs). No version is specified.
+
+{
+	command = "realcoordinates",
+	enabled = true or false
+}
+
+{
+	command = "addimage",
+	X = n,
+	Y = n,
+	W = n,
+	H = n,
+	texture_name = string
+}
+
+{
+	command = "addfield",
+	X = n,
+	Y = n,
+	W = n,
+	H = n,
+	name = string,
+	label = string,
+	default = string
+}
+
+{
+	command = "addpwdfield",
+	X = n,
+	Y = n,
+	W = n,
+	H = n,
+	name = string,
+	label = string
+}
+
+{
+	command = "addtextarea",
+	X = n,
+	Y = n,
+	W = n,
+	H = n,
+	name = string,
+	label = string,
+	default = string
+}
+
+{
+	command = "addlabel",
+	X = n,
+	Y = n,
+	label = string
+}
+
+{
+	command = "addvertlabel",
+	X = n,
+	Y = n,
+	label = string
+}
+
+{
+	command = "addbutton",
+	X = n,
+	Y = n,
+	W = n,
+	H = n,
+	name = string,
+	label = string
+}
+
+{
+	command = "addbutton_exit",
+	X = n,
+	Y = n,
+	W = n,
+	H = n,
+	name = string,
+	label = string
+}
+
+{
+	command = "addimage_button",
+	X = n,
+	Y = n,
+	W = n,
+	H = n,
+	image = string,
+	name = string,
+	label = string
+}
+
+{
+	command = "addimage_button_exit",
+	X = n,
+	Y = n,
+	W = n,
+	H = n,
+	image = string,
+	name = string,
+	label = string
+}
+
+{
+	command = "adddropdown",
+	X = n,
+	Y = n,
+	W = n,
+	H = n,
+	name = string,
+	selected_id = n,
+	choices = { string [, string ... ] }
+}
+
+{
+	command = "addtextlist",
+	X = n,
+	Y = n,
+	W = n,
+	H = n,
+	transparent = true/false,
+	name = string,
+	selected_id = n,
+	listelements = { string [, string ... ] }
+}
+
+
+If unlocked ignores protection.
+
+{
+	command = "lock"
+}
+
+
+{
+	command = "locked"
+}
+
+
+
+When the touchscreen form is accessed a message is sent with the
+touchscreen's channel with the 'fields' parameter from the on_receive_fields
+handler, with an additional field 'clicker' with the name of the player
+that accessed the form.
