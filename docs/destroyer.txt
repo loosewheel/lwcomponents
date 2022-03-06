@@ -1,0 +1,11 @@
+Destroyer
+---------
+
+Destroyers dispose of items placed in their single slot inventory (basically
+a trash). Items can be push into destroyers with tubes from pipeworks or
+hoppers attached to the top or sides, so they are suitable for automation.
+Items cannot be pulled out of destroyers.
+
+Note that destroyers act when an item is placed in their inventory, as with
+storage indexers it is best to use the hopper from this mod to feed them
+in multi-player games.

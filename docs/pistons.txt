@@ -7,6 +7,16 @@ of the pusher when extended. Sticky piston draw back a single node in
 front of the pusher when retracted. Piston also act as a digilines
 conductor.
 
+Sticky blocks are also supported. Any sticky block structure attached to
+the pusher will also be pushed, up to the maximum setting. Any free blocks
+(not attached to the sticky blocks) in front will be pushed up to the
+maximum setting. This limit is from the pusher, not the sticky block. When
+retracting a maximum of one free block depth will be pulled.
+
+Any entities in front of or standing on a moving node are pushed/pulled,
+if nothing is in the way of their base position. Any entities against a
+sticky face are not pulled.
+
 UI
 
 Channel - digilines channel of piston.
