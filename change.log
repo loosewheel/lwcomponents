@@ -53,7 +53,7 @@ v0.1.8
 *	Made changes to lwcomponents.register_spawner api - called function
 	must now set velocity, can use force parameter.
 *	Removed spawning from this mod. Created lwcomponents_spawners to
-	register spawers.
+	register spawners.
 
 
 v0.1.9
@@ -153,3 +153,11 @@ v0.1.25
 *	Improved unescaping item description.
 *	Fixed custom item output from storage.
 *	Added filtering to conduit forms.
+
+
+v0.1.26
+*	Added support for stickblocks to pistons.
+*	Changed description of hoppers to avoid confusion.
+*	Added destroyer.
+*	Cleaned up hopper code.
+*	Fixed recipe for solid conductor blocks.

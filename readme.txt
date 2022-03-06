@@ -13,7 +13,7 @@ CC BY-SA 3.0
 
 Version
 =======
-0.1.25
+0.1.26
 
 
 Minetest Version
@@ -59,7 +59,8 @@ Various components for mesecons and digilines.
 *	Puncher, punches players or entities within a given reach.
 *	Player button, sends digilines message with player name.
 *	Breaker, digs the nodes directly in front.
-*	Deployers, places the nodes directly in front.
+*	Deployer, places the nodes directly in front.
+*	Destroyer, automated trash.
 *	Hologram, projects a hologram above the hologram node.
 *	Fan, blows any entity, player or drop in front of the fan.
 *	Conduit, connected in a circuit to move items.

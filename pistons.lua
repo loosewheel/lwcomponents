@@ -43,33 +43,36 @@ end
 
 
 
-local function push_entities (pos, vec)
-	local tpos = vector.add (pos, vec)
-	local tnode = utils.get_far_node (tpos)
-	local can_move = false
+local function push_entities (pos, movedir, entity_list, upper_limit)
+	local objects = minetest.get_objects_inside_radius (pos, 1.5)
 
-	if tnode then
-		if tnode.name == "air" then
-			can_move = true
-		else
-			local tdef = utils.find_item_def (tnode.name)
+	for _, obj in ipairs (objects) do
+		if obj.get_pos and obj.move_to then
+			local opos = obj:get_pos ()
 
-			can_move = tdef and not tdef.walkable
-		end
-	end
-
-	if can_move then
-		local object = minetest.get_objects_inside_radius (pos, 1.5)
-
-		for j = 1, #object do
-			if object[j].get_pos then
-				local opos = object[j]:get_pos ()
-
-				if opos.x > (pos.x - 0.5) and opos.x < (pos.x + 0.5) and
+			if opos.x > (pos.x - 0.5) and opos.x < (pos.x + 0.5) and
 					opos.z > (pos.z - 0.5) and opos.z < (pos.z + 0.5) and
-					opos.y > (pos.y - 0.5) and opos.y < (pos.y + 0.5) then
+					opos.y >= (pos.y - 0.5) and opos.y < (pos.y + upper_limit) then
 
-					object[j]:set_pos (vector.add (opos, vec))
+				local newpos = vector.add (opos, movedir)
+				local node = utils.get_far_node (vector.round (newpos))
+				local def = (node and utils.find_item_def (node.name)) or nil
+
+				if (node.name == "air") or (def and not def.walkable) then
+
+					entity_list[#entity_list + 1] =
+					{
+						obj = obj,
+						pos = newpos
+					}
+
+					obj:move_to (newpos)
+				else
+					entity_list[#entity_list + 1] =
+					{
+						obj = obj,
+						pos = opos
+					}
 				end
 			end
 		end
@@ -78,76 +81,261 @@ end
 
 
 
-local function push_nodes (pos, extent)
-	local node = utils.get_far_node (pos)
+local function update_player_position (player_list)
+	for _, entry in ipairs (player_list) do
+		local player = minetest.get_player_by_name (entry.name)
 
-	if node then
-		local vec = direction_vector (node)
-		local last = vector.add (pos, vector.multiply (vec, extent))
-		local maxnodes = utils.settings.max_piston_nodes + 1
-		local count = 0
+		if player then
+			local pos = player:get_pos ()
 
-		for i = 1, maxnodes do
-			local tnode = utils.get_far_node (last)
-
-			if not tnode then
-				return false
+			if pos.y < entry.pos.y then
+				pos.y = entry.pos.y
+				player:set_pos (pos)
 			end
+		end
+	end
+end
 
-			local tdef = utils.find_item_def (tnode.name)
 
-			if tnode.name == "air" or (tdef and not tdef.walkable) then
-				count = i - 1
-				break
-			end
 
-			if i == maxnodes then
-				return false
-			end
+local function queue_player_update (entity_list, movedir)
+	local players = { }
 
-			last = vector.add (last, vec)
+	for _, entry in ipairs (entity_list) do
+		if entry.obj and entry.obj:is_player () then
+			players[#players + 1] =
+			{
+				pos = entry.pos,
+				name = entry.obj:get_player_name ()
+			}
+		end
+	end
+
+	if #players > 0 then
+		minetest.after(0.1, update_player_position, players)
+	end
+end
+
+
+
+local rules_alldirs =
+{
+	{x =  1, y =  0,  z =  0},
+	{x = -1, y =  0,  z =  0},
+	{x =  0, y =  1,  z =  0},
+	{x =  0, y = -1,  z =  0},
+	{x =  0, y =  0,  z =  1},
+	{x =  0, y =  0,  z = -1},
+}
+
+
+
+local function add_pos_to_list (pos, dir, movedir, node_list, check_list)
+	local hash = minetest.hash_node_position (pos)
+
+	if not check_list[hash] then
+		if minetest.is_protected (pos, "") then
+			return 0
 		end
 
-		push_entities (last, vec)
+		local node = utils.get_far_node (pos)
 
-		for i = 1, count, 1 do
-			local cpos = vector.subtract (last, vec)
-			local cnode = utils.get_far_node (cpos)
-			local cmeta = minetest.get_meta (cpos)
+		if not node then
+			return 0
+		end
 
-			if not cnode or not cmeta then
-				return false
+		local def = utils.find_item_def (node.name)
+
+		if node.name == "air" or (def and def.buildable_to) then
+			return 1
+		end
+
+		local meta = minetest.get_meta (pos)
+		local timer = minetest.get_node_timer (pos)
+
+		check_list[hash] = true
+
+		node_list[#node_list + 1] =
+		{
+			node = node,
+			def = def,
+			pos = vector.new (pos),
+			newpos = vector.add (pos, movedir),
+			meta = (meta and meta:to_table ()) or { },
+			node_timer =
+			{
+				(timer and timer:get_timeout ()) or 0,
+				(timer and timer:get_elapsed ()) or 0
+			}
+		}
+
+		if def.mvps_sticky then
+			local sides = def.mvps_sticky (pos, node)
+
+			for _, r in ipairs (sides) do
+				if add_pos_to_list (r, dir, movedir, node_list, check_list) == 0 then
+					return 0
+				end
 			end
+		end
 
-			local tmeta = cmeta:to_table ()
-			local ctimer = minetest.get_node_timer (cpos)
-			local ctimeout = (ctimer and ctimer:get_timeout ()) or 0
-			local celapsed = (ctimer and ctimer:get_elapsed ()) or 0
+		-- If adjacent node is sticky block and connects add that
+		-- position to the connected table
+		for _, r in ipairs (rules_alldirs) do
+			local apos = vector.add (pos, r)
+			local anode = utils.get_far_node (apos)
+			local adef = (anode and minetest.registered_nodes[anode.name]) or nil
 
-			push_entities (cpos, vec)
+			if adef and adef.mvps_sticky then
+				local sides = adef.mvps_sticky (apos, anode)
 
-			minetest.remove_node (cpos)
-			minetest.set_node (last, cnode)
+				-- connects to this position?
+				for _, link in ipairs (sides) do
+					if vector.equals (link, pos) then
+						if add_pos_to_list (apos, dir, movedir, node_list, check_list) == 0 then
+							return 0
+						end
 
-			if tmeta then
-				cmeta = minetest.get_meta (last)
+						break
+					end
+				end
+			end
+		end
+	end
 
-				if not cmeta then
+	return 2
+end
+
+
+
+local function node_list_last_pos (pos, node_list, length)
+	local movedir = node_list.movedir
+	local base_pos = node_list.base_pos
+
+	if movedir then
+		if movedir.x ~= 0 then
+			return vector.new ({
+				x = base_pos.x + (movedir.x * length),
+				y = pos.y,
+				z = pos.z
+			})
+		elseif movedir.z ~= 0 then
+			return vector.new ({
+				x = pos.x,
+				y = pos.y,
+				z = base_pos.z + (movedir.z * length)
+			})
+		elseif movedir.y ~= 0 then
+			return vector.new ({
+				x = pos.x,
+				y = base_pos.y + (movedir.y * length),
+				z = pos.z
+			})
+		end
+	end
+
+	return pos
+end
+
+
+
+local function get_node_list (pos, extent, length, maxnodes, pushing, node_list, check_list)
+	local node = utils.get_far_node (pos)
+	node_list = node_list or { }
+	check_list = check_list or { }
+
+	if node then
+		local dir = vector.round (direction_vector (node))
+		local movedir = vector.round ((pushing and dir) or vector.multiply (dir, -1))
+
+		node_list.dir = dir
+		node_list.movedir = movedir
+		node_list.base_pos = vector.add (pos, vector.multiply (dir, extent))
+		node_list.length = length
+		node_list.maxnodes = maxnodes
+
+		check_list[minetest.hash_node_position (vector.add (pos, vector.multiply (dir, extent - 1)))] = true
+
+		for i = 0, length - 1, 1 do
+			local tpos = vector.add (pos, vector.multiply (dir, extent + i))
+
+			local result = add_pos_to_list (tpos, dir, movedir, node_list, check_list)
+
+			if result == 0 then
+				return false
+			elseif result == 1 then
+				break
+			end
+		end
+
+		-- get any ahead of stickyblocks to limit
+		local copy_list = table.copy (node_list)
+
+		for _, n in ipairs (copy_list) do
+			local hash = minetest.hash_node_position (n.newpos)
+
+			if not check_list[hash] then
+				local last_pos = node_list_last_pos (n.newpos, node_list, length)
+				local this_pos = vector.new (n.newpos)
+				local count = 0
+
+				while not vector.equals (this_pos, last_pos) and count < length do
+					local result = add_pos_to_list (this_pos, dir, movedir, node_list, check_list)
+
+					if result == 0 then
+						return false
+					elseif result == 1 then
+						break
+					end
+
+					count = count + 1
+					this_pos = vector.add (this_pos, movedir)
+				end
+			end
+		end
+
+		return true
+	end
+
+	return false
+end
+
+
+
+local function can_node_list_move (node_list, check_list)
+	local movedir = node_list.movedir
+	local radius = math.floor (node_list.maxnodes / 2)
+	local base_pos = node_list.base_pos
+
+	if movedir then
+		for _, n in ipairs (node_list) do
+			-- check connected stickyblocks don't extend too far laterally
+			if movedir.x ~= 0 then
+				if math.abs (n.pos.y - base_pos.y) > radius or
+						math.abs (n.pos.z - base_pos.z) > radius then
 					return false
 				end
-
-				cmeta:from_table (tmeta)
-			end
-
-			if ctimeout > 0 then
-				ctimer = minetest.get_node_timer (last)
-
-				if ctimer then
-					ctimer:set (ctimeout, celapsed)
+			elseif movedir.z ~= 0 then
+				if math.abs (n.pos.y - base_pos.y) > radius or
+						math.abs (n.pos.x - base_pos.x) > radius then
+					return false
+				end
+			elseif movedir.y ~= 0 then
+				if math.abs (n.pos.x - base_pos.x) > radius or
+						math.abs (n.pos.z - base_pos.z) > radius then
+					return false
 				end
 			end
 
-			last = cpos
+			-- check moving to is clear
+			if not check_list[minetest.hash_node_position (n.newpos)] then
+				local node = utils.get_far_node (n.newpos)
+				local def = (node and utils.find_item_def (node.name)) or nil
+
+				if node.name ~= "air" and def and not def.buildable_to then
+					return false
+				end
+			end
 		end
 	end
 
@@ -156,47 +344,239 @@ end
 
 
 
-local function pull_node (pos, extent)
-	local node = utils.get_far_node (pos)
+local function sort_node_list (node_list)
+	local movedir = node_list.movedir
 
-	if node then
-		local vec = direction_vector (node)
-		local cpos = vector.add (pos, vector.multiply (vec, extent))
-		local cnode = utils.get_far_node (cpos)
-		local cdef = cnode and utils.find_item_def (cnode.name)
+	if movedir then
+		if movedir.x > 0 then
+			table.sort (node_list , function (n1, n2)
+				return n1.pos.x > n2.pos.x
+			end)
+		elseif movedir.x < 0 then
+			table.sort (node_list , function (n1, n2)
+				return n1.pos.x < n2.pos.x
+			end)
+		elseif movedir.z > 0 then
+			table.sort (node_list , function (n1, n2)
+				return n1.pos.z > n2.pos.z
+			end)
+		elseif movedir.z < 0 then
+			table.sort (node_list , function (n1, n2)
+				return n1.pos.z < n2.pos.z
+			end)
+		elseif movedir.y > 0 then
+			table.sort (node_list , function (n1, n2)
+				return n1.pos.y > n2.pos.y
+			end)
+		elseif movedir.y < 0 then
+			table.sort (node_list , function (n1, n2)
+				return n1.pos.y < n2.pos.y
+			end)
+		end
+	end
+end
 
-		if cnode and cnode.name ~= "air" and cdef and cdef.walkable then
 
-			local cmeta = minetest.get_meta (cpos)
 
-			if cmeta then
-				local tpos = vector.subtract (cpos, vec)
-				local tmeta = cmeta:to_table ()
-				local ctimer = minetest.get_node_timer (cpos)
-				local ctimeout = (ctimer and ctimer:get_timeout ()) or 0
-				local celapsed = (ctimer and ctimer:get_elapsed ()) or 0
+local on_mvps_move = function (node_list)
+end
 
-				minetest.remove_node (cpos)
-				minetest.set_node (tpos, cnode)
 
-				if tmeta then
-					cmeta = minetest.get_meta (tpos)
 
-					if cmeta then
-						cmeta:from_table (tmeta)
-					end
-				end
+local is_mvps_stopper = function (node, movedir, node_list, id)
+	return false
+end
 
-				if ctimeout > 0 then
-					ctimer = minetest.get_node_timer (tpos)
 
-					if ctimer then
-						ctimer:set (ctimeout, celapsed)
-					end
-				end
+
+local update_mesecons_connections_removed = function (node_list)
+end
+
+
+
+local update_mesecons_connections_added = function (node_list)
+end
+
+
+if utils.mesecon_supported then
+	if mesecon.on_mvps_move then
+		on_mvps_move = function (node_list)
+			for _, callback in ipairs (mesecon.on_mvps_move) do
+				callback (node_list)
 			end
 		end
 	end
+
+	if mesecon.is_mvps_stopper then
+		is_mvps_stopper = function (node, movedir, node_list, id)
+			return mesecon.is_mvps_stopper (node, movedir, node_list, id)
+		end
+	end
+
+	if mesecon.on_dignode then
+		update_mesecons_connections_removed = function (node_list)
+			for _, node in ipairs (node_list) do
+				mesecon.on_dignode (node.oldpos, node.node)
+			end
+		end
+	end
+
+	if mesecon.on_placenode then
+		update_mesecons_connections_added = function (node_list)
+			for _, node in ipairs (node_list) do
+				mesecon.on_placenode (node.pos, utils.get_far_node (node.pos))
+			end
+		end
+	end
+end
+
+
+
+local function push_nodes (pos, extent)
+	local node_list = { }
+	local check_list = { }
+	local entity_list = { }
+	local maxnodes = utils.settings.max_piston_nodes
+
+	if not get_node_list (pos, extent, maxnodes, maxnodes, true, node_list, check_list) then
+		return false
+	end
+
+	if not can_node_list_move (node_list, check_list, maxnodes) then
+		return false
+	end
+
+	sort_node_list (node_list)
+
+	for id, node in ipairs (node_list) do
+		if is_mvps_stopper (node.node, node_list.movedir, node_list, id) then
+			return false
+		end
+	end
+
+	for _, node in ipairs (node_list) do
+		node.oldpos = vector.new (node.pos)
+		node.pos = vector.new (node.newpos)
+		node.newpos = nil
+
+		minetest.remove_node (node.oldpos)
+	end
+
+	update_mesecons_connections_removed (node_list)
+
+	-- push entities in front first
+	for _, node in ipairs (node_list) do
+		if not check_list[minetest.hash_node_position (node.pos)] then
+			push_entities (node.pos, node_list.movedir, entity_list, 0.5)
+		end
+	end
+
+	for _, node in ipairs (node_list) do
+		push_entities (node.oldpos, node_list.movedir, entity_list, 1.0)
+
+		minetest.set_node (node.pos, node.node)
+
+		if node.meta then
+			local meta = minetest.get_meta (node.pos)
+
+			if meta then
+				meta:from_table (node.meta)
+			end
+		end
+
+		if node.node_timer[1] > 0 then
+			local timer = minetest.get_node_timer (node.pos)
+
+			if timer then
+				timer:set (node.node_timer[1], node.node_timer[2])
+			end
+		end
+	end
+
+	-- push any entities in front of pusher
+	push_entities (node_list.base_pos, node_list.movedir, entity_list, 0.5)
+
+	on_mvps_move (node_list)
+	update_mesecons_connections_added (node_list)
+
+	if node_list.movedir.y >= 0 then
+		queue_player_update (entity_list, node_list.movedir)
+	end
+
+	return true
+end
+
+
+
+local function pull_node (pos, extent)
+	local node_list = { }
+	local check_list = { }
+	local entity_list = { }
+	local maxnodes = utils.settings.max_piston_nodes
+
+	if not get_node_list (pos, extent, 1, maxnodes, false, node_list, check_list) then
+		return false
+	end
+
+	if not can_node_list_move (node_list, check_list, maxnodes) then
+		return false
+	end
+
+	sort_node_list (node_list)
+
+	for id, node in ipairs (node_list) do
+		if is_mvps_stopper (node.node, node_list.movedir, node_list, id) then
+			return false
+		end
+	end
+
+	for _, node in ipairs (node_list) do
+		node.oldpos = vector.new (node.pos)
+		node.pos = vector.new (node.newpos)
+		node.newpos = nil
+
+		minetest.remove_node (node.oldpos)
+	end
+
+	update_mesecons_connections_removed (node_list)
+
+	-- push entities in front first
+	for _, node in ipairs (node_list) do
+		if not check_list[minetest.hash_node_position (node.pos)] then
+			push_entities (node.pos, node_list.movedir, entity_list, 0.5)
+		end
+	end
+
+	for _, node in ipairs (node_list) do
+		push_entities (node.oldpos, node_list.movedir, entity_list, 1.0)
+
+		minetest.set_node (node.pos, node.node)
+
+		if node.meta then
+			local meta = minetest.get_meta (node.pos)
+
+			if meta then
+				meta:from_table (node.meta)
+			end
+		end
+
+		if node.node_timer[1] > 0 then
+			local timer = minetest.get_node_timer (node.pos)
+
+			if timer then
+				timer:set (node.node_timer[1], node.node_timer[2])
+			end
+		end
+	end
+
+	on_mvps_move (node_list)
+	update_mesecons_connections_added (node_list)
+
+	if node_list.movedir.y >= 0 then
+		queue_player_update (entity_list, node_list.movedir)
+	end
+
+	return true
 end
 
 

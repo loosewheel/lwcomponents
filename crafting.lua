@@ -102,6 +102,16 @@ minetest.register_craft( {
 
 
 minetest.register_craft( {
+	output = "lwcomponents:destroyer",
+	recipe = {
+		{ "default:stone", "", "group:wood" },
+		{ "", "default:steel_ingot", "" },
+		{ "group:wood", "", "default:stone" }
+	},
+})
+
+
+minetest.register_craft( {
 	output = "lwcomponents:cannon_shell 10",
 	recipe = {
 		{ "default:steel_ingot", "default:steel_ingot" },
@@ -437,7 +447,7 @@ end -- utils.digilines_supported and utils.mesecon_supported
 if utils.unifieddyes_supported and utils.mesecon_supported then
 
 minetest.register_craft ({
-	output = "lwcomputers:solid_conductor_off 3",
+	output = "lwcomponents:solid_conductor_off 3",
 	recipe = {
 		{ "default:mese_crystal_fragment", "group:wood", ""},
 		{ "group:wood", "group:wood", "dye:white" },
@@ -446,7 +456,7 @@ minetest.register_craft ({
 
 
 minetest.register_craft ({
-	output = "lwcomputers:solid_horizontal_conductor_off 3",
+	output = "lwcomponents:solid_horizontal_conductor_off 3",
 	recipe = {
 		{ "group:wood", "group:wood", ""},
 		{ "default:mese_crystal_fragment", "group:wood", "dye:white" },

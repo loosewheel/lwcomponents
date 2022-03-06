@@ -149,6 +149,29 @@ end
 
 
 
+local function call_allow_metadata_inventory_put (def, pos, listname, index, stack, placer)
+	if def.allow_metadata_inventory_put and placer then
+		local result, count = pcall (def.allow_metadata_inventory_put,
+											  pos, listname, index, stack, placer)
+
+		if result then
+			return count
+		end
+	end
+
+	return utils.settings.default_stack_max
+end
+
+
+
+local function call_on_metadata_inventory_put (def, pos, listname, index, stack, placer)
+	if def.on_metadata_inventory_put and placer then
+		pcall (def.on_metadata_inventory_put, pos, listname, index, stack, placer)
+	end
+end
+
+
+
 local function place_item (dest_pos, dest_node, dest_inv_name, stack, placer)
 	local dest_def = minetest.registered_nodes[dest_node.name]
 
@@ -169,16 +192,12 @@ local function place_item (dest_pos, dest_node, dest_inv_name, stack, placer)
 			if inv_stack and not inv_stack:is_empty () and
 				utils.is_same_item (inv_stack, stack) and
 				inv_stack:get_count () < inv_stack:get_stack_max () and
-				(dest_def.allow_metadata_inventory_put == nil or
-				 placer == nil or
-				 dest_def.allow_metadata_inventory_put(dest_pos, dest_inv_name, slot, stack, placer) > 0) then
+				(call_allow_metadata_inventory_put (dest_def, dest_pos, dest_inv_name, slot, stack, placer) > 0) then
 
 				inv_stack:set_count (inv_stack:get_count () + 1)
 				dest_inv:set_stack (dest_inv_name, slot, inv_stack)
 
-				if dest_def.on_metadata_inventory_put and placer then
-					dest_def.on_metadata_inventory_put (dest_pos, dest_inv_name, slot, stack, placer)
-				end
+				call_on_metadata_inventory_put (dest_def, dest_pos, dest_inv_name, slot, stack, placer)
 
 				return true
 			end
@@ -189,15 +208,11 @@ local function place_item (dest_pos, dest_node, dest_inv_name, stack, placer)
 			local inv_stack = dest_inv:get_stack (dest_inv_name, slot)
 
 			if not inv_stack or inv_stack:is_empty () and
-				(dest_def.allow_metadata_inventory_put == nil or
-				 placer == nil or
-				 dest_def.allow_metadata_inventory_put(dest_pos, dest_inv_name, slot, stack, placer) > 0) then
+				(call_allow_metadata_inventory_put (dest_def, dest_pos, dest_inv_name, slot, stack, placer) > 0) then
 
 				dest_inv:set_stack (dest_inv_name, slot, stack)
 
-				if dest_def.on_metadata_inventory_put and placer then
-					dest_def.on_metadata_inventory_put (dest_pos, dest_inv_name, slot, stack, placer)
-				end
+				call_on_metadata_inventory_put (dest_def, dest_pos, dest_inv_name, slot, stack, placer)
 
 				return true
 			end
@@ -205,6 +220,28 @@ local function place_item (dest_pos, dest_node, dest_inv_name, stack, placer)
 	end
 
 	return false
+end
+
+
+
+local function get_player_object (pos)
+	local meta = minetest.get_meta (pos)
+	local placer_name = "<unknown>"
+
+	if meta then
+		placer_name = meta:get_string ("placer_name")
+		local placer = minetest.get_player_by_name (placer_name)
+
+		if placer then
+			return placer
+		end
+
+		if placer_name == "" then
+			placer_name = "<unknown>"
+		end
+	end
+
+	return utils.get_dummy_player (true, placer_name)
 end
 
 
@@ -221,10 +258,7 @@ local function run_hopper_action (pos)
 			local registered_dest_invs = hopper.get_registered_inventories_for (dest_node.name)
 
 			if registered_dest_invs then
-				local meta = minetest.get_meta (pos)
-				local placer_name = (meta and meta:get_string ("placer_name")) or nil
-				local placer = (placer_name and minetest.get_player_by_name (placer_name)) or
-									utils.get_dummy_player (true, placer_name or "<unknown>")
+				local placer = get_player_object (pos)
 				local src_pos = vector.add (pos, get_input_dir (node))
 				local drop = nil
 				local stack = nil
@@ -310,7 +344,7 @@ end
 
 
 minetest.register_node ("lwcomponents:hopper", {
-   description = S("Hopper"),
+   description = S("Conduit Hopper"),
    tiles = { "lwcomponents_hopper_top.png", "lwcomponents_hopper_vert_spout.png",
 				 "lwcomponents_hopper_side.png", "lwcomponents_hopper_side.png",
 				 "lwcomponents_hopper_side.png", "lwcomponents_hopper_side.png" },
@@ -359,7 +393,7 @@ minetest.register_node ("lwcomponents:hopper", {
 
 
 minetest.register_node ("lwcomponents:hopper_horz", {
-   description = S("Hopper"),
+   description = S("Conduit Hopper"),
    tiles = { "lwcomponents_hopper_top.png", "lwcomponents_hopper_bottom.png",
 				 "lwcomponents_hopper_side.png", "lwcomponents_hopper_side.png",
 				 "lwcomponents_hopper_side_spout.png", "lwcomponents_hopper_side.png" },
