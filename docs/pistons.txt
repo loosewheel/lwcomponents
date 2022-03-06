@@ -11,7 +11,9 @@ Sticky blocks are also supported. Any sticky block structure attached to
 the pusher will also be pushed, up to the maximum setting. Any free blocks
 (not attached to the sticky blocks) in front will be pushed up to the
 maximum setting. This limit is from the pusher, not the sticky block. When
-retracting a maximum of one free block depth will be pulled.
+retracting a maximum of one free block depth will be pulled. Any sticky
+block structure extending laterally by more than half the maximum limit
+will not be pushed.
 
 Any entities in front of or standing on a moving node are pushed/pulled,
 if nothing is in the way of their base position. Any entities against a
