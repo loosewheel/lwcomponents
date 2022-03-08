@@ -66,7 +66,7 @@ Various components for mesecons and digilines.
 *	Conduit, connected in a circuit to move items.
 *	Cannon, shoots an item on command with directional aiming (plus 3 shells).
 *	Double (optionally single) reach pistons and sticky pistons.
-*	Digiswitch, digilines controlled mesecons power.
+*	Digilines Switch, digilines controlled mesecons power.
 *	Movefloor, similar to vertical mesecons movestone.
 *	Camera, takes a representative image.
 *	Storage, indexed storage units.
