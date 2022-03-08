@@ -97,13 +97,8 @@ local function punch (pos)
 						punched = true
 					end
 
-				elseif object[i].get_luaentity and object[i]:get_luaentity () and
-						 object[i]:get_luaentity ().name and
-						 object[i]:get_luaentity ().name == "__builtin:item" then
-
-					-- don't punch drops
-
-				elseif object[i].get_pos and object[i]:get_pos () then
+				elseif not utils.is_drop (object[i]) and object[i].get_pos
+							and object[i]:get_pos () then
 
 					-- entity
 					if meta:get_string ("entities") == "true" then
@@ -180,28 +175,19 @@ end
 
 local function start_puncher (pos)
 	local node = minetest.get_node (pos)
-	local meta = minetest.get_meta (pos)
 
-	if node and meta then
+	if node then
 		if node.name == "lwcomponents:puncher" then
-			local meta = minetest.get_meta (pos)
+			node.name = "lwcomponents:puncher_on"
 
-			if meta then
-				node.name = "lwcomponents:puncher_on"
-
-				minetest.swap_node (pos, node)
-				update_form_spec (pos)
-			end
+			minetest.swap_node (pos, node)
+			update_form_spec (pos)
 
 		elseif node.name == "lwcomponents:puncher_locked" then
-			local meta = minetest.get_meta (pos)
+			node.name = "lwcomponents:puncher_locked_on"
 
-			if meta then
-				node.name = "lwcomponents:puncher_locked_on"
-
-				minetest.swap_node (pos, node)
-				update_form_spec (pos)
-			end
+			minetest.swap_node (pos, node)
+			update_form_spec (pos)
 
 		end
 	end
@@ -211,28 +197,19 @@ end
 
 local function stop_puncher (pos)
 	local node = minetest.get_node (pos)
-	local meta = minetest.get_meta (pos)
 
-	if node and meta then
+	if node then
 		if node.name == "lwcomponents:puncher_on" then
-			local meta = minetest.get_meta (pos)
+			node.name = "lwcomponents:puncher"
 
-			if meta then
-				node.name = "lwcomponents:puncher"
-
-				minetest.swap_node (pos, node)
-				update_form_spec (pos)
-			end
+			minetest.swap_node (pos, node)
+			update_form_spec (pos)
 
 		elseif node.name == "lwcomponents:puncher_locked_on" then
-			local meta = minetest.get_meta (pos)
+			node.name = "lwcomponents:puncher_locked"
 
-			if meta then
-				node.name = "lwcomponents:puncher_locked"
-
-				minetest.swap_node (pos, node)
-				update_form_spec (pos)
-			end
+			minetest.swap_node (pos, node)
+			update_form_spec (pos)
 
 		end
 	end
@@ -365,7 +342,6 @@ local function on_blast (pos, intensity)
 					local stack = ItemStack (items[1])
 
 					if stack then
-						preserve_metadata (pos, node, meta, { stack })
 						utils.item_drop (stack, nil, pos)
 						minetest.remove_node (pos)
 					end

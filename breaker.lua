@@ -12,7 +12,7 @@ local break_interval = 1.0
 
 
 local function get_breaker_side (pos, param2, side)
-	local base = nil
+	local base
 
 	if side == "left" then
 		base = { x = -1, y = pos.y, z = 0 }
@@ -138,7 +138,7 @@ local function can_break_node (pos, breakpos)
 			if node_def then
 				-- try tool first
 				local tool = get_tool (pos)
-				local dig_params = nil
+				local dig_params
 
 				if tool then
 					local tool_def = minetest.registered_items[tool:get_name ()]
@@ -516,7 +516,6 @@ local function on_blast (pos, intensity)
 					local stack = ItemStack (items[1])
 
 					if stack then
-						preserve_metadata (pos, node, meta, { stack })
 						utils.item_drop (stack, nil, pos)
 						minetest.remove_node (pos)
 					end

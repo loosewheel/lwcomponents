@@ -145,7 +145,7 @@ local function place_node (item, pos)
 
 				if not result then
 					if utils.settings.alert_handler_errors then
-						minetest.log ("error", "after_place_node handler for "..nodename.." crashed - "..msg)
+						minetest.log ("error", "after_place_node handler for "..stack:get_name ().." crashed - "..msg)
 					end
 				end
 			end
@@ -262,7 +262,7 @@ end
 
 
 
-local function deployer_on (pos, node, slot, range)
+local function deployer_on (pos, _node, slot, range)
 	local node = minetest.get_node (pos)
 
 	range = tonumber (range) or 1
@@ -428,7 +428,6 @@ local function on_blast (pos, intensity)
 					local stack = ItemStack (items[1])
 
 					if stack then
-						preserve_metadata (pos, node, meta, { stack })
 						utils.item_drop (stack, nil, pos)
 						minetest.remove_node (pos)
 					end

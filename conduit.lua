@@ -300,7 +300,6 @@ local function send_to_target (pos, target, slot)
 				local stack = inv:get_stack ("main", slot)
 
 				if stack and not stack:is_empty () then
-					local name = stack:get_name ()
 					local item = ItemStack (stack)
 
 					target = (target and tostring (target)) or
@@ -447,7 +446,7 @@ local function send_inventory_message (pos)
 
 					if stack and not stack:is_empty () then
 						local name = stack:get_name ()
-						local description = nil
+						local description
 						local custom = false
 						local pallet_index = nil
 						local tstack = stack:to_table ()
@@ -737,7 +736,6 @@ local function on_blast (pos, intensity)
 					local stack = ItemStack (items[1])
 
 					if stack then
-						preserve_metadata (pos, node, meta, { stack })
 						utils.item_drop (stack, nil, pos)
 						on_destruct (pos)
 						minetest.remove_node (pos)

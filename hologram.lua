@@ -126,14 +126,14 @@ local function draw_map (pos, map)
 					end
 
 					if draw then
-						local holonode = hologram_block[line[z]]
+						local colornode = hologram_block[line[z]]
 
 						if node then
 							utils.destroy_node (holopos)
 						end
 
-						if holonode then
-							minetest.set_node (holopos, { name = holonode.node })
+						if colornode then
+							minetest.set_node (holopos, { name = colornode.node })
 
 							local nodemeta = minetest.get_meta (holopos)
 
@@ -231,7 +231,6 @@ local function on_blast (pos, intensity)
 					local stack = ItemStack (items[1])
 
 					if stack then
-						preserve_metadata (pos, node, meta, { stack })
 						utils.item_drop (stack, nil, pos)
 						minetest.remove_node (pos)
 					end

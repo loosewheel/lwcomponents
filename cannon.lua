@@ -29,18 +29,6 @@ end
 
 
 
-local function get_barrel_pos (pos)
-	local barrel = get_cannon_barrel (pos)
-
-	if barrel then
-		return barrel:get_pos ()
-	end
-
-	return nil
-end
-
-
-
 local function get_barrel_angle (pos)
 	local node = minetest.get_node_or_nil (pos)
 	local barrel = get_cannon_barrel (pos)
@@ -181,11 +169,7 @@ end
 
 
 local function aim_barrel_delayed (pos, aimpos)
-	local x = tonumber (aimpos.x) or 0
-	local y = tonumber (aimpos.y) or 0
-	local z = tonumber (aimpos.z) or 0
-
-	if z < 1 then
+	if (tonumber (aimpos.z) or 0) < 1 then
 		return
 	end
 
@@ -230,7 +214,8 @@ local function fire_cannon (pos)
 						if ammo_pos and ammo_angle then
 							local dir = vector.rotate ({ x = 0, y = 0, z = -1 }, ammo_angle)
 							local owner = meta:get_string ("owner")
-							local obj, cancel = nil, false
+							local obj = nil
+							local cancel
 							local spawn_pos = { x = ammo_pos.x + dir.x,
 													  y = ammo_pos.y + dir.y,
 													  z = ammo_pos.z + dir.z }
@@ -464,7 +449,7 @@ local function on_place (itemstack, placer, pointed_thing)
 		minetest.set_node (pos, { name = "lwcomponents:cannon", param1 = 0, param2 = param2 })
 		after_place_node (pos, placer, itemstack, pointed_thing)
 
-		if not utils.is_creative (player) then
+		if not utils.is_creative (placer) then
 			itemstack:set_count (itemstack:get_count () - 1)
 		end
 	end
@@ -499,7 +484,7 @@ local function on_place_locked (itemstack, placer, pointed_thing)
 		minetest.set_node (pos, { name = "lwcomponents:cannon_locked", param1 = 0, param2 = param2 })
 		after_place_node_locked (pos, placer, itemstack, pointed_thing)
 
-		if not utils.is_creative (player) then
+		if not utils.is_creative (placer) then
 			itemstack:set_count (itemstack:get_count () - 1)
 		end
 	end
@@ -621,7 +606,6 @@ local function on_blast (pos, intensity)
 					local stack = ItemStack (items[1])
 
 					if stack then
-						preserve_metadata (pos, node, meta, { stack })
 						utils.item_drop (stack, nil, pos)
 						on_destruct (pos)
 						minetest.remove_node (pos)

@@ -121,7 +121,7 @@ local function camera_scan (pos, resolution, distance)
 					local horz = (x - (resolution / 2)) * scale * view
 					local vert = (y - (resolution / 2)) * scale * view
 
-					local tpos = nil
+					local tpos
 					if dir.x ~= 0 then
 						tpos = vector.round ({ x = (dist * dir.x) + pos.x, y = pos.y - vert, z = horz + pos.z })
 					else
@@ -146,9 +146,9 @@ local function camera_scan (pos, resolution, distance)
 							last_color = string.format ("0000%02X", color)
 							image[y][x] = last_color
 						else
-							local node = utils.get_far_node (tpos)
+							local tnode = utils.get_far_node (tpos)
 
-							if node and node.name ~= "air" then
+							if tnode and tnode.name ~= "air" then
 								local color = (((distance - dist) / distance) * 98) + 30
 
 								last_color = string.format ("%02X%02X%02X", color, color, color)
@@ -293,7 +293,6 @@ local function on_blast (pos, intensity)
 					local stack = ItemStack (items[1])
 
 					if stack then
-						preserve_metadata (pos, node, meta, { stack })
 						utils.item_drop (stack, nil, pos)
 						minetest.remove_node (pos)
 					end

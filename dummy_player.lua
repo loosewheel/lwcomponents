@@ -22,8 +22,8 @@ local function get_dummy_player (as_player, name, pos, look_dir, controls, veloc
 	end
 
 
-	object.set_pos = function (self, pos)
-		obj_pos = vector.new (pos)
+	object.set_pos = function (self, _pos)
+		obj_pos = vector.new (_pos)
 	end
 
 
@@ -37,8 +37,8 @@ local function get_dummy_player (as_player, name, pos, look_dir, controls, veloc
 	end
 
 
-	object.move_to = function (self, pos, continuous)
-		obj_pos = vector.new (pos)
+	object.move_to = function (self, _pos, continuous)
+		obj_pos = vector.new (_pos)
 	end
 
 
@@ -55,8 +55,8 @@ local function get_dummy_player (as_player, name, pos, look_dir, controls, veloc
 	end
 
 
-	object.set_hp = function (self, hp, reason)
-		obj_hp = hp
+	object.set_hp = function (self, _hp, reason)
+		obj_hp = _hp
 	end
 
 
@@ -134,8 +134,8 @@ local function get_dummy_player (as_player, name, pos, look_dir, controls, veloc
 	end
 
 
-	object.set_properties = function (self, properties)
-		obj_properties = table.copy (properties or { })
+	object.set_properties = function (self, _properties)
+		obj_properties = table.copy (_properties or { })
 	end
 
 
@@ -237,7 +237,6 @@ local function get_dummy_player (as_player, name, pos, look_dir, controls, veloc
 
 
 	object.set_fov = function (self, fov, is_multiplier, transition_time)
-		obj_breath = value
 	end
 
 

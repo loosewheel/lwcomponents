@@ -87,7 +87,6 @@ local function unit_on_blast (pos, intensity)
 				end
 			end
 
-			on_destruct (pos)
 			minetest.remove_node (pos)
 
 		else -- intensity < 1.0
@@ -113,9 +112,7 @@ local function unit_on_blast (pos, intensity)
 					local stack = ItemStack (items[1])
 
 					if stack then
-						preserve_metadata (pos, node, meta, { stack })
 						utils.item_drop (stack, nil, pos)
-						on_destruct (pos)
 						minetest.remove_node (pos)
 					end
 				end
@@ -312,7 +309,7 @@ local function get_stock_list (pos)
 	for k, v in pairs (inv_list) do
 		local stack = ItemStack (k)
 		local name = stack:get_name ()
-		local description = nil
+		local description
 		local custom = false
 		local pallet_index = nil
 		local tstack = stack:to_table ()
@@ -704,8 +701,6 @@ local function get_formspec_list (pos)
 	for k, v in pairs (inv_list) do
 		local description = k
 		local stack = ItemStack (k)
-		local smeta = stack:get_meta ()
-
 
 		if stack:get_short_description () ~= "" then
 			description = stack:get_short_description ()
@@ -942,7 +937,6 @@ local function indexer_on_blast (pos, intensity)
 				end
 			end
 
-			on_destruct (pos)
 			minetest.remove_node (pos)
 
 		else -- intensity < 1.0
@@ -978,9 +972,7 @@ local function indexer_on_blast (pos, intensity)
 					local stack = ItemStack (items[1])
 
 					if stack then
-						preserve_metadata (pos, node, meta, { stack })
 						utils.item_drop (stack, nil, pos)
-						on_destruct (pos)
 						minetest.remove_node (pos)
 					end
 				end

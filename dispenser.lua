@@ -139,7 +139,8 @@ local function dispense_item (pos, node, slot)
 						item:set_count (1)
 						local spawn_pos = dispense_pos (pos, node)
 						local owner = meta:get_string ("owner")
-						local obj, cancel = nil, false
+						local obj = nil
+						local cancel
 
 						if utils.settings.spawn_mobs then
 							obj, cancel = utils.spawn_registered (name,
@@ -318,7 +319,6 @@ local function on_blast (pos, intensity)
 					local stack = ItemStack (items[1])
 
 					if stack then
-						preserve_metadata (pos, node, meta, { stack })
 						utils.item_drop (stack, nil, pos)
 						minetest.remove_node (pos)
 					end

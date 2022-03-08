@@ -249,9 +249,6 @@ local function explode_entities (pos, radius, damage, drops)
 									if def and def.on_rightclick then
 										def.on_rightclick (obj:get_pos (), ItemStack (), child)
 
-										local ent_damage = ((radius - dist) / radius * damage / 2) + (damage / 2)
-										local reason = { type = "set_hp", from = "lwcomponents" }
-
 										child:add_velocity (vel)
 										child:set_hp (child:get_hp () - ent_damage, reason)
 									end

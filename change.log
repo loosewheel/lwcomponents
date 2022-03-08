@@ -161,3 +161,9 @@ v0.1.26
 *	Added destroyer.
 *	Cleaned up hopper code.
 *	Fixed recipe for solid conductor blocks.
+
+
+v0.1.27
+*	Bug fixes and code cleanup.
+*	Fixed receptor state in detector.
+*	Improved receptor state in digiswitch.

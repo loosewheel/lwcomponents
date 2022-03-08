@@ -8,8 +8,6 @@ if utils.digilines_supported and utils.mesecon_supported then
 
 
 local function get_mesecon_rule_for_side (side)
-	local base = nil
-
 	if side == "white" then
 		return { { x = 0, y = 1, z = 0 } }
 	elseif side == "black" then
@@ -108,12 +106,59 @@ end
 
 
 
+local function get_powered_rules (node)
+	local rules = { }
+
+	if is_side_on (node.param1, "switch") then
+		rules = table.copy (utils.mesecon_default_rules)
+
+		if is_side_on (node.param1, "white") then
+			rules[#rules + 1] = get_mesecon_rule_for_side ("white")[1]
+		end
+
+		if is_side_on (node.param1, "black") then
+			rules[#rules + 1] = get_mesecon_rule_for_side ("black")[1]
+		end
+	else
+		local sides =
+		{
+			"white",
+			"black",
+			"red",
+			"green",
+			"blue",
+			"yellow",
+		}
+
+		for _, side in ipairs (sides) do
+			if is_side_on (node.param1, side) then
+				rules[#rules + 1] = get_mesecon_rule_for_side (side)[1]
+			end
+		end
+	end
+
+	return rules
+end
+
+
+
+local function get_node_name (node)
+	if node.param1 ~= 0 then
+		return "lwcomponents:digiswitch_on"
+	end
+
+	return "lwcomponents:digiswitch"
+end
+
+
+
 local function switch_on (pos, side)
 	utils.mesecon_receptor_on (pos, get_mesecon_rule_for_side (side))
 
 	local node = utils.get_far_node (pos)
 	if node then
 		node.param1 = set_side_bit (node.param1, side, true)
+		node.name = get_node_name (node)
 		minetest.swap_node (pos, node)
 	end
 end
@@ -126,6 +171,7 @@ local function switch_off (pos, side)
 	local node = utils.get_far_node (pos)
 	if node then
 		node.param1 = set_side_bit (node.param1, side, false)
+		node.name = get_node_name (node)
 		minetest.swap_node (pos, node)
 	end
 end
@@ -192,32 +238,37 @@ local function mesecon_support ()
 	{
 		receptor =
 		{
+			state = mesecon.state.off,
+			rules =
+			{
+				{ x =  0, y =  0, z = -1 },
+				{ x =  1, y =  0, z =  0 },
+				{ x = -1, y =  0, z =  0 },
+				{ x =  0, y =  0, z =  1 },
+				{ x =  1, y =  1, z =  0 },
+				{ x =  1, y = -1, z =  0 },
+				{ x = -1, y =  1, z =  0 },
+				{ x = -1, y = -1, z =  0 },
+				{ x =  0, y =  1, z =  1 },
+				{ x =  0, y = -1, z =  1 },
+				{ x =  0, y =  1, z = -1 },
+				{ x =  0, y = -1, z = -1 },
+				{ x =  0, y =  1, z =  0 },
+				{ x =  0, y = -1, z =  0 }
+			}
+		},
+	}
+end
+
+
+
+local function mesecon_support_on ()
+	return
+	{
+		receptor =
+		{
 			state = mesecon.state.on,
-
-			rules = function (node)
-				if is_side_on (node.param1, "switch") then
-					return utils.mesecon_default_rules
-				end
-
-				local r = { }
-				local sides =
-				{
-					"white",
-					"black",
-					"red",
-					"green",
-					"blue",
-					"yellow",
-				}
-
-				for _, side in ipairs (sides) do
-					if is_side_on (node.param1, side) then
-						r[#r + 1] = get_mesecon_rule_for_side (side)[1]
-					end
-				end
-
-				return r
-			end
+			rules = get_powered_rules
 		},
 	}
 end
@@ -243,7 +294,15 @@ end
 
 
 local function on_destruct (pos)
-	utils.mesecon_receptor_off (pos, get_mesecon_rule_for_side ())
+	local node = utils.get_far_node (pos)
+
+	if node then
+		local rules = get_powered_rules (node)
+
+		if #rules > 0 then
+			utils.mesecon_receptor_off (pos, rules)
+		end
+	end
 end
 
 
@@ -278,6 +337,34 @@ minetest.register_node ("lwcomponents:digiswitch", {
 	groups = { cracky = 2, oddly_breakable_by_hand = 2 },
 	sounds = default.node_sound_stone_defaults (),
 	mesecons = mesecon_support (),
+	digiline = digilines_support (),
+	_digistuff_channelcopier_fieldname = "channel",
+
+   on_construct = on_construct,
+   on_destruct = on_destruct,
+	on_receive_fields = on_receive_fields,
+})
+
+
+
+minetest.register_node ("lwcomponents:digiswitch_on", {
+   description = S("Digilines Switch"),
+   tiles = { "lwdigiswitch_white.png", "lwdigiswitch_black.png",
+				 "lwdigiswitch_green.png", "lwdigiswitch_red.png",
+				 "lwdigiswitch_yellow.png", "lwdigiswitch_blue.png" },
+   sunlight_propagates = false,
+   drawtype = "normal",
+   node_box = {
+      type = "fixed",
+      fixed = {
+         {-0.5, -0.5, -0.5, 0.5, 0.5, 0.5},
+      }
+   },
+	paramtype = "none",
+	param1 = 0,
+	groups = { cracky = 2, oddly_breakable_by_hand = 2, not_in_creative_inventory = 1 },
+	sounds = default.node_sound_stone_defaults (),
+	mesecons = mesecon_support_on (),
 	digiline = digilines_support (),
 	_digistuff_channelcopier_fieldname = "channel",
 

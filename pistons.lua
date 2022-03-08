@@ -884,7 +884,6 @@ local function on_blast (pos, intensity)
 					local stack = ItemStack (items[1])
 
 					if stack then
-						preserve_metadata (pos, node, meta, { stack })
 						utils.item_drop (stack, nil, pos)
 						minetest.remove_node (pos)
 					end
@@ -1070,7 +1069,7 @@ minetest.register_node("lwcomponents:piston_blank_1", {
 minetest.register_node("lwcomponents:piston_blank_2", {
 	description = S("Piston blank"),
 	drawtype = "airlike",
-	paramtype = "none",
+	paramtype = "light",
 	param1 = 0,
 	paramtype2 = "facedir",
 	param2 = 0,
@@ -1092,7 +1091,6 @@ minetest.register_node("lwcomponents:piston_blank_2", {
 	is_ground_content = false,
 	drop = "",
 	groups = { not_in_creative_inventory = 1 },
-	paramtype = "light",
 	-- unaffected by explosions
 	on_blast = function() end,
 })

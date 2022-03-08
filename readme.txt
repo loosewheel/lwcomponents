@@ -13,7 +13,7 @@ CC BY-SA 3.0
 
 Version
 =======
-0.1.26
+0.1.27
 
 
 Minetest Version

@@ -21,7 +21,12 @@ local function mesecons_on (pos)
 			local node = utils.get_far_node (pos)
 
 			if node then
-				node.param1 = 1
+				if node.name == "lwcomponents:detector_locked_on" then
+					node.name = "lwcomponents:detector_locked_on_on"
+				elseif node.name == "lwcomponents:detector_on" then
+					node.name = "lwcomponents:detector_on_on"
+				end
+
 				minetest.swap_node (pos, node)
 			end
 		end
@@ -40,7 +45,12 @@ local function mesecons_off (pos)
 			local node = utils.get_far_node (pos)
 
 			if node then
-				node.param1 = 0
+				if node.name == "lwcomponents:detector_locked_on_on" then
+					node.name = "lwcomponents:detector_locked_on"
+				elseif node.name == "lwcomponents:detector_on_on" then
+					node.name = "lwcomponents:detector_on"
+				end
+
 				minetest.swap_node (pos, node)
 			end
 		end
@@ -145,7 +155,7 @@ local function get_entity_height (objref)
 		local entity = objref:get_luaentity ()
 
 		if entity and entity.name then
-			def = minetest.registered_entities[entity.name]
+			local def = minetest.registered_entities[entity.name]
 
 			if def and type (def.collisionbox) == "table" and
 				type (def.collisionbox[5]) == "number" then
@@ -343,30 +353,21 @@ end
 
 local function start_detector (pos)
 	local node = minetest.get_node (pos)
-	local meta = minetest.get_meta (pos)
 
-	if node and meta then
+	if node then
 		if node.name == "lwcomponents:detector" then
-			local meta = minetest.get_meta (pos)
+			node.name = "lwcomponents:detector_on"
 
-			if meta then
-				node.name = "lwcomponents:detector_on"
-
-				minetest.swap_node (pos, node)
-				minetest.get_node_timer (pos):start (detect_interval)
-				update_form_spec (pos)
-			end
+			minetest.swap_node (pos, node)
+			minetest.get_node_timer (pos):start (detect_interval)
+			update_form_spec (pos)
 
 		elseif node.name == "lwcomponents:detector_locked" then
-			local meta = minetest.get_meta (pos)
+			node.name = "lwcomponents:detector_locked_on"
 
-			if meta then
-				node.name = "lwcomponents:detector_locked_on"
-
-				minetest.swap_node (pos, node)
-				minetest.get_node_timer (pos):start (detect_interval)
-				update_form_spec (pos)
-			end
+			minetest.swap_node (pos, node)
+			minetest.get_node_timer (pos):start (detect_interval)
+			update_form_spec (pos)
 
 		end
 	end
@@ -376,32 +377,25 @@ end
 
 local function stop_detector (pos)
 	local node = minetest.get_node (pos)
-	local meta = minetest.get_meta (pos)
 
-	if node and meta then
-		if node.name == "lwcomponents:detector_on" then
-			local meta = minetest.get_meta (pos)
+	if node then
+		if node.name == "lwcomponents:detector_on" or
+				node.name == "lwcomponents:detector_on_on" then
+			node.name = "lwcomponents:detector"
 
-			if meta then
-				node.name = "lwcomponents:detector"
+			minetest.swap_node (pos, node)
+			minetest.get_node_timer (pos):stop ()
+			mesecons_off (pos)
+			update_form_spec (pos)
 
-				minetest.swap_node (pos, node)
-				minetest.get_node_timer (pos):stop ()
-				mesecons_off (pos)
-				update_form_spec (pos)
-			end
+		elseif node.name == "lwcomponents:detector_locked_on" or
+				 node.name == "lwcomponents:detector_locked_on_on" then
+			node.name = "lwcomponents:detector_locked"
 
-		elseif node.name == "lwcomponents:detector_locked_on" then
-			local meta = minetest.get_meta (pos)
-
-			if meta then
-				node.name = "lwcomponents:detector_locked"
-
-				minetest.swap_node (pos, node)
-				minetest.get_node_timer (pos):stop ()
-				mesecons_off (pos)
-				update_form_spec (pos)
-			end
+			minetest.swap_node (pos, node)
+			minetest.get_node_timer (pos):stop ()
+			mesecons_off (pos)
+			update_form_spec (pos)
 
 		end
 	end
@@ -565,7 +559,6 @@ local function on_blast (pos, intensity)
 					local stack = ItemStack (items[1])
 
 					if stack then
-						preserve_metadata (pos, node, meta, { stack })
 						utils.item_drop (stack, nil, pos)
 						on_destruct (pos)
 						minetest.remove_node (pos)
@@ -698,16 +691,31 @@ end
 
 
 
-local function mesecon_support ()
+local function mesecon_support_on ()
 	if utils.mesecon_supported then
 		return
 		{
 			receptor =
 			{
 				state = utils.mesecon_state_on,
-				rules = function (node)
-					return (node.param1 == 0 and { }) or utils.mesecon_default_rules
-				end
+				rules = utils.mesecon_default_rules
+			}
+		}
+	end
+
+	return nil
+end
+
+
+
+local function mesecon_support_off ()
+	if utils.mesecon_supported then
+		return
+		{
+			receptor =
+			{
+				state = utils.mesecon_state_off,
+				rules = utils.mesecon_default_rules
 			}
 		}
 	end
@@ -732,7 +740,7 @@ minetest.register_node("lwcomponents:detector", {
 	drop = "lwcomponents:detector",
 	_digistuff_channelcopier_fieldname = "channel",
 
-	mesecons = mesecon_support (),
+	mesecons = mesecon_support_off (),
 	digiline = digilines_support (),
 
 	on_destruct = on_destruct,
@@ -761,7 +769,7 @@ minetest.register_node("lwcomponents:detector_locked", {
 	drop = "lwcomponents:detector_locked",
 	_digistuff_channelcopier_fieldname = "channel",
 
-	mesecons = mesecon_support (),
+	mesecons = mesecon_support_off (),
 	digiline = digilines_support (),
 
 	on_destruct = on_destruct,
@@ -790,7 +798,7 @@ minetest.register_node("lwcomponents:detector_on", {
 	drop = "lwcomponents:detector",
 	_digistuff_channelcopier_fieldname = "channel",
 
-	mesecons = mesecon_support (),
+	mesecons = mesecon_support_off (),
 	digiline = digilines_support (),
 
 	on_destruct = on_destruct,
@@ -819,7 +827,65 @@ minetest.register_node("lwcomponents:detector_locked_on", {
 	drop = "lwcomponents:detector_locked",
 	_digistuff_channelcopier_fieldname = "channel",
 
-	mesecons = mesecon_support (),
+	mesecons = mesecon_support_off (),
+	digiline = digilines_support (),
+
+	on_destruct = on_destruct,
+	on_receive_fields = on_receive_fields,
+	can_dig = can_dig,
+	after_place_node = after_place_node_locked,
+	on_blast = on_blast,
+	on_timer = on_timer,
+	on_rightclick = on_rightclick
+})
+
+
+
+minetest.register_node("lwcomponents:detector_on_on", {
+	description = S("Detector"),
+	tiles = { "lwdetector_face_on.png", "lwdetector_face_on.png", "lwdetector.png",
+				 "lwdetector.png", "lwdetector.png", "lwdetector_face_on.png"},
+	is_ground_content = false,
+	groups = { cracky = 3, not_in_creative_inventory = 1 },
+	sounds = default.node_sound_stone_defaults (),
+	paramtype = "none",
+	param1 = 0,
+	paramtype2 = "facedir",
+	param2 = 1,
+	floodable = false,
+	drop = "lwcomponents:detector",
+	_digistuff_channelcopier_fieldname = "channel",
+
+	mesecons = mesecon_support_on (),
+	digiline = digilines_support (),
+
+	on_destruct = on_destruct,
+	on_receive_fields = on_receive_fields,
+	can_dig = can_dig,
+	after_place_node = after_place_node,
+	on_blast = on_blast,
+	on_timer = on_timer,
+	on_rightclick = on_rightclick
+})
+
+
+
+minetest.register_node("lwcomponents:detector_locked_on_on", {
+	description = S("Detector (locked)"),
+	tiles = { "lwdetector_face_on.png", "lwdetector_face_on.png", "lwdetector.png",
+				 "lwdetector.png", "lwdetector.png", "lwdetector_face_on.png"},
+	is_ground_content = false,
+	groups = { cracky = 3, not_in_creative_inventory = 1 },
+	sounds = default.node_sound_stone_defaults (),
+	paramtype = "none",
+	param1 = 0,
+	paramtype2 = "facedir",
+	param2 = 1,
+	floodable = false,
+	drop = "lwcomponents:detector_locked",
+	_digistuff_channelcopier_fieldname = "channel",
+
+	mesecons = mesecon_support_on (),
 	digiline = digilines_support (),
 
 	on_destruct = on_destruct,

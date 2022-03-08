@@ -260,8 +260,8 @@ local function run_hopper_action (pos)
 			if registered_dest_invs then
 				local placer = get_player_object (pos)
 				local src_pos = vector.add (pos, get_input_dir (node))
-				local drop = nil
-				local stack = nil
+				local drop
+				local stack
 				local slot = nil
 				local src_inv_name = nil
 

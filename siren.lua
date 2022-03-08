@@ -103,30 +103,21 @@ end
 
 local function start_siren (pos)
 	local node = minetest.get_node (pos)
-	local meta = minetest.get_meta (pos)
 
-	if node and meta then
+	if node then
 		if node.name == "lwcomponents:siren" then
-			local meta = minetest.get_meta (pos)
+			node.name = "lwcomponents:siren_on"
 
-			if meta then
-				node.name = "lwcomponents:siren_on"
-
-				stop_sound (pos)
-				minetest.swap_node (pos, node)
-				update_form_spec (pos)
-			end
+			stop_sound (pos)
+			minetest.swap_node (pos, node)
+			update_form_spec (pos)
 
 		elseif node.name == "lwcomponents:siren_locked" then
-			local meta = minetest.get_meta (pos)
+			node.name = "lwcomponents:siren_locked_on"
 
-			if meta then
-				node.name = "lwcomponents:siren_locked_on"
-
-				stop_sound (pos)
-				minetest.swap_node (pos, node)
-				update_form_spec (pos)
-			end
+			stop_sound (pos)
+			minetest.swap_node (pos, node)
+			update_form_spec (pos)
 
 		end
 	end
@@ -136,34 +127,25 @@ end
 
 local function stop_siren (pos)
 	local node = minetest.get_node (pos)
-	local meta = minetest.get_meta (pos)
 
-	if node and meta then
+	if node then
 		if node.name == "lwcomponents:siren_on" or
-			node.name == "lwcomponents:siren_alarm" then
-			local meta = minetest.get_meta (pos)
+				node.name == "lwcomponents:siren_alarm" then
+			node.name = "lwcomponents:siren"
 
-			if meta then
-				node.name = "lwcomponents:siren"
-
-				minetest.get_node_timer (pos):stop ()
-				stop_sound (pos)
-				minetest.swap_node (pos, node)
-				update_form_spec (pos)
-			end
+			minetest.get_node_timer (pos):stop ()
+			stop_sound (pos)
+			minetest.swap_node (pos, node)
+			update_form_spec (pos)
 
 		elseif node.name == "lwcomponents:siren_locked_on" or
-				 node.name == "lwcomponents:siren_locked_alarm" then
-			local meta = minetest.get_meta (pos)
+					node.name == "lwcomponents:siren_locked_alarm" then
+			node.name = "lwcomponents:siren_locked"
 
-			if meta then
-				node.name = "lwcomponents:siren_locked"
-
-				minetest.get_node_timer (pos):stop ()
-				stop_sound (pos)
-				minetest.swap_node (pos, node)
-				update_form_spec (pos)
-			end
+			minetest.get_node_timer (pos):stop ()
+			stop_sound (pos)
+			minetest.swap_node (pos, node)
+			update_form_spec (pos)
 
 		end
 	end
@@ -173,30 +155,21 @@ end
 
 local function start_alarm (pos)
 	local node = minetest.get_node (pos)
-	local meta = minetest.get_meta (pos)
 
-	if node and meta then
+	if node then
 		if node.name == "lwcomponents:siren_on" then
-			local meta = minetest.get_meta (pos)
+			node.name = "lwcomponents:siren_alarm"
 
-			if meta then
-				node.name = "lwcomponents:siren_alarm"
-
-				minetest.get_node_timer (pos):start (sound_interval)
-				start_sound (pos)
-				minetest.swap_node (pos, node)
-			end
+			minetest.get_node_timer (pos):start (sound_interval)
+			start_sound (pos)
+			minetest.swap_node (pos, node)
 
 		elseif node.name == "lwcomponents:siren_locked_on" then
-			local meta = minetest.get_meta (pos)
+			node.name = "lwcomponents:siren_locked_alarm"
 
-			if meta then
-				node.name = "lwcomponents:siren_locked_alarm"
-
-				minetest.get_node_timer (pos):start (sound_interval)
-				start_sound (pos)
-				minetest.swap_node (pos, node)
-			end
+			minetest.get_node_timer (pos):start (sound_interval)
+			start_sound (pos)
+			minetest.swap_node (pos, node)
 
 		end
 	end
@@ -206,30 +179,21 @@ end
 
 local function stop_alarm (pos)
 	local node = minetest.get_node (pos)
-	local meta = minetest.get_meta (pos)
 
-	if node and meta then
+	if node then
 		if node.name == "lwcomponents:siren_alarm" then
-			local meta = minetest.get_meta (pos)
+			node.name = "lwcomponents:siren_on"
 
-			if meta then
-				node.name = "lwcomponents:siren_on"
-
-				minetest.get_node_timer (pos):stop ()
-				stop_sound (pos)
-				minetest.swap_node (pos, node)
-			end
+			minetest.get_node_timer (pos):stop ()
+			stop_sound (pos)
+			minetest.swap_node (pos, node)
 
 		elseif node.name == "lwcomponents:siren_locked_alarm" then
-			local meta = minetest.get_meta (pos)
+			node.name = "lwcomponents:siren_locked_on"
 
-			if meta then
-				node.name = "lwcomponents:siren_locked_on"
-
-				minetest.get_node_timer (pos):stop ()
-				stop_sound (pos)
-				minetest.swap_node (pos, node)
-			end
+			minetest.get_node_timer (pos):stop ()
+			stop_sound (pos)
+			minetest.swap_node (pos, node)
 
 		end
 	end
@@ -365,7 +329,6 @@ local function on_blast (pos, intensity)
 					local stack = ItemStack (items[1])
 
 					if stack then
-						preserve_metadata (pos, node, meta, { stack })
 						utils.item_drop (stack, nil, pos)
 						on_destruct (pos)
 						minetest.remove_node (pos)

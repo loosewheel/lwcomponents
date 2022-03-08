@@ -237,7 +237,7 @@ local function move_entities (list, move, players)
 	for _, entry in ipairs (list) do
 		if entry.obj then
 			if players or not entry.obj:is_player () then
-				local pos = nil
+				local pos
 
 				if entry.obj:is_player () then
 					pos = vector.add (entry.pos, { x = move.x, y = move.y + 0.1, z = move.z })
@@ -311,7 +311,7 @@ local function move_nodes (list, move)
 			end
 
 			if list[i].timeout > 0 then
-				timer = minetest.get_node_timer (pos)
+				local timer = minetest.get_node_timer (pos)
 
 				if timer then
 					timer:set (list[i].timeout, list[i].elapsed)
@@ -334,7 +334,7 @@ local function move_nodes (list, move)
 			end
 
 			if list[i].timeout > 0 then
-				timer = minetest.get_node_timer (pos)
+				local timer = minetest.get_node_timer (pos)
 
 				if timer then
 					timer:set (list[i].timeout, list[i].elapsed)

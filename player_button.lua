@@ -69,7 +69,6 @@ end
 
 local function player_button_turnoff (pos)
 	local node = minetest.get_node(pos)
-	local meta = minetest.get_meta(pos)
 
 	if node.name == "lwcomponents:player_button_on" then
 		node.name = "lwcomponents:player_button_off"
@@ -85,7 +84,7 @@ end
 
 
 minetest.register_node ("lwcomponents:player_button", {
-	description = "Player Button",
+	description = S("Player Button"),
 	drawtype = "nodebox",
 	tiles = {
 	"lwplayer_button_side.png",
@@ -134,7 +133,7 @@ minetest.register_node ("lwcomponents:player_button", {
 
 
 minetest.register_node ("lwcomponents:player_button_off", {
-	description = "Player Button",
+	description = S("Player Button"),
 	drawtype = "nodebox",
 	tiles = {
 	"lwplayer_button_side.png",
@@ -184,7 +183,7 @@ minetest.register_node ("lwcomponents:player_button_off", {
 
 
 minetest.register_node ("lwcomponents:player_button_on", {
-	description = "Player Button",
+	description = S("Player Button"),
 	drawtype = "nodebox",
 	tiles = {
 	"lwplayer_button_side.png",
