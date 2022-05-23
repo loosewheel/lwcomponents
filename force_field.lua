@@ -820,7 +820,7 @@ end
 
 
 
-local force_field_groups = { cracky = 3 }
+local force_field_groups = { cracky = 3, wires_connect = 1 }
 if utils.pipeworks_supported then
 	force_field_groups.tubedevice = 1
 	force_field_groups.tubedevice_receiver = 1
@@ -828,7 +828,7 @@ end
 
 
 
-local force_field_on_groups = { cracky = 3, not_in_creative_inventory = 1 }
+local force_field_on_groups = { cracky = 3, not_in_creative_inventory = 1, wires_connect = 1 }
 if utils.pipeworks_supported then
 	force_field_on_groups.tubedevice = 1
 	force_field_on_groups.tubedevice_receiver = 1

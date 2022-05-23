@@ -513,7 +513,7 @@ end
 
 
 
-local dispenser_groups = { cracky = 3 }
+local dispenser_groups = { cracky = 3, wires_connect = 1 }
 if utils.pipeworks_supported then
 	dispenser_groups.tubedevice = 1
 	dispenser_groups.tubedevice_receiver = 1

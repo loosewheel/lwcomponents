@@ -923,7 +923,7 @@ end
 
 
 
-local cannon_groups = { cracky = 3 }
+local cannon_groups = { cracky = 3, wires_connect = 1 }
 if utils.pipeworks_supported then
 	cannon_groups.tubedevice = 1
 	cannon_groups.tubedevice_receiver = 1

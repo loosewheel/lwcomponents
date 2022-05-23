@@ -35,6 +35,7 @@ mesecon.register_node (":lwcomponents:solid_conductor",
 		groups = {
 			dig_immediate = 2,
 			ud_param2_colorable = 1,
+			wires_connect = 1
 		},
 	},
 	{
@@ -51,7 +52,8 @@ mesecon.register_node (":lwcomponents:solid_conductor",
 		groups = {
 			dig_immediate = 2,
 			ud_param2_colorable = 1,
-			not_in_creative_inventory = 1
+			not_in_creative_inventory = 1,
+			wires_connect = 1
 		},
 	}
 )
@@ -101,6 +103,7 @@ mesecon.register_node (":lwcomponents:solid_horizontal_conductor",
 		groups = {
 			dig_immediate = 2,
 			ud_param2_colorable = 1,
+			wires_connect = 1
 		},
 	},
 	{
@@ -117,7 +120,8 @@ mesecon.register_node (":lwcomponents:solid_horizontal_conductor",
 		groups = {
 			dig_immediate = 2,
 			ud_param2_colorable = 1,
-			not_in_creative_inventory = 1
+			not_in_creative_inventory = 1,
+			wires_connect = 1
 		},
 	}
 )

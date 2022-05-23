@@ -13,7 +13,7 @@ CC BY-SA 3.0
 
 Version
 =======
-0.1.27
+0.1.28
 
 
 Minetest Version
@@ -35,6 +35,7 @@ intllib
 hopper
 digistuff
 pipeworks
+lwwires
 
 
 Installation

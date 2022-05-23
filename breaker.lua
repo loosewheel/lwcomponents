@@ -712,7 +712,7 @@ end
 
 
 
-local breaker_groups = { cracky = 3 }
+local breaker_groups = { cracky = 3, wires_connect = 1 }
 if utils.pipeworks_supported then
 	breaker_groups.tubedevice = 1
 	breaker_groups.tubedevice_receiver = 1
@@ -720,7 +720,7 @@ end
 
 
 
-local breaker_on_groups = { cracky = 3, not_in_creative_inventory = 1 }
+local breaker_on_groups = { cracky = 3, not_in_creative_inventory = 1, wires_connect = 1 }
 if utils.pipeworks_supported then
 	breaker_on_groups.tubedevice = 1
 	breaker_on_groups.tubedevice_receiver = 1

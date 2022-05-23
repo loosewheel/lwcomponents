@@ -167,3 +167,7 @@ v0.1.27
 *	Bug fixes and code cleanup.
 *	Fixed receptor state in detector.
 *	Improved receptor state in digiswitch.
+
+
+v0.1.28
+*	Added support for lwwires. Wires will not connect to conduits.

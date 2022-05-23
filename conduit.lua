@@ -1024,7 +1024,7 @@ end
 
 
 
-local conduit_groups = { cracky = 3 }
+local conduit_groups = { cracky = 3, wires_connect = 1 }
 if utils.pipeworks_supported then
 	conduit_groups.tubedevice = 1
 	conduit_groups.tubedevice_receiver = 1
@@ -1034,13 +1034,14 @@ end
 
 minetest.register_node("lwcomponents:conduit", {
 	description = S("Conduit"),
+	short_description = S("Conduit"),
 	tiles = { "lwconduit.png" },
 	drawtype = "nodebox",
 	node_box = {
 		type = "connected",
 		fixed = 				{ -0.375, -0.375, -0.375, 0.375, 0.375, 0.375 }, -- body
 		connect_top = 		{ -0.3125, 0.3125, -0.3125, 0.3125, 0.5, 0.3125 }, -- top
-		connect_bottom =	{-0.3125, -0.5, -0.3125, 0.3125, -0.3125, 0.3125}, -- down
+		connect_bottom =	{ -0.3125, -0.5, -0.3125, 0.3125, -0.3125, 0.3125 }, -- down
 		connect_front = 	{ -0.3125, -0.3125, -0.5, 0.3125, 0.3125, -0.3125 }, -- front
 		connect_back =  	{ -0.3125, -0.3125, 0.5, 0.3125, 0.3125, 0.3125 }, -- back
 		connect_left =  	{ -0.5, -0.3125, -0.3125, -0.3125, 0.3125, 0.3125 }, -- left
@@ -1056,7 +1057,7 @@ minetest.register_node("lwcomponents:conduit", {
 		type = "connected",
 		fixed = 				{ -0.375, -0.375, -0.375, 0.375, 0.375, 0.375 }, -- body
 		connect_top = 		{ -0.3125, 0.3125, -0.3125, 0.3125, 0.5, 0.3125 }, -- top
-		connect_bottom =	{-0.3125, -0.5, -0.3125, 0.3125, -0.3125, 0.3125}, -- down
+		connect_bottom =	{ -0.3125, -0.5, -0.3125, 0.3125, -0.3125, 0.3125 }, -- down
 		connect_front = 	{ -0.3125, -0.3125, -0.5, 0.3125, 0.3125, -0.3125 }, -- front
 		connect_back =  	{ -0.3125, -0.3125, 0.5, 0.3125, 0.3125, 0.3125 }, -- back
 		connect_left =  	{ -0.5, -0.3125, -0.3125, -0.3125, 0.3125, 0.3125 }, -- left
@@ -1066,7 +1067,7 @@ minetest.register_node("lwcomponents:conduit", {
 		type = "connected",
 		fixed = 				{ -0.375, -0.375, -0.375, 0.375, 0.375, 0.375 }, -- body
 		connect_top = 		{ -0.3125, 0.3125, -0.3125, 0.3125, 0.5, 0.3125 }, -- top
-		connect_bottom =	{-0.3125, -0.5, -0.3125, 0.3125, -0.3125, 0.3125}, -- down
+		connect_bottom =	{ -0.3125, -0.5, -0.3125, 0.3125, -0.3125, 0.3125 }, -- down
 		connect_front = 	{ -0.3125, -0.3125, -0.5, 0.3125, 0.3125, -0.3125 }, -- front
 		connect_back =  	{ -0.3125, -0.3125, 0.5, 0.3125, 0.3125, 0.3125 }, -- back
 		connect_left =  	{ -0.5, -0.3125, -0.3125, -0.3125, 0.3125, 0.3125 }, -- left
@@ -1104,13 +1105,14 @@ minetest.register_node("lwcomponents:conduit", {
 
 minetest.register_node("lwcomponents:conduit_locked", {
 	description = S("Conduit (locked)"),
+	short_description = S("Conduit (locked)"),
 	tiles = { "lwconduit.png" },
 	drawtype = "nodebox",
 	node_box = {
 		type = "connected",
 		fixed = 				{ -0.375, -0.375, -0.375, 0.375, 0.375, 0.375 }, -- body
 		connect_top = 		{ -0.3125, 0.3125, -0.3125, 0.3125, 0.5, 0.3125 }, -- top
-		connect_bottom =	{-0.3125, -0.5, -0.3125, 0.3125, -0.3125, 0.3125}, -- down
+		connect_bottom =	{ -0.3125, -0.5, -0.3125, 0.3125, -0.3125, 0.3125 }, -- down
 		connect_front = 	{ -0.3125, -0.3125, -0.5, 0.3125, 0.3125, -0.3125 }, -- front
 		connect_back =  	{ -0.3125, -0.3125, 0.5, 0.3125, 0.3125, 0.3125 }, -- back
 		connect_left =  	{ -0.5, -0.3125, -0.3125, -0.3125, 0.3125, 0.3125 }, -- left
@@ -1126,7 +1128,7 @@ minetest.register_node("lwcomponents:conduit_locked", {
 		type = "connected",
 		fixed = 				{ -0.375, -0.375, -0.375, 0.375, 0.375, 0.375 }, -- body
 		connect_top = 		{ -0.3125, 0.3125, -0.3125, 0.3125, 0.5, 0.3125 }, -- top
-		connect_bottom =	{-0.3125, -0.5, -0.3125, 0.3125, -0.3125, 0.3125}, -- down
+		connect_bottom =	{ -0.3125, -0.5, -0.3125, 0.3125, -0.3125, 0.3125 }, -- down
 		connect_front = 	{ -0.3125, -0.3125, -0.5, 0.3125, 0.3125, -0.3125 }, -- front
 		connect_back =  	{ -0.3125, -0.3125, 0.5, 0.3125, 0.3125, 0.3125 }, -- back
 		connect_left =  	{ -0.5, -0.3125, -0.3125, -0.3125, 0.3125, 0.3125 }, -- left
@@ -1136,7 +1138,7 @@ minetest.register_node("lwcomponents:conduit_locked", {
 		type = "connected",
 		fixed = 				{ -0.375, -0.375, -0.375, 0.375, 0.375, 0.375 }, -- body
 		connect_top = 		{ -0.3125, 0.3125, -0.3125, 0.3125, 0.5, 0.3125 }, -- top
-		connect_bottom =	{-0.3125, -0.5, -0.3125, 0.3125, -0.3125, 0.3125}, -- down
+		connect_bottom =	{ -0.3125, -0.5, -0.3125, 0.3125, -0.3125, 0.3125 }, -- down
 		connect_front = 	{ -0.3125, -0.3125, -0.5, 0.3125, 0.3125, -0.3125 }, -- front
 		connect_back =  	{ -0.3125, -0.3125, 0.5, 0.3125, 0.3125, 0.3125 }, -- back
 		connect_left =  	{ -0.5, -0.3125, -0.3125, -0.3125, 0.3125, 0.3125 }, -- left

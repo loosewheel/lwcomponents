@@ -448,7 +448,7 @@ end
 
 
 
-local dropper_groups = { cracky = 3 }
+local dropper_groups = { cracky = 3, wires_connect = 1 }
 if utils.pipeworks_supported then
 	dropper_groups.tubedevice = 1
 	dropper_groups.tubedevice_receiver = 1
