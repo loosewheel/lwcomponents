@@ -171,3 +171,7 @@ v0.1.27
 
 v0.1.28
 *	Added support for lwwires. Wires will not connect to conduits.
+
+
+v0.1.29
+*	Fixed piston moving piston blanks.

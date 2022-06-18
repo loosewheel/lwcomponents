@@ -150,6 +150,11 @@ local function add_pos_to_list (pos, dir, movedir, node_list, check_list)
 			return 1
 		end
 
+		if node.name == "lwcomponents:piston_blank_1" or
+				node.name == "lwcomponents:piston_blank_2" then
+			return 0
+		end
+
 		local meta = minetest.get_meta (pos)
 		local timer = minetest.get_node_timer (pos)
 
@@ -1083,14 +1088,14 @@ minetest.register_node("lwcomponents:piston_blank_2", {
 	light_source = 0,
 	sunlight_propagates = true,
 	walkable = true,
-	pointable = false,
-	diggable = false,
+	pointable = true,
+	diggable = true,
 	climbable = false,
 	buildable_to = false,
 	floodable = false,
 	is_ground_content = false,
 	drop = "",
-	groups = { not_in_creative_inventory = 1 },
+	groups = { cracky = 3, not_in_creative_inventory = 1 },
 	-- unaffected by explosions
 	on_blast = function() end,
 })
