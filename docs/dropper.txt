@@ -2,7 +2,7 @@ Dropper
 -------
 * This block is only available if digilines and/or mesecons are loaded.
 
-Contains an inventory and drops an item on command. Also acts as a
+Contains an inventory and drops item/s on command. Also acts as a
 digilines conductor. If the hopper mod is loaded, will take items from the
 top and sides, and release them from the bottom. Pipeworks tubes can push
 items into and pull items from the inventory.
@@ -13,29 +13,52 @@ UI
 
 Channel - digilines channel of dropper.
 Top 16 slot inventory - storage of items to drop.
+Qty - the number of items dropped on an action.
 Bottom 32 slot inventory - player's inventory.
 
 Mesecons
-	Drops the next item when power is turned on.
+	Drops the next item/s when power is turned on, to the given quantity.
 
 Digilines messages
 
+"drop [<slot>|<itemname>] [qty]"
+	slot or itemname are optional. If given slot must be the number of
+	the dropper slot to drop from (1 to 16). itemname must be the name of
+	the item from the dropper to drop (eg. default:stone).
+	qty is optional. If given must be the number of items to drop. If
+	omitted the quantity set on the dropper's form is dropped.
+
+examples:
 "drop"
-	Drops the next item. No drop if dropper is empty.
+	Drops the first found item with the quantity from the dropper's form.
 
-"drop <slot>"
-	Drops 1 item from the given slot (1 to 16). No drop if slot is empty.
-	eg. "drop 7"
+"drop 7"
+	Drops items from slot 7 with the quantity from the dropper's form.
 
-"drop <itemname>"
-	Drops 1 item of the given name. No drop if dropper does not contain the
-	item.
-	eg. "drop default:stone"
+"drop default:stone"
+	Drops the item "default:stone" with the quantity from the dropper's form.
 
-When an item is dropped a digilines message is sent with the dropper's
+"drop 7 5"
+	Drops items from slot 7 with the quantity of 5.
+
+"drop default:stone 5"
+	Drops the item "default:stone" with the quantity of 5.
+
+"drop nil 5"
+	Drops the first found item with the quantity of 5.
+
+If there are not enough items in the dropper (of a name or in a slot) to
+fulfil the quantity, only the amount available is dropped. If no slot or
+name is given the first found item is used (multiple items are not dropped
+to fulfil the quantity).
+
+
+When items are dropped a digilines message is sent with the dropper's
 channel. The message is a table with the following keys:
 {
 	action = "drop",
-	name = "<itemname>", -- name of dropped item
-	slot = <slot> -- slot number the item was taken from (1 to 16).
+	name = "<itemname>", -- name of dropped item/s
+	slot = <slot>, -- slot number the item/s were taken from (1 to 16). If
+						-- more than one slot was taken from this will be -1
+	qty = <number> -- the number of items dropped
 }

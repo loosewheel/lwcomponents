@@ -11,7 +11,9 @@ used. Also acts as a digilines conductor. If the hopper mod is loaded,
 will take tools from the top and sides. Pipeworks tubes can push items
 into and pull items from the inventory.
 
-Only the owner can dig or access the form of the locked version.
+Only the owner can dig or access the form of the locked version. To break
+nodes in a protected area, the locked version must be used and the owner
+must be able to dig in the area.
 
 UI
 
