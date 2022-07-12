@@ -23,7 +23,7 @@ end
 
 
 
-local function send_drop_message (pos, slot, name)
+local function send_drop_message (pos, slot, name, qty)
 	if utils.digilines_supported then
 		local meta = minetest.get_meta (pos)
 
@@ -36,7 +36,8 @@ local function send_drop_message (pos, slot, name)
 														 channel,
 														 { action = "drop",
 															name = name,
-															slot = slot })
+															slot = slot,
+															qty = qty })
 			end
 		end
 	end
@@ -45,69 +46,110 @@ end
 
 
 -- slot:
---    nil - next item, no drop if empty
---    number - 1 item from slot, no drop if empty
---    string - name of item to drop, no drop if none
-local function drop_item (pos, node, slot)
+--    nil or "nil"- next item, no drop if empty, max qty or less of first found item
+--    number - qty items from slot, no drop if empty, max qty or less
+--    string - name of item to drop, no drop if none, max qty or less
+local function drop_item (pos, node, slot, qty)
 	local meta = minetest.get_meta (pos)
 
 	if meta then
 		local inv = meta:get_inventory ()
 
 		if inv then
-			if not slot then
+			local item
+
+			if qty then
+				qty = tonumber (qty)
+			end
+
+			if not qty then
+				qty = tonumber (meta:get_string ("quantity")) or 1
+			end
+
+			qty = math.max (qty, 1)
+
+			if not slot or (type (slot) == "string" and slot == "nil") then
 				local slots = inv:get_size ("main")
 
 				for i = 1, slots do
 					local stack = inv:get_stack ("main", i)
 
 					if not stack:is_empty () and stack:get_count () > 0 then
-						slot = i
+						item = stack:get_name ()
 						break
 					end
 				end
 
-			elseif type (slot) == "string" then
-				local name = slot
 				slot = nil
 
-				local slots = inv:get_size ("main")
-
-				for i = 1, slots do
-					local stack = inv:get_stack ("main", i)
-
-					if not stack:is_empty () and stack:get_count () > 0 then
-						if name == stack:get_name () then
-							slot = i
-							break
-						end
-					end
-				end
+			elseif type (slot) == "string" then
+				item = slot
+				slot = nil
 
 			else
 				slot = tonumber (slot)
-
 			end
 
 			if slot then
 				local stack = inv:get_stack ("main", slot)
 
 				if not stack:is_empty () and stack:get_count () > 0 then
-					local name = stack:get_name ()
-					local item = ItemStack (stack)
+					item = stack:get_name ()
+					local drop
 
-					if item then
-						item:set_count (1)
-
-						stack:set_count (stack:get_count () - 1)
+					if stack:get_count () >= qty then
+						drop = qty
+						stack:set_count (stack:get_count () - qty)
 						inv:set_stack ("main", slot, stack)
-
-						utils.item_drop (item, nil, drop_pos (pos, node))
-
-						send_drop_message (pos, slot, name)
-
-						return true, slot, name
+					else
+						drop = stack:get_count ()
+						inv:set_stack ("main", slot, nil)
 					end
+
+					if drop > 0 then
+						utils.item_drop (ItemStack (item.." "..drop), nil, drop_pos (pos, node))
+
+						send_drop_message (pos, slot, item, drop)
+
+						return true, slot, item
+					end
+				end
+
+			elseif item then
+				local slots = inv:get_size ("main")
+				local drop = 0
+
+				for i = 1, slots do
+					local stack = inv:get_stack ("main", i)
+
+					if not stack:is_empty () and stack:get_count () > 0 then
+						if item == stack:get_name () then
+							local remain = qty - drop
+
+							slot = (slot and -1) or i
+
+							if stack:get_count () > remain then
+								stack:set_count (stack:get_count () - remain)
+								drop = qty
+								inv:set_stack ("main", i, stack)
+							else
+								drop = drop + stack:get_count ()
+								inv:set_stack ("main", i, nil)
+							end
+						end
+					end
+
+					if drop == qty then
+						break
+					end
+				end
+
+				if drop > 0 then
+					utils.item_drop (ItemStack (item.." "..drop), nil, drop_pos (pos, node))
+
+					send_drop_message (pos, slot, item, drop)
+
+					return true, slot, item
 				end
 			end
 		end
@@ -118,19 +160,27 @@ end
 
 
 
-local function after_place_base (pos, placer, itemstack, pointed_thing)
-	local meta = minetest.get_meta (pos)
-	local spec =
+local function get_formspec ()
+	return
 	"formspec_version[3]\n"..
 	"size[11.75,13.75;true]\n"..
-	"field[1.0,1.0;4.0,0.8;channel;Channel;${channel}]\n"..
-	"button[5.5,1.0;2.0,0.8;setchannel;Set]\n"..
-	"list[context;main;3.5,2.5;4,4;]\n"..
-	"list[current_player;main;1.0,8.0;8,4;]\n"..
-	"listring[]"
+	"field[1.0,1.0;4.0,0.8;channel;Channel;${channel}]"..
+	"button[5.5,1.0;2.0,0.8;setchannel;Set]"..
+	"list[context;main;1.0,2.5;4,4;]"..
+	"list[current_player;main;1.0,8.0;8,4;]"..
+	"listring[]"..
+	"field[6.5,2.9;2.75,0.8;quantity;Qty;${quantity}]"..
+	"button[9.25,2.9;1.5,0.8;setquantity;Set]"
+end
+
+
+
+local function after_place_base (pos, placer, itemstack, pointed_thing)
+	local meta = minetest.get_meta (pos)
 
 	meta:set_string ("inventory", "{ main = { } }")
-	meta:set_string ("formspec", spec)
+	meta:set_string ("quantity", "1")
+	meta:set_string ("formspec", get_formspec ())
 
 	local inv = meta:get_inventory ()
 
@@ -178,6 +228,15 @@ local function on_receive_fields (pos, formname, fields, sender)
 
 		if meta then
 			meta:set_string ("channel", fields.channel)
+		end
+	end
+
+	if fields.setquantity then
+		local meta = minetest.get_meta (pos)
+
+		if meta then
+			local qty = math.max (tonumber (fields.quantity or 1) or 1, 1)
+			meta:set_string ("quantity", tostring (qty))
 		end
 	end
 end
@@ -285,6 +344,15 @@ local function on_rightclick (pos, node, clicker, itemstack, pointed_thing)
 											"lwcomponents:component_privately_owned",
 											spec)
 		end
+	else
+		local meta = minetest.get_meta (pos)
+
+		if meta then
+			if meta:get_string ("quantity") == "" then
+				meta:set_string ("quantity", "1")
+				meta:set_string ("formspec", get_formspec ())
+			end
+		end
 	end
 
 	return itemstack
@@ -322,7 +390,13 @@ local function digilines_support ()
 									m[2] = tonumber (m[2])
 								end
 
-								drop_item (pos, node, m[2])
+								if m[3] and tonumber (m[3]) then
+									m[3] = tonumber (m[3])
+								else
+									m[3] = nil
+								end
+
+								drop_item (pos, node, m[2], m[3])
 							end
 						end
 					end

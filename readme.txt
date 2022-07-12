@@ -13,7 +13,7 @@ CC BY-SA 3.0
 
 Version
 =======
-0.1.29
+0.1.30
 
 
 Minetest Version
@@ -105,5 +105,9 @@ Maximum piston nodes
 	Maximum nodes a piston can push.
 	Default: 15
 
+Use player when placing
+	Use the owner player of locked versions when placing nodes, otherwise
+	no player is used.
+	Default: false
 
 ------------------------------------------------------------------------

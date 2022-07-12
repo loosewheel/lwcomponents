@@ -73,10 +73,15 @@ end
 
 
 
-local function place_node (item, pos)
+local function place_node (item, pos, owner)
 	local node = minetest.get_node_or_nil ({ x = pos.x, y = pos.y - 1, z = pos.z })
 
 	if not node then
+		return false
+	end
+
+	if (utils.settings.use_player_when_placing and minetest.is_protected (pos, owner)) or
+			(not utils.settings.use_player_when_placing and minetest.is_protected (pos, "")) then
 		return false
 	end
 
@@ -95,7 +100,7 @@ local function place_node (item, pos)
 	nodedef = utils.find_item_def (node.name)
 
 	if node.name ~= "air" then
-		if not nodedef or not nodedef.buildable_to or minetest.is_protected (pos, "") then
+		if not nodedef or not nodedef.buildable_to then
 			return false
 		end
 	end
@@ -121,8 +126,14 @@ local function place_node (item, pos)
 			}
 		end
 
+		local placer
+
+		if owner ~= "" and utils.settings.use_player_when_placing then
+			placer = minetest.get_player_by_name (owner)
+		end
+
 		if itemdef and itemdef.on_place then
-			local result, leftover = pcall (itemdef.on_place, stack, nil, pointed_thing)
+			local result, leftover = pcall (itemdef.on_place, stack, placer, pointed_thing)
 
 			placed = result
 
@@ -221,7 +232,7 @@ local function deploy_item (pos, node, slot, range)
 					local deploypos = get_deploy_pos (pos, node.param2, range)
 
 					if item and deploypos then
-						if place_node (stack, deploypos) then
+						if place_node (stack, deploypos, meta:get_string ("owner")) then
 							stack:set_count (stack:get_count () - 1)
 							inv:set_stack ("main", slot, stack)
 

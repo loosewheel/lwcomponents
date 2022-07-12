@@ -253,8 +253,13 @@ end
 
 local function break_node (pos, range)
 	local node = minetest.get_node_or_nil (pos)
+	local meta = minetest.get_meta (pos)
 
 	if node then
+		if meta and minetest.is_protected (pos, meta:get_string ("owner")) then
+			return
+		end
+
 		local breakpos = get_break_pos (pos, node.param2, range)
 
 		if breakpos then

@@ -175,3 +175,8 @@ v0.1.28
 
 v0.1.29
 *	Fixed piston moving piston blanks.
+
+
+v0.1.30
+*	Added quantity field to droppers.
+*	Added 'Use player when placing' setting.

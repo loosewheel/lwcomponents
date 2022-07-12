@@ -6,3 +6,6 @@ lwcomponents_alert_handler_errors (Alert handler errors) bool true
 
 # Maximum nodes a piston can push.
 lwcomponents_max_piston_nodes (Maximum piston nodes) int 15
+
+# Use owner player when placing nodes.
+lwcomponents_use_player_when_placing (Use player when placing) bool false

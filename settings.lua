@@ -12,6 +12,9 @@ utils.settings.alert_handler_errors =
 utils.settings.max_piston_nodes =
 	tonumber (minetest.settings:get ("lwcomponents_max_piston_nodes") or 15)
 
+utils.settings.use_player_when_placing =
+	minetest.settings:get_bool ("lwcomponents_use_player_when_placing", false)
+
 utils.settings.default_stack_max =
 	tonumber (minetest.settings:get ("default_stack_max")) or 99
 
