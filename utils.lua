@@ -439,4 +439,13 @@ end
 
 
 
+local crafting_mods = dofile (minetest.get_modpath ("lwcomponents").."/crafting_mods.lua")
+
+
+function utils.get_crafting_mods (item)
+	return crafting_mods[item]
+end
+
+
+
 --

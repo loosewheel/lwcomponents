@@ -13,7 +13,7 @@ CC BY-SA 3.0
 
 Version
 =======
-0.1.30
+0.1.31
 
 
 Minetest Version
@@ -71,6 +71,7 @@ Various components for mesecons and digilines.
 *	Movefloor, similar to vertical mesecons movestone.
 *	Camera, takes a representative image.
 *	Storage, indexed storage units.
+*	Crafter, crafts by recipe or by item, and can pull from storage units.
 *	Hoppers, that are more compatible with this mod.
 *	Force Field Generator, repels players and mobs within a radius.
 *	Mesecons Through Wire, transmits through 1 to 2 solid blocks.

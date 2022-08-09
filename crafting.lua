@@ -61,6 +61,26 @@ minetest.register_craft( {
 
 
 minetest.register_craft( {
+	output = "lwcomponents:crafter",
+	recipe = {
+		{ "default:steel_ingot", "group:wood", "default:steel_ingot" },
+		{ "group:wood", "", "group:wood" },
+		{ "default:copper_ingot", "group:wood", "default:chest" },
+	},
+})
+
+
+minetest.register_craft( {
+	output = "lwcomponents:crafter_locked",
+	recipe = {
+		{ "default:steel_ingot", "group:wood", "default:steel_ingot" },
+		{ "group:wood", "", "group:wood" },
+		{ "default:copper_ingot", "group:wood", "default:chest_locked" },
+	},
+})
+
+
+minetest.register_craft( {
 	output = "lwcomponents:force_field",
 	recipe = {
 		{ "default:steel_ingot", "default:mese_crystal", "group:wood" },

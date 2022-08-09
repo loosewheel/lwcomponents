@@ -180,3 +180,7 @@ v0.1.29
 v0.1.30
 *	Added quantity field to droppers.
 *	Added 'Use player when placing' setting.
+
+
+v0.1.31
+*	Added crafter.
