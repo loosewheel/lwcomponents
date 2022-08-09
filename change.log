@@ -184,3 +184,7 @@ v0.1.30
 
 v0.1.31
 *	Added crafter.
+
+
+v0.1.32
+*	Fixed crafter not return replacement items properly.

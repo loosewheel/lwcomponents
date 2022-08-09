@@ -498,6 +498,20 @@ end
 
 
 
+local function place_in_output (pos, stack)
+	local meta = minetest.get_meta (pos)
+
+	if meta then
+		local inv = meta:get_inventory ()
+
+		if inv then
+			inv:add_item ("output", stack)
+		end
+	end
+end
+
+
+
 -- items is list of recipe grid
 local function craft (pos, items, recipe, qty, inv_list)
 	local output, leftover = minetest.get_craft_result (recipe)
@@ -584,12 +598,18 @@ local function craft (pos, items, recipe, qty, inv_list)
 									count = 0
 								end
 
-								return_input_items (over)
+								if not return_input_items (over) then
+									place_in_output (pos, ItemStack (string.format ("%s %d", over.name, count)))
+								end
 
 								if count < 1 then
 									break
 								end
 							end
+						end
+
+						if count > 0 then
+							place_in_output (pos, ItemStack (string.format ("%s %d", leftover.items[i]:get_name (), count)))
 						end
 					end
 				end
