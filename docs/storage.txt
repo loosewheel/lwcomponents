@@ -19,7 +19,7 @@ Channel - digilines channel of indexer.
 Input - middle.
 Output - top right.
 Filter - center right.
-Player inventor - lower right.
+Player inventory - lower right.
 
 When the UI is accessed the storage is scanned, and its contents are
 displayed in the list. The list contains the following columns:

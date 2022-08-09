@@ -1,0 +1,131 @@
+Crafter
+-------
+
+Crafters can craft items by recipe or desired output item. Crafted items
+are placed in the Output inventory, along with any replacement items (for
+example if a bucket of milk is used in the craft the bucket is placed in
+the Output inventory as well). Source items for the craft must be in the
+Input inventory. If the crafter is adjoined to a storage unit the crafter
+will also use source items from it as well.
+
+Only the owner can dig or access the form of the locked version.
+
+Unowned crafters can only access unowned units. Owned crafters can access
+units of the same owner or unowned units.
+
+UI
+Input inventory - top left, source items for crafting.
+Player inventory - lower left.
+Channel - digilines channel of crafter, press enter or click Set to set.
+Crafting grid - center top, enter a recipe to craft.
+Automatic - if checked a craft of the recipe is performed every second (if possible).
+Preview - this is a preview of the item crafted from the recipe.
+Craft - perform 1 craft from the recipe (if possible).
+Output inventory - center bottom, where crafted and replacement items are placed.
+Search - top right.
+Craftable list - right, list of all items that are possible to craft from
+						the input items. clicking an item crafts it (if possible).
+
+The form does not update while open. A craft from source items no longer
+available will not craft.
+
+Terms can be entered into the search field, and when enter is pressed or
+the Search button is pressed, only items whose name or description contains
+these terms are shown in the list. That is if they match any of the space
+separated terms.
+
+When items are placed into the crafting grid a copy is used and the item
+returns to where it was taken from. When items are removed from the crafting
+grid they are disposed of.
+
+The preview displays the craft preformed by the recipe. Items cannot be
+pulled from here.
+
+The automatic crafting is only operable when the crafter is in an active
+block. Mesecons and digilines operations operate in unloaded blocks.
+
+Hoppers placed to the top or sides of a crafter will feed items into the
+input. Hoppers placed below a crafter will take items from the output.
+
+Pipeworks tubes can push items into the input, and pull items from the
+output.
+
+Mesecons
+	Perform 1 craft from the recipe when power is turned on (if possible).
+
+Digilines messages
+"craft [qty]"
+	Craft from the recipe if possible. qty is optional, if given must be an
+	integer between 1 to 10.
+
+"craftitem itemname [qty]"
+	Craft the given item if possible. itemname must be a valid item name
+	(eg. "default:wood"). qty is optional, if given must be an integer
+	between 1 to 10.
+
+"automatic state"
+	Sets the automatic running state of the crafter. state must be true or
+	false.
+
+"craftable"
+	Sends a digilines message with it's own channel of the possible craftable
+	items in the following form:
+	{
+		action = "craftable",
+		items = {
+			<items>
+		}
+	}
+		The items key is an indexed list of items. Each item entry is
+		a table with the following keys:
+		{
+			name -- string, the name of the item, as <mod>:<name>
+			description -- string, short description of item
+		}
+
+"inventory"
+	Sends a digilines message with it's own channel of the source items,
+	including any attached storage, in the following form:
+	{
+		action = "inventory",
+		inventory = {
+			<items>
+		}
+	}
+		The inventory key is an indexed list of items. Each item entry is
+		a table with the following keys:
+		{
+			name -- string, the name of the item, as <mod>:<name>
+			description -- string, short description of item
+			count -- number, the total number of this item in storage
+		}
+
+
+Set recipe grid:
+{
+	action = "recipe",
+	items = { ... }
+}
+	items must be a string list of item names as <mod>:<name>. The grid is
+	fill left to right, top to bottom. Up to the first 9 items are used.
+
+*	When crafting by item the output quantities may not be as expected. The
+	first found recipe for the craft which is satisfied by the available
+	items is used. So if you have saplings and wood in the input and try
+	to craft sticks, if the first recipe found uses the saplings 1 stick will
+	be output, if wood then 4 sticks. Also, sometimes the same recipe is
+	registered for more than 1 item. In this case, what item will actually
+	be crafted is ambiguous.
+
+*	The file 'crafting_mods.lua' in the mod folder contains a list of
+	crafting modifications. Modify this file as necessary. The field name
+	is the item being crafted. Each item in the add list is added to the
+	output inventory. Each item in the remove list is removed from the
+	replacements or source storage.
+
+*	Gaining the list of craftable items is an exponential process, based
+	on the number of unique source items and the total number of items
+	available. As a guide, 320 source items and 795 total items that resulted
+	623 craftable items took approx. 200ms (1st gen i5 processor). This list
+	is only gained: when the form is opened; when the Search button is clicked;
+	and when the digilines "craftable" message is sent.
