@@ -331,12 +331,12 @@ end
 
 
 
--- removes items from storage and returns list where they were taken from or nil
-local function get_input_items (items, inv_list)
+-- tests storage for input items and returns list where they would be taken from or nil
+local function check_input_items (items, inv_list)
 	local agg = { }
 	local input = { }
 
-	for i = 1, 9, 1 do
+	for i = 1, #items, 1 do
 		if items[i] then
 			if items[i]:len () > 0 then
 				if agg[items[i]] then
@@ -371,9 +371,10 @@ local function get_input_items (items, inv_list)
 					count = list[i].count
 				}
 
+				list.count = list.count - list[i].count
 				count = count - list[i].count
 
-				list[i] = nil
+				table.remove (list, i)
 			else
 				input[#input + 1] =
 				{
@@ -384,9 +385,11 @@ local function get_input_items (items, inv_list)
 				}
 
 				list[i].count = list[i].count - count
+				list.count = list.count - count
 
 				count = 0
 			end
+
 
 			if count < 1 then
 				break
@@ -394,18 +397,27 @@ local function get_input_items (items, inv_list)
 		end
 	end
 
-	for i = 1, #input, 1 do
-		if not remove_input_items (input[i]) then
-			-- put back
-			for j = i - 1, 1, -1 do
-				return_input_items (input[j])
-			end
+	return input
+end
 
-			return nil
+
+
+-- removes items from storage and returns input_items or nil
+local function get_input_items (input_items)
+	if input_items then
+		for i = 1, #input_items, 1 do
+			if not remove_input_items (input_items[i]) then
+				-- put back
+				for j = i - 1, 1, -1 do
+					return_input_items (input_items[j])
+				end
+
+				return nil
+			end
 		end
 	end
 
-	return input
+	return input_items
 end
 
 
@@ -435,7 +447,7 @@ local function can_fit_output (pos, output)
 					for j = 1, #list, 1 do
 						if utils.is_same_item (list[j], copy[i]) then
 							if (list[j]:get_count () + copy[i]:get_count ()) > list[j]:get_stack_max () then
-								copy[i]:set_count (list[j]:get_stack_max () - list[j]:get_count ())
+								copy[i]:set_count (copy[i]:get_count () - (list[j]:get_stack_max () - list[j]:get_count ()))
 								list[j]:set_count (list[j]:get_stack_max ())
 							else
 								list[j]:set_count (list[j]:get_count () + copy[i]:get_count ())
@@ -498,20 +510,6 @@ end
 
 
 
-local function place_in_output (pos, stack)
-	local meta = minetest.get_meta (pos)
-
-	if meta then
-		local inv = meta:get_inventory ()
-
-		if inv then
-			inv:add_item ("output", stack)
-		end
-	end
-end
-
-
-
 -- items is list of recipe grid
 local function craft (pos, items, recipe, qty, inv_list)
 	local output, leftover = minetest.get_craft_result (recipe)
@@ -519,7 +517,9 @@ local function craft (pos, items, recipe, qty, inv_list)
 
 	if output and output.item and not output.item:is_empty () then
 		for q = 1, qty, 1 do
-			-- check for output space
+			local src_items = table.copy (items)
+
+			-- output itemstacks
 			local output_items = { ItemStack (output.item) }
 			for i = 1, #output.replacements, 1 do
 				if output.replacements[i] and not output.replacements[i]:is_empty () then
@@ -527,9 +527,30 @@ local function craft (pos, items, recipe, qty, inv_list)
 				end
 			end
 
+			-- adjust leftovers
+			for i = 1, #leftover.items, 1 do
+				if leftover.items[i] and not leftover.items[i]:is_empty () then
+					local count = leftover.items[i]:get_count ()
+
+					for j = #src_items, 1, -1 do
+						if src_items[j] == leftover.items[i]:get_name () then
+							table.remove (src_items, j)
+							count = count - 1
+
+							if count < 1 then
+								break
+							end
+						end
+					end
+
+					if count > 0 then
+						output_items[#output_items + 1] = ItemStack (leftover.items[i]:get_name ().." "..tostring (count))
+					end
+				end
+			end
+
 			-- implement crafting_mods.lua
 			local mods = utils.get_crafting_mods (output.item:get_name ())
-			local remove_items = { }
 			if mods then
 				if mods.add then
 					for i = 1, #mods.add do
@@ -554,77 +575,121 @@ local function craft (pos, items, recipe, qty, inv_list)
 						end
 
 						if not found then
-							remove_items[#remove_items + 1] = mods.remove[i]
+							src_items[#src_items + 1] = mods.remove[i]
 						end
 					end
 				end
 			end
 
-			-- get updated output inv if can fit
+			local input_items = check_input_items (src_items, inv_list)
+
+			if not input_items then
+				return crafted
+			end
+
 			local output_list = can_fit_output (pos, output_items)
-			if output_list then
-				local input_items = get_input_items (items, inv_list)
 
-				if not input_items then
-					return crafted
-				end
-
-				if not update_output (pos, output_list) then
-					for j = 1, #input_items, 1 do
-						return_input_items (input_items[j])
-					end
-
-					return crafted
-				end
-
-				for i = 1, #leftover.items, 1 do
-					if leftover.items[i] and not leftover.items[i]:is_empty () then
-						local count = leftover.items[i]:get_count ()
-
-						for j = 1, #input_items, 1 do
-							if input_items[j].name == leftover.items[i]:get_name () then
-								local over =
-								{
-									name = input_items[j].name,
-									pos = input_items[j].pos,
-									slot = input_items[j].slot,
-									count = input_items[j].count
-								}
-
-								if over.count < count then
-									count = count - over.count
-								else
-									over.count = count
-									count = 0
-								end
-
-								if not return_input_items (over) then
-									place_in_output (pos, ItemStack (string.format ("%s %d", over.name, count)))
-								end
-
-								if count < 1 then
-									break
-								end
-							end
-						end
-
-						if count > 0 then
-							place_in_output (pos, ItemStack (string.format ("%s %d", leftover.items[i]:get_name (), count)))
-						end
-					end
-				end
-
-				-- removes from crafting_mods.lua if not taken from replacements
-				if #remove_items > 0 then
-					get_input_items (remove_items, inv_list)
-				end
-
-				crafted = crafted + 1
+			if not output_list then
+				return crafted
 			end
+
+			if not get_input_items (input_items) then
+				return crafted
+			end
+
+			if not update_output (pos, output_list) then
+				for j = 1, #input_items, 1 do
+					return_input_items (input_items[j])
+				end
+
+				return crafted
+			end
+
+			crafted = crafted + 1
 		end
 	end
 
 	return crafted
+end
+
+
+
+-- items is list of recipe grid
+local function can_craft (pos, items, recipe, inv_list)
+	local output, leftover = minetest.get_craft_result (recipe)
+
+	if output and output.item and not output.item:is_empty () then
+		local src_items = table.copy (items)
+
+		-- output itemstacks
+		local output_items = { ItemStack (output.item) }
+		for i = 1, #output.replacements, 1 do
+			if output.replacements[i] and not output.replacements[i]:is_empty () then
+				output_items[#output_items + 1] = ItemStack (output.replacements[i])
+			end
+		end
+
+		-- adjust leftovers
+		for i = 1, #leftover.items, 1 do
+			if leftover.items[i] and not leftover.items[i]:is_empty () then
+				local count = leftover.items[i]:get_count ()
+
+				for j = #src_items, 1, -1 do
+					if src_items[j] == leftover.items[i]:get_name () then
+						table.remove (src_items, j)
+						count = count - 1
+
+						if count < 1 then
+							break
+						end
+					end
+				end
+
+				if count > 0 then
+					output_items[#output_items + 1] = ItemStack (leftover.items[i]:get_name ().." "..tostring (count))
+				end
+			end
+		end
+
+		-- implement crafting_mods.lua
+		local mods = utils.get_crafting_mods (output.item:get_name ())
+		if mods then
+			if mods.add then
+				for i = 1, #mods.add do
+					output_items[#output_items + 1] = ItemStack (mods.add[i])
+				end
+			end
+
+			if mods.remove then
+				for i = 1, #mods.remove do
+					local found = false
+
+					for j = #output_items, 1, -1 do
+						if output_items[j]:get_name () == mods.remove[i] then
+							if output_items[j]:get_count () > 1 then
+								output_items[j]:set_count (output_items[j]:get_count () - 1)
+							else
+								output_items[j] = nil
+							end
+
+							found = true
+						end
+					end
+
+					if not found then
+						src_items[#src_items + 1] = mods.remove[i]
+					end
+				end
+			end
+		end
+
+		if check_input_items (src_items, inv_list) and
+				can_fit_output (pos, output_items) then
+			return true
+		end
+	end
+
+	return false
 end
 
 
@@ -658,30 +723,6 @@ end
 
 
 
-local function set_recipe_grid (pos, items)
-	local meta = minetest.get_meta (pos)
-
-	if meta then
-		local inv = meta:get_inventory ()
-
-		if inv then
-			if type (items) ~= "table" then
-				items = { }
-			end
-
-			for i = 1, 9, 1 do
-				if items[i] and minetest.registered_items[items[i]] then
-					inv:set_stack ("craft", i, ItemStack (items[i]))
-				else
-					inv:set_stack ("craft", i, nil)
-				end
-			end
-		end
-	end
-end
-
-
-
 local function craft_recipe (pos, qty)
 	local inv_list = get_inventory_list (pos)
 	local items = get_recipe_grid (pos)
@@ -710,6 +751,46 @@ end
 
 
 
+local function craft_item_by_recipe (pos, recipe, items, qty)
+	local inv_list = get_inventory_list (pos)
+
+	if items and recipe then
+		return craft (pos, items, recipe, qty, inv_list)
+	end
+
+	return 0
+end
+
+
+
+local function can_craft_recipe (pos)
+	local inv_list = get_inventory_list (pos)
+	local items = get_recipe_grid (pos)
+	local recipe =
+	{
+		method = "normal",
+		width = 3,
+		items = get_recipe_grid (pos)
+	}
+
+	return can_craft (pos, items, recipe, inv_list)
+end
+
+
+
+local function can_craft_item (pos, itemname)
+	local inv_list = get_inventory_list (pos)
+	local items, recipe = get_craft_items (itemname, inv_list)
+
+	if items and recipe then
+		return can_craft (pos, items, recipe, inv_list)
+	end
+
+	return false
+end
+
+
+
 local function preview_craft (pos)
 	local items = get_recipe_grid (pos)
 	local	recipe =
@@ -733,6 +814,32 @@ local function preview_craft (pos)
 
 		if inv then
 			inv:set_stack ("preview", 1, item)
+		end
+	end
+end
+
+
+
+local function set_recipe_grid (pos, items)
+	local meta = minetest.get_meta (pos)
+
+	if meta then
+		local inv = meta:get_inventory ()
+
+		if inv then
+			if type (items) ~= "table" then
+				items = { }
+			end
+
+			for i = 1, 9, 1 do
+				if items[i] and minetest.registered_items[items[i]] then
+					inv:set_stack ("craft", i, ItemStack (items[i]))
+				else
+					inv:set_stack ("craft", i, nil)
+				end
+			end
+
+			preview_craft (pos)
 		end
 	end
 end
@@ -802,6 +909,80 @@ end
 
 
 
+local function get_item_craft (pos, itemname, index)
+	if itemname:len () < 1 or index < 1 then
+		return nil
+	end
+
+	local inv_list = get_inventory_list (pos)
+	local names = { }
+
+	names[itemname] = true
+	for alias, name in pairs (minetest.registered_aliases) do
+		if alias == itemname then
+			names[name] = true
+		elseif name == itemname then
+			names[alias] = true
+		end
+	end
+
+	local recipes = { }
+	local grid = { }
+	for name, _ in pairs (names) do
+		local r = minetest.get_all_craft_recipes (name)
+
+		if r then
+			for i = 1, #r, 1 do
+				local items = get_craft_recipe_items (r[i].items, inv_list)
+
+				if items then
+					recipes[#recipes + 1] = r[i]
+					grid[#grid + 1] = items
+				end
+			end
+		end
+	end
+
+	if recipes and recipes[index] then
+		return recipes[index], #recipes, grid[index]
+	end
+
+	return nil
+end
+
+
+
+local function get_craft_items_grid (recipe, items)
+	local grid = { "", "", "", "", "", "", "", "", "" }
+
+	if recipe.width == 1 then
+		for i = 1, 3, 1 do
+			grid[((i - 1) * 3) + 2] = items[i] or ""
+		end
+	elseif recipe.width == 2 then
+		for i = 1, 6, 1 do
+			grid[(((i - 1) % 2) * 3) + math.floor ((i - 1) / 2) + 1] = items[i] or ""
+		end
+	else
+		for i = 1, 9, 1 do
+			grid[i] = items[i] or ""
+		end
+	end
+
+	return grid
+end
+
+
+
+local function get_item_button (item, x, y, element_name)
+	local name = item or ""
+
+	return string.format ("item_image_button[%f,%f;1.0,1.0;%s;%s;]",
+								 x, y, name, element_name)
+end
+
+
+
 local function get_formspec (pos, search)
 	local spec = ""
 	local meta = minetest.get_meta (pos)
@@ -828,6 +1009,40 @@ local function get_formspec (pos, search)
 													  item.name)
 		end
 
+		local craft_grid
+		local craftitem = meta:get_string ("craftitem")
+		local recipe_index = meta:get_int ("recipe_index")
+		local item_recipe, recipe_count, item_items = get_item_craft (pos, craftitem, recipe_index)
+
+		if item_recipe and item_items then
+			local grid = get_craft_items_grid (item_recipe, item_items)
+			local prior_button = ((recipe_index > 1) and "button[15.5,3.9;1.0,0.8;prior_craft;<]") or ""
+			local next_button = ((recipe_index < recipe_count) and "button[16.5,3.9;1.0,0.8;next_craft;>]") or ""
+
+			craft_grid = string.format ("%s%s%s%s%s%s%s%s%s"..
+												 "button[15.5,2.5;2.0,0.8;close_item_craft;Close]"..
+												 "%s%s"..
+												 "button[15.5,5.3;2.0,0.8;craft_item;Craft]",
+												 get_item_button (grid[1], 11.5, 2.5, "guide_1"),
+												 get_item_button (grid[2], 12.75, 2.5, "guide_2"),
+												 get_item_button (grid[3], 14.0, 2.5, "guide_3"),
+												 get_item_button (grid[4], 11.5, 3.75, "guide_4"),
+												 get_item_button (grid[5], 12.75, 3.75, "guide_5"),
+												 get_item_button (grid[6], 14.0, 3.75, "guide_6"),
+												 get_item_button (grid[7], 11.5, 5.0, "guide_7"),
+												 get_item_button (grid[8], 12.75, 5.0, "guide_8"),
+												 get_item_button (grid[9], 14.0, 5.0, "guide_9"),
+												 prior_button,
+												 next_button)
+		else
+			craft_grid = string.format ("list[context;craft;11.5,2.5;3,3;]"..
+												 "checkbox[15.5,2.7;automatic;Automatic;%s]"..
+												 "button[15.5,5.3;2.0,0.8;craft;Craft]"..
+												 "list[context;preview;16.0,3.75;1,1;]",
+												 automatic)
+		end
+
+
 		spec = string.format ("formspec_version[3]"..
 									 "size[24.7,13.0,false]"..
 									 "set_focus[search_field;true]"..
@@ -839,10 +1054,7 @@ local function get_formspec (pos, search)
 									 "field[11.5,1.21;3.0,0.8;channel;Channel;${channel}]"..
 									 "field_close_on_enter[channel;false]"..
 									 "button[14.5,1.21;1.5,0.8;setchannel;Set]"..
-									 "list[context;craft;11.5,2.5;3,3;]"..
-									 "checkbox[15.5,2.7;automatic;Automatic;%s]"..
-									 "button[15.5,5.3;2.0,0.8;craft;Craft]"..
-									 "list[context;preview;16.0,3.75;1,1;]"..
+									 "%s"..
 									 "label[11.5,6.95;Output]"..
 									 "list[context;output;11.5,7.2;5,4;]"..
 									 "listring[current_player;main]"..
@@ -854,7 +1066,7 @@ local function get_formspec (pos, search)
 									 "scroll_container[18.2,2.0;5.0,10.0;crafter_scrollbar;vertical;0.1]"..
 									 "%s"..
 									 "scroll_container_end[]",
-									 automatic,
+									 craft_grid,
 									 search,
 									 scroll_height,
 									 thumb_size,
@@ -1038,6 +1250,8 @@ local function on_rightclick (pos, node, clicker, itemstack, pointed_thing)
 		local meta = minetest.get_meta (pos)
 
 		if meta then
+			meta:set_string ("craftitem", "")
+			meta:set_int ("recipe_index", 0)
 			meta:set_string ("formspec", get_formspec (pos))
 		end
 	end
@@ -1074,18 +1288,80 @@ local function on_receive_fields (pos, formname, fields, sender)
 		local meta = minetest.get_meta (pos)
 
 		if meta then
+			meta:set_string ("craftitem", "")
+			meta:set_int ("recipe_index", 0)
 			meta:set_string ("formspec", get_formspec (pos, fields.search_field))
 		end
 
 	elseif fields.craft then
 		craft_recipe (pos, 1)
 
+	elseif fields.prior_craft then
+		local meta = minetest.get_meta (pos)
+
+		if meta then
+			meta:set_int ("recipe_index", meta:get_int ("recipe_index") - 1)
+			meta:set_string ("formspec", get_formspec (pos, fields.search_field))
+		end
+
+	elseif fields.next_craft then
+		local meta = minetest.get_meta (pos)
+
+		if meta then
+			meta:set_int ("recipe_index", meta:get_int ("recipe_index") + 1)
+			meta:set_string ("formspec", get_formspec (pos, fields.search_field))
+		end
+
+	elseif fields.close_item_craft then
+		local meta = minetest.get_meta (pos)
+
+		if meta then
+			meta:set_string ("craftitem", "")
+			meta:set_int ("recipe_index", 0)
+			meta:set_string ("formspec", get_formspec (pos, fields.search_field))
+		end
+
+	elseif fields.craft_item then
+		local meta = minetest.get_meta (pos)
+
+		if meta then
+			local itemname = meta:get_string ("craftitem")
+			local index = meta:get_int ("recipe_index")
+
+			if itemname:len () > 0 then
+				local recipe, _, items = get_item_craft (pos, itemname, index)
+
+				if recipe then
+					craft_item_by_recipe (pos, recipe, items, 1)
+				end
+			end
+		end
+
 	else
 		for k, v in pairs (fields) do
 			if k:sub (1, 5) == "ITEM_" then
 				local itemname = k:sub (6, -1)
+				local _, count = get_item_craft (pos, itemname, 1)
 
-				craft_item (pos, itemname, 1)
+				if count > 1 then
+					local meta = minetest.get_meta (pos)
+
+					if meta then
+						meta:set_string ("craftitem", itemname)
+						meta:set_int ("recipe_index", 1)
+						meta:set_string ("formspec", get_formspec (pos, fields.search_field))
+					end
+				elseif count == 1 then
+					craft_item (pos, itemname, 1)
+
+					local meta = minetest.get_meta (pos)
+
+					if meta and meta:get_string ("craftitem"): len () > 0 then
+						meta:set_string ("craftitem", "")
+						meta:set_int ("recipe_index", 0)
+						meta:set_string ("formspec", get_formspec (pos, fields.search_field))
+					end
+				end
 
 				break
 			end
@@ -1334,6 +1610,59 @@ end
 
 
 
+local function send_craft_result_message (pos, itemname, qty, crafted)
+	if utils.digilines_supported then
+		local meta = minetest.get_meta (pos)
+
+		if meta then
+			local channel = meta:get_string ("channel")
+
+			if channel:len () > 0 then
+				local msg =
+				{
+					action = "crafted",
+					itemname = itemname,
+					qty = qty,
+					crafted = crafted
+				}
+
+				utils.digilines_receptor_send (pos,
+														 utils.digilines_default_rules,
+														 channel,
+														 msg)
+			end
+		end
+	end
+end
+
+
+
+local function send_can_craft_message (pos, itemname, result)
+	if utils.digilines_supported then
+		local meta = minetest.get_meta (pos)
+
+		if meta then
+			local channel = meta:get_string ("channel")
+
+			if channel:len () > 0 then
+				local msg =
+				{
+					action = "can_craft",
+					itemname = itemname,
+					result = result
+				}
+
+				utils.digilines_receptor_send (pos,
+														 utils.digilines_default_rules,
+														 channel,
+														 msg)
+			end
+		end
+	end
+end
+
+
+
 local function digilines_support ()
 	if utils.digilines_supported then
 		return
@@ -1366,17 +1695,28 @@ local function digilines_support ()
 											qty = math.floor (math.max (math.min (tonumber (m[2]), 10), 1))
 										end
 
-										craft_recipe (pos, qty)
+										send_craft_result_message (pos, nil, qty, craft_recipe (pos, qty))
 
 									elseif m[1] == "craftitem" then
+										local qty = 1
+
+										if m[3] and tonumber (m[3]) then
+											qty = math.floor (math.max (math.min (tonumber (m[3]), 10), 1))
+										end
+
 										if m[2] and minetest.registered_items[m[2]] then
-											local qty = 1
+											send_craft_result_message (pos, m[2], qty, craft_item (pos, m[2], qty))
+										else
+											send_craft_result_message (pos, m[2] or "", qty, 0)
+										end
 
-											if m[3] and tonumber (m[3]) then
-												qty = math.floor (math.max (math.min (tonumber (m[3]), 10), 1))
-											end
-
-											craft_item (pos, m[2], qty)
+									elseif m[1] == "can_craft" then
+										if m[2] and not minetest.registered_items[m[2]] then
+											send_can_craft_message (pos, m[2], false)
+										elseif m[2] then
+											send_can_craft_message (pos, m[2], can_craft_item (pos, m[2]))
+										else
+											send_can_craft_message (pos, nil, can_craft_recipe (pos))
 										end
 
 									elseif m[1] == "automatic" then

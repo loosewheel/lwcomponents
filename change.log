@@ -188,3 +188,11 @@ v0.1.31
 
 v0.1.32
 *	Fixed crafter not return replacement items properly.
+
+
+v0.1.33
+*	Added recipe list when crafting by item to UI in crafters.
+*	Added results message for crafters digilines messages "craft" and "craftitem".
+*	Added "can_craft" digilines message to crafters.
+*	Fixed crafter not outputing all items when output has full stack.
+*	Improved crafter crafting.
