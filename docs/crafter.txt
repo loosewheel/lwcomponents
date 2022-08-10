@@ -44,6 +44,13 @@ pulled from here.
 The automatic crafting is only operable when the crafter is in an active
 block. Mesecons and digilines operations operate in unloaded blocks.
 
+When crafting by item, if more than one recipe is satisfied by the input
+items, the crafting grid is replaced with the available crafts for that
+item. Clicking the < and > buttons walks through the recipes. Clicking
+Craft performs one craft with the displayed recipe. Clicking Close displays
+the crafting grid. If only one recipe is satisfied by the input items one
+craft is immediately performed without displaying the recipe.
+
 Hoppers placed to the top or sides of a crafter will feed items into the
 input. Hoppers placed below a crafter will take items from the output.
 
@@ -56,12 +63,37 @@ Mesecons
 Digilines messages
 "craft [qty]"
 	Craft from the recipe if possible. qty is optional, if given must be an
-	integer between 1 to 10.
+	integer between 1 to 10. If not given defaults to 1. A return message
+	is sent with it's own channel in the following format:
+	{
+		action = "crafted",
+		qty = number, -- craft qty requested
+		crafted = number -- crafts successfully performed
+	}
+
 
 "craftitem itemname [qty]"
 	Craft the given item if possible. itemname must be a valid item name
 	(eg. "default:wood"). qty is optional, if given must be an integer
-	between 1 to 10.
+	between 1 to 10. If not given defaults to 1. A return message is sent
+	with it's own channel in the following format:
+	{
+		action = "crafted",
+		itemname = string, -- the name of the item requested to craft
+		qty = number, -- craft qty requested
+		crafted = number -- crafts successfully performed
+	}
+
+"can_craft [itemname]"
+	Test whether a single craft can be performed for the item. itemname is
+	optional, if given will test craft by item. If not given will test if
+	the recipe in the crafting grid can be performed. A return message is
+	sent with it's own channel in the following format:
+	{
+		action = "can_craft",
+		itemname = string, -- the name of the item requested, nil for recipe
+		result = boolean -- true if craft can be performed, false if not
+	}
 
 "automatic state"
 	Sets the automatic running state of the crafter. state must be true or
@@ -107,15 +139,15 @@ Set recipe grid:
 	items = { ... }
 }
 	items must be a string list of item names as <mod>:<name>. The grid is
-	fill left to right, top to bottom. Up to the first 9 items are used.
+	filled left to right, top to bottom. Up to the first 9 items are used.
 
-*	When crafting by item the output quantities may not be as expected. The
-	first found recipe for the craft which is satisfied by the available
-	items is used. So if you have saplings and wood in the input and try
-	to craft sticks, if the first recipe found uses the saplings 1 stick will
-	be output, if wood then 4 sticks. Also, sometimes the same recipe is
-	registered for more than 1 item. In this case, what item will actually
-	be crafted is ambiguous.
+*	When crafting by item the output may not be as expected. For the digilines
+	"craftitem" message, the first found recipe for the craft which is
+	satisfied by the available items is used. So if you have saplings and
+	wood in the input and try to craft sticks, if the first recipe found
+	uses the saplings 1 stick will be output, if wood then 4 sticks.
+	Also, sometimes the same recipe is registered for more than 1 item.
+	In this case, what item will actually be crafted is ambiguous.
 
 *	The file 'crafting_mods.lua' in the mod folder contains a list of
 	crafting modifications. Modify this file as necessary. The field name
