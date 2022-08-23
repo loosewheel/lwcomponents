@@ -1,4 +1,4 @@
-local version = "0.1.33"
+local version = "0.1.34"
 local mod_storage = minetest.get_mod_storage ()
 
 
@@ -18,6 +18,7 @@ local modpath = minetest.get_modpath ("lwcomponents")
 loadfile (modpath.."/settings.lua") (utils)
 utils.get_dummy_player = loadfile (modpath.."/dummy_player.lua") ()
 loadfile (modpath.."/utils.lua") (utils)
+loadfile (modpath.."/long_process.lua") (utils)
 loadfile (modpath.."/explode.lua") (utils)
 loadfile (modpath.."/api.lua") (utils)
 utils.connections = loadfile (modpath.."/connections.lua") ()

@@ -258,6 +258,8 @@ local function get_craftable_list (pos)
 				name = itemname,
 				description = utils.unescape_description (description or "")
 			}
+
+			utils.long_process.expire (0.08)
 		end
 	end
 
@@ -1225,6 +1227,22 @@ end
 
 
 
+local function update_form_func (pos, search)
+	local meta = minetest.get_meta (pos)
+
+	if meta then
+		meta:set_string ("formspec", get_formspec (pos, search))
+	end
+end
+
+
+
+local function update_form (pos, search)
+	utils.long_process.add (update_form_func, nil, pos, search)
+end
+
+
+
 local function on_rightclick (pos, node, clicker, itemstack, pointed_thing)
 	if not utils.can_interact_with_node (pos, clicker) then
 		if clicker and clicker:is_player () then
@@ -1252,7 +1270,7 @@ local function on_rightclick (pos, node, clicker, itemstack, pointed_thing)
 		if meta then
 			meta:set_string ("craftitem", "")
 			meta:set_int ("recipe_index", 0)
-			meta:set_string ("formspec", get_formspec (pos))
+			update_form (pos)
 		end
 	end
 
@@ -1290,7 +1308,7 @@ local function on_receive_fields (pos, formname, fields, sender)
 		if meta then
 			meta:set_string ("craftitem", "")
 			meta:set_int ("recipe_index", 0)
-			meta:set_string ("formspec", get_formspec (pos, fields.search_field))
+			update_form (pos, fields.search_field)
 		end
 
 	elseif fields.craft then
@@ -1301,7 +1319,7 @@ local function on_receive_fields (pos, formname, fields, sender)
 
 		if meta then
 			meta:set_int ("recipe_index", meta:get_int ("recipe_index") - 1)
-			meta:set_string ("formspec", get_formspec (pos, fields.search_field))
+			update_form (pos, fields.search_field)
 		end
 
 	elseif fields.next_craft then
@@ -1309,7 +1327,7 @@ local function on_receive_fields (pos, formname, fields, sender)
 
 		if meta then
 			meta:set_int ("recipe_index", meta:get_int ("recipe_index") + 1)
-			meta:set_string ("formspec", get_formspec (pos, fields.search_field))
+			update_form (pos, fields.search_field)
 		end
 
 	elseif fields.close_item_craft then
@@ -1318,7 +1336,7 @@ local function on_receive_fields (pos, formname, fields, sender)
 		if meta then
 			meta:set_string ("craftitem", "")
 			meta:set_int ("recipe_index", 0)
-			meta:set_string ("formspec", get_formspec (pos, fields.search_field))
+			update_form (pos, fields.search_field)
 		end
 
 	elseif fields.craft_item then
@@ -1333,6 +1351,10 @@ local function on_receive_fields (pos, formname, fields, sender)
 
 				if recipe then
 					craft_item_by_recipe (pos, recipe, items, 1)
+				else
+					meta:set_string ("craftitem", "")
+					meta:set_int ("recipe_index", 0)
+					update_form (pos, fields.search_field)
 				end
 			end
 		end
@@ -1343,23 +1365,34 @@ local function on_receive_fields (pos, formname, fields, sender)
 				local itemname = k:sub (6, -1)
 				local _, count = get_item_craft (pos, itemname, 1)
 
-				if count > 1 then
+				if count then
+					if count > 1 then
+						local meta = minetest.get_meta (pos)
+
+						if meta then
+							meta:set_string ("craftitem", itemname)
+							meta:set_int ("recipe_index", 1)
+							update_form (pos, fields.search_field)
+						end
+					elseif count == 1 then
+						craft_item (pos, itemname, 1)
+
+						local meta = minetest.get_meta (pos)
+
+						if meta and meta:get_string ("craftitem"): len () > 0 then
+							meta:set_string ("craftitem", "")
+							meta:set_int ("recipe_index", 0)
+							update_form (pos, fields.search_field)
+						end
+					end
+
+				else
 					local meta = minetest.get_meta (pos)
 
 					if meta then
-						meta:set_string ("craftitem", itemname)
-						meta:set_int ("recipe_index", 1)
-						meta:set_string ("formspec", get_formspec (pos, fields.search_field))
-					end
-				elseif count == 1 then
-					craft_item (pos, itemname, 1)
-
-					local meta = minetest.get_meta (pos)
-
-					if meta and meta:get_string ("craftitem"): len () > 0 then
 						meta:set_string ("craftitem", "")
 						meta:set_int ("recipe_index", 0)
-						meta:set_string ("formspec", get_formspec (pos, fields.search_field))
+						update_form (pos, fields.search_field)
 					end
 				end
 
