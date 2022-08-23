@@ -27,7 +27,8 @@ Craftable list - right, list of all items that are possible to craft from
 						the input items. clicking an item crafts it (if possible).
 
 The form does not update while open. A craft from source items no longer
-available will not craft.
+available will not craft. If an attempt is made to craft by item when the
+source materials have run out, the form does update.
 
 Terms can be entered into the search field, and when enter is pressed or
 the Search button is pressed, only items whose name or description contains
@@ -158,6 +159,8 @@ Set recipe grid:
 *	Gaining the list of craftable items is an exponential process, based
 	on the number of unique source items and the total number of items
 	available. As a guide, 320 source items and 795 total items that resulted
-	623 craftable items took approx. 200ms (1st gen i5 processor). This list
-	is only gained: when the form is opened; when the Search button is clicked;
-	and when the digilines "craftable" message is sent.
+	623 craftable items took approx. 200ms (1st gen i5 processor). The
+	list is obtained in a granular function to minimise server burden, but
+	may take a moment to update. This list is only gained: when the form is
+	opened; when the Search button is clicked; and when the digilines
+	"craftable" message is sent.
