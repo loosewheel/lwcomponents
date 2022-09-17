@@ -757,20 +757,21 @@ local function indexer_get_formspec (pos, search)
 			local stack = ItemStack (v.item)
 			local max_stack = stack:get_stack_max ()
 			local descr_esc = minetest.formspec_escape (v.description)
+			local item_encoded = utils.hex_encode (v.item)
 			local item =
 			string.format ("item_image_button[0.0,%0.2f;1.0,1.0;%s;01_%s;]",
-								top, v.item, v.item)
+								top, v.item, item_encoded)
 
 			if max_stack >= 10 then
 				item = item..
 				string.format ("button[1.0,%0.2f;1.0,1.0;10_%s;10]",
-									top, v.item)
+									top, item_encoded)
 			end
 
 			if max_stack > 1 then
 				item = item..
 				string.format ("button[2.0,%0.2f;1.0,1.0;ST_%d_%s;%d]",
-									top, max_stack, v.item, max_stack)
+									top, max_stack, item_encoded, max_stack)
 			end
 
 			item = item..
@@ -1038,12 +1039,12 @@ local function indexer_on_receive_fields (pos, formname, fields, sender)
 		for k, v in pairs (fields) do
 			if k:sub (1, 3) == "01_" then
 				local item = k:sub (4, -1)
-				output_items (pos, item, 1)
+				output_items (pos, utils.hex_decode (item), 1)
 
 				break
 			elseif k:sub (1, 3) == "10_" then
 				local item = k:sub (4, -1)
-				output_items (pos, item, 10)
+				output_items (pos, utils.hex_decode (item), 10)
 
 				break
 			elseif k:sub (1, 3) == "ST_" then
@@ -1053,7 +1054,7 @@ local function indexer_on_receive_fields (pos, formname, fields, sender)
 					local qty = tonumber (k:sub (4, marker - 1) or 1)
 					local item = k:sub (marker + 1, -1)
 
-					output_items (pos, item, qty)
+					output_items (pos, utils.hex_decode (item), qty)
 				end
 			end
 		end

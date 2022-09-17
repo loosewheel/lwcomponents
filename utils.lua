@@ -448,4 +448,24 @@ end
 
 
 
+function utils.hex_decode (hex)
+   return (hex:gsub ("%x%x", function (digits)
+		return string.char (tonumber (digits, 16))
+	end))
+end
+
+
+
+function utils.hex_encode (str)
+   return (str:gsub (".", function (char)
+		return string.format ("%2x", char:byte ())
+	end))
+end
+
+
+
+
+
+
+
 --
