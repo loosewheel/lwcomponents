@@ -1,6 +1,14 @@
 local utils = ...
 local S = utils.S
 
+local function hexdecode(hex)
+   return (hex:gsub("%x%x", function(digits) return string.char(tonumber(digits, 16)) end))
+end
+
+local function hexencode(str)
+   return (str:gsub(".", function(char) return string.format("%2x", char:byte()) end))
+end
+
 
 
 local function unit_after_place_node (pos, placer, itemstack, pointed_thing)
@@ -138,7 +146,6 @@ local function unit_on_rightclick (pos, node, clicker, itemstack, pointed_thing)
 			"size[8.0,4.0,false]"..
 			"label[1.0,1.0;Owned by "..minetest.formspec_escape (owner).."]"..
 			"button_exit[3.0,2.0;2.0,1.0;close;Close]"
-
 			minetest.show_formspec (clicker:get_player_name (),
 											"lwcomponents:component_privately_owned",
 											spec)
@@ -150,11 +157,10 @@ end
 
 
 
-
 minetest.register_node("lwcomponents:storage_unit", {
 	description = S("Storage Unit"),
-	drawtype = "glasslike_framed",
-	tiles = { "lwcomponents_storage_framed.png", "lwcomponents_storage.png" },
+	drawtype = "normal",
+	tiles = { "lwcomponents_storage_framed.png" },
 	is_ground_content = false,
 	groups = { choppy = 2 },
 	sounds = default.node_sound_wood_defaults (),
@@ -174,8 +180,8 @@ minetest.register_node("lwcomponents:storage_unit", {
 
 minetest.register_node("lwcomponents:storage_unit_locked", {
 	description = S("Storage Unit (locked)"),
-	drawtype = "glasslike_framed",
-	tiles = { "lwcomponents_storage_framed.png", "lwcomponents_storage.png" },
+	drawtype = "normal",
+	tiles = { "lwcomponents_storage_framed.png" },
 	is_ground_content = false,
 	groups = { choppy = 2 },
 	sounds = default.node_sound_wood_defaults (),
@@ -190,6 +196,8 @@ minetest.register_node("lwcomponents:storage_unit_locked", {
 	on_blast = unit_on_blast,
 	on_rightclick = unit_on_rightclick
 })
+
+
 
 
 
@@ -754,23 +762,25 @@ local function indexer_get_formspec (pos, search)
 	local top = 0
 	for _, v in ipairs (inv_list) do
 		if search_filter (v.description, terms) then
+			local vitem = hexencode(v.item)
+			local vitemr = minetest.formspec_escape(v.item)
 			local stack = ItemStack (v.item)
 			local max_stack = stack:get_stack_max ()
 			local descr_esc = minetest.formspec_escape (v.description)
 			local item =
 			string.format ("item_image_button[0.0,%0.2f;1.0,1.0;%s;01_%s;]",
-								top, v.item, v.item)
+								top, vitemr, vitem)
 
 			if max_stack >= 10 then
 				item = item..
 				string.format ("button[1.0,%0.2f;1.0,1.0;10_%s;10]",
-									top, v.item)
+									top, vitem)
 			end
 
 			if max_stack > 1 then
 				item = item..
 				string.format ("button[2.0,%0.2f;1.0,1.0;ST_%d_%s;%d]",
-									top, max_stack, v.item, max_stack)
+									top, max_stack, vitem, max_stack)
 			end
 
 			item = item..
@@ -996,7 +1006,6 @@ local function indexer_on_rightclick (pos, node, clicker, itemstack, pointed_thi
 				"size[8.0,4.0,false]"..
 				"label[1.0,1.0;Owned by "..minetest.formspec_escape (owner).."]"..
 				"button_exit[3.0,2.0;2.0,1.0;close;Close]"
-
 				minetest.show_formspec (clicker:get_player_name (),
 												"lwcomponents:component_privately_owned",
 												spec)
@@ -1038,12 +1047,12 @@ local function indexer_on_receive_fields (pos, formname, fields, sender)
 		for k, v in pairs (fields) do
 			if k:sub (1, 3) == "01_" then
 				local item = k:sub (4, -1)
-				output_items (pos, item, 1)
+				output_items (pos, hexdecode(item), 1)
 
 				break
 			elseif k:sub (1, 3) == "10_" then
 				local item = k:sub (4, -1)
-				output_items (pos, item, 10)
+				output_items (pos, hexdecode(item), 10)
 
 				break
 			elseif k:sub (1, 3) == "ST_" then
@@ -1053,7 +1062,7 @@ local function indexer_on_receive_fields (pos, formname, fields, sender)
 					local qty = tonumber (k:sub (4, marker - 1) or 1)
 					local item = k:sub (marker + 1, -1)
 
-					output_items (pos, item, qty)
+					output_items (pos, hexdecode(item), qty)
 				end
 			end
 		end

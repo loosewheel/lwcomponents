@@ -186,6 +186,26 @@ function utils.can_interact_with_node (pos, player)
 end
 
 
+utils.allow_metadata_inventory_move = function(pos, from_list, from_index,
+		to_list, to_index, count, player)
+	if not utils.can_interact_with_node(pos, player) then
+		return 0
+	end
+	return count
+end
+utils.allow_metadata_inventory_put = function(pos, listname, index, stack, player)
+	if not utils.can_interact_with_node(pos, player) then
+		return 0
+	end
+	return stack:get_count()
+end
+utils.allow_metadata_inventory_take = function(pos, listname, index, stack, player)
+	if not utils.can_interact_with_node(pos, player) then
+		return 0
+	end
+	return stack:get_count()
+end
+
 
 function utils.get_far_node (pos)
 	local node = minetest.get_node (pos)

@@ -861,7 +861,7 @@ minetest.register_node("lwcomponents:force_field", {
 	after_place_node = after_place_node,
 	on_blast = on_blast,
 	on_rightclick = on_rightclick,
-	on_timer = on_timer
+	on_timer = on_timer,
 })
 
 

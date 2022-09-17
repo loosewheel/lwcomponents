@@ -19,6 +19,28 @@ loadfile (modpath.."/settings.lua") (utils)
 utils.get_dummy_player = loadfile (modpath.."/dummy_player.lua") ()
 loadfile (modpath.."/utils.lua") (utils)
 loadfile (modpath.."/long_process.lua") (utils)
+-- ugly hack warnign
+local oldregnode = minetest.register_node
+function minetest.register_node(name,def)
+	local n="lwcomponents:"
+	if name:sub(1,#n) == n and name:find("locked") then
+		for _,k in pairs{"take","put","move"} do
+			local k="allow_metadata_inventory_"..k
+			if not def[k] then
+				def[k]=utils[k]
+			else
+				local f=def[k]
+				def[k]=function(...)
+					local e=utils[k](...)
+					if not e or e==0 then return e end
+					return f(...)
+				end
+			end
+		end
+	end
+	return oldregnode(name,def)
+end
+-- /ugly hack
 loadfile (modpath.."/explode.lua") (utils)
 loadfile (modpath.."/api.lua") (utils)
 utils.connections = loadfile (modpath.."/connections.lua") ()
@@ -49,7 +71,7 @@ loadfile (modpath.."/digiswitch.lua") (utils)
 loadfile (modpath.."/movefloor.lua") (utils)
 loadfile (modpath.."/solid_conductor.lua") (utils)
 loadfile (modpath.."/crafting.lua") (utils)
-
+minetest.register_node=oldregnode
 
 
 --
