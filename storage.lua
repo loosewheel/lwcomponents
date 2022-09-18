@@ -3,6 +3,10 @@ local S = utils.S
 
 
 
+local current_formspec_lists = { }
+
+
+
 local function unit_after_place_node (pos, placer, itemstack, pointed_thing)
 	local meta = minetest.get_meta (pos)
 	local spec =
@@ -694,6 +698,22 @@ end
 
 
 
+local function indexer_get_blank_formspec (pos)
+	local meta = minetest.get_meta (pos)
+
+	if meta and meta:get_string ("owner"):len () > 0 then
+		return "formspec_version[3]"..
+				 "size[8.0,4.0,false]"..
+				 "label[1.0,1.0;Owned by "..minetest.formspec_escape (meta:get_string ("owner")).."]"
+	else
+		return "formspec_version[3]"..
+				 "size[8.0,4.0,false]"..
+				 "label[1.0,1.0;Preparing form ...]"
+	end
+end
+
+
+
 local function get_formspec_list (pos)
 	local inv_list = get_inventory_list (pos)
 	local list = { }
@@ -721,6 +741,7 @@ local function get_formspec_list (pos)
 		list[#list + 1] =
 		{
 			item = k,
+			name = stack:get_name (),
 			description = utils.unescape_description (description),
 			count = v.count
 		}
@@ -749,6 +770,8 @@ local function indexer_get_formspec (pos, search)
 		terms = nil
 	end
 
+	local formspec_list = { }
+
 	local index = ""
 	local count = 0
 	local top = 0
@@ -757,21 +780,24 @@ local function indexer_get_formspec (pos, search)
 			local stack = ItemStack (v.item)
 			local max_stack = stack:get_stack_max ()
 			local descr_esc = minetest.formspec_escape (v.description)
-			local item_encoded = utils.hex_encode (v.item)
+
+			local item_index = #formspec_list + 1
+			formspec_list[item_index] = v
+
 			local item =
-			string.format ("item_image_button[0.0,%0.2f;1.0,1.0;%s;01_%s;]",
-								top, v.item, item_encoded)
+			string.format ("item_image_button[0.0,%0.2f;1.0,1.0;%s;01_%d;]",
+								top, minetest.formspec_escape(v.name), item_index)
 
 			if max_stack >= 10 then
 				item = item..
-				string.format ("button[1.0,%0.2f;1.0,1.0;10_%s;10]",
-									top, item_encoded)
+				string.format ("button[1.0,%0.2f;1.0,1.0;10_%d;10]",
+									top, item_index)
 			end
 
 			if max_stack > 1 then
 				item = item..
-				string.format ("button[2.0,%0.2f;1.0,1.0;ST_%d_%s;%d]",
-									top, max_stack, item_encoded, max_stack)
+				string.format ("button[2.0,%0.2f;1.0,1.0;ST_%d_%d;%d]",
+									top, max_stack, item_index, max_stack)
 			end
 
 			item = item..
@@ -824,6 +850,8 @@ local function indexer_get_formspec (pos, search)
 						scroll_height,
 						index)
 
+	current_formspec_lists[minetest.pos_to_string (pos, 0)] = formspec_list
+
 	return spec
 end
 
@@ -833,7 +861,7 @@ local function indexer_after_place_base (pos, placer, itemstack, pointed_thing)
 	local meta = minetest.get_meta (pos)
 
 	meta:set_string ("inventory", "{ input = { }, output = { }, filter = { } }")
-	meta:set_string ("formspec", indexer_get_formspec (pos))
+	meta:set_string ("formspec", indexer_get_blank_formspec (pos))
 
 	local inv = meta:get_inventory ()
 
@@ -1035,26 +1063,46 @@ local function indexer_on_receive_fields (pos, formname, fields, sender)
 			meta:set_string ("formspec", indexer_get_formspec (pos, fields.search_field))
 		end
 
+	elseif fields.quit then
+		local meta = minetest.get_meta (pos)
+
+		if meta and meta:get_string ("owner"):len () > 0 then
+			meta:set_string ("formspec", indexer_get_blank_formspec (pos))
+			current_formspec_lists[minetest.pos_to_string (pos, 0)] = nil
+		end
+
 	else
-		for k, v in pairs (fields) do
-			if k:sub (1, 3) == "01_" then
-				local item = k:sub (4, -1)
-				output_items (pos, utils.hex_decode (item), 1)
+		local formspec_list = current_formspec_lists[minetest.pos_to_string (pos, 0)]
 
-				break
-			elseif k:sub (1, 3) == "10_" then
-				local item = k:sub (4, -1)
-				output_items (pos, utils.hex_decode (item), 10)
+		if formspec_list then
+			for k, v in pairs (fields) do
+				if k:sub (1, 3) == "01_" then
+					local index = tonumber (k:sub (4, -1))
 
-				break
-			elseif k:sub (1, 3) == "ST_" then
-				local marker = k:find ("_", 4, true)
+					if index and formspec_list[index] then
+						output_items (pos, formspec_list[index].item, 1)
+					end
 
-				if marker then
-					local qty = tonumber (k:sub (4, marker - 1) or 1)
-					local item = k:sub (marker + 1, -1)
+					break
+				elseif k:sub (1, 3) == "10_" then
+					local index = tonumber (k:sub (4, -1))
 
-					output_items (pos, utils.hex_decode (item), qty)
+					if index and formspec_list[index] then
+						output_items (pos, formspec_list[index].item, 10)
+					end
+
+					break
+				elseif k:sub (1, 3) == "ST_" then
+					local marker = k:find ("_", 4, true)
+
+					if marker then
+						local qty = tonumber (k:sub (4, marker - 1) or 1)
+						local index = tonumber (k:sub (marker + 1, -1))
+
+						if index and formspec_list[index] then
+							output_items (pos, formspec_list[index].item, qty)
+						end
+					end
 				end
 			end
 		end
