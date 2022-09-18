@@ -741,7 +741,6 @@ local function get_formspec_list (pos)
 		list[#list + 1] =
 		{
 			item = k,
-			name = stack:get_name (),
 			description = utils.unescape_description (description),
 			count = v.count
 		}
@@ -752,6 +751,20 @@ local function get_formspec_list (pos)
 	end)
 
 	return list
+end
+
+
+
+local function item_to_string_stripped (stack)
+	local t = ItemStack (stack):to_table ()
+	local palette_index = (t.meta and t.meta.palette_index)
+
+	t.meta = nil
+	if palette_index then
+		t.meta = { palette_index = palette_index }
+	end
+
+	return ItemStack (t):to_string ()
 end
 
 
@@ -786,7 +799,8 @@ local function indexer_get_formspec (pos, search)
 
 			local item =
 			string.format ("item_image_button[0.0,%0.2f;1.0,1.0;%s;01_%d;]",
-								top, minetest.formspec_escape(v.name), item_index)
+								top, minetest.formspec_escape (item_to_string_stripped (v.item)),
+								item_index)
 
 			if max_stack >= 10 then
 				item = item..
